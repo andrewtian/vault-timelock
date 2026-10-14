@@ -13,7 +13,7 @@ import type * as Fixtures from '../../packages/core/test/decrypt/fixtures.ts'
 import { OutputViolation, OutputWriter, checkOutPath, isScrypt, outputFor, peekFile, prepareDecrypt, readInput, safeSegments, shapeOfBytes, stanzaTypes, PasteScanner } from '../src/ops/decrypt-broker.ts'
 import { BROKER_TAG, Violation, answerRequest, decryptPolicy, policyFor } from '../src/ops/broker.ts'
 import type { BrokerTty } from '../src/ops/broker.ts'
-import { ARMOR_END, PASTE_MAX, parseDecryptArgs } from '../src/decrypt-args.ts'
+import { ARMOR_END, PASTE_MAX, decryptPositions, parseDecryptArgs } from '../src/decrypt-args.ts'
 import { rejectsWith, removeDir, tempDir, throwsWith } from './lib.ts'
 
 const PASS = 'decrypt-broker-synthetic-passphrase'
@@ -229,9 +229,11 @@ test('writer, --out <file>: O_EXCL, 0600, any split of the stream; a second file
   w3.push(frame('a', 'complete bytes'))
   assert.equal(w3.finish(true), null, 'no end frame: not complete')
   assert.equal(existsSync(dir('w3.txt')), false)
-  // the file appeared between the check and the write: never overwritten
+  // the file appeared between the check and the write: never overwritten (fix round 1: refused when the complete file is linked into place)
   writeFileSync(dir('w4.txt'), 'theirs')
-  throwsWith(() => new OutputWriter({ kind: 'file', path: dir('w4.txt') }).push(frame('a', 'ours')), 'vt.out-exists')
+  const w4 = new OutputWriter({ kind: 'file', path: dir('w4.txt') })
+  w4.push(Buffer.concat([frame('a', 'ours'), END]))
+  throwsWith(() => w4.finish(true), 'vt.out-exists')
   assert.equal(readFileSync(dir('w4.txt'), 'utf8'), 'theirs')
   for (const bad of ['not json\n', '{"path":"a"}\n', '{"path":"a","size":-1}\n', '{"path":"a","size":1,"x":1}\n', `${'x'.repeat(9000)}`]) {
     assert.throws(() => new OutputWriter({ kind: 'file', path: dir('w5.txt') }).push(Buffer.from(bad)), OutputViolation, bad.slice(0, 30))
@@ -272,14 +274,15 @@ test('M-5: two entries APFS stores as ONE file — `A` / `a`, `\u00e9` NFC / `\u
     assert.equal(w.finish(false), null, name)
     assert.equal(existsSync(root), false, `${name}: nothing kept`)
   }
-  // the O_EXCL backstop under the fold check: a file that appears inside the output directory is never overwritten
-  const root = dir('m5-planted')
-  const w = new OutputWriter({ kind: 'dir', path: root })
+  // the O_EXCL backstop under the fold check: a file that appears inside the (partial) output directory is never overwritten
+  const w = new OutputWriter({ kind: 'dir', path: dir('m5-planted') })
   w.push(frame('first.txt', 'first'))
-  writeFileSync(join(root, 'second.txt'), 'planted')
+  const partial = join(T, readdirSync(T).find((n) => n.startsWith('.m5-planted.vt-partial-')) as string)
+  writeFileSync(join(partial, 'second.txt'), 'planted')
   throwsWith(() => w.push(frame('second.txt', 'ours')), 'vt.out-exists')
-  assert.equal(readFileSync(join(root, 'second.txt'), 'utf8'), 'planted', 'not overwritten')
+  assert.equal(readFileSync(join(partial, 'second.txt'), 'utf8'), 'planted', 'not overwritten')
   w.finish(false)
+  assert.equal(existsSync(partial), false)
   // on this disk (APFS, case- and normalization-insensitive by default) O_EXCL alone already sees each pair as one name
   const probe = dir('m5-probe')
   mkdirSync(probe)
@@ -301,4 +304,105 @@ test('writer, --stdout: the bytes go to the sink raw (no filter), with backpress
   assert.deepEqual([...Buffer.concat(got)], [...raw])
   assert.equal(w.finish(true)?.bytes, raw.length)
   assert.throws(() => new OutputWriter({ kind: 'none' }).push(frame('p', 'x')), OutputViolation)
+})
+
+// =============================== fix round 1 ===============================
+
+test('fix1 I-2: an input under a protected location ($VAULT_TIMELOCK_DIR, the default package dir) is opened by the LAUNCHER and handed on stdin; the child gets `-`', { timeout: 30_000 }, async () => {
+  const out = dir('fx-out')
+  mkdirSync(join(out, 'pkg'), { recursive: true })
+  writeFileSync(join(out, 'pkg', 'p.age.txt'), SCRYPT_ARMOR)
+  const d = { stdin: new PassThrough(), stdinIsTty: false, stdoutIsTty: false, note: () => {}, flush: () => {}, protectedRoots: [out] }
+  const argv = ['decrypt', join(out, 'pkg', 'p.age.txt'), '--out', dir('fx-o1')]
+  const plan = await prepareDecrypt(argv, d)
+  assert.equal(plan.stdin?.toString(), SCRYPT_ARMOR)
+  assert.deepEqual(plan.childArgs, ['decrypt', '-', '--out', dir('fx-o1')])
+  assert.equal(plan.passLabel, 'p.age.txt')
+  // outside a protected location: handed as before
+  writeFileSync(dir('fx-plain.age'), SCRYPT_ARMOR)
+  const p2 = await prepareDecrypt(['decrypt', dir('fx-plain.age'), '--stdout'], d)
+  assert.equal(p2.stdin, null); assert.deepEqual(p2.childArgs, ['decrypt', dir('fx-plain.age'), '--stdout'])
+})
+
+test('fix1 I-2: vt.decrypt-input — the launcher refuses, naming the reason: under restored/, a link, not a regular file, a vt credential, --identity in a protected place; over 1 MiB is decrypt.size', { timeout: 30_000 }, async () => {
+  const out = dir('fx2-out')
+  mkdirSync(join(out, 'pkg', 'restored'), { recursive: true })
+  mkdirSync(join(out, 'local'), { recursive: true })
+  writeFileSync(join(out, 'pkg', 'restored', 'x.age'), SCRYPT_ARMOR)
+  writeFileSync(join(out, 'pkg', 'real.age'), SCRYPT_ARMOR)
+  symlinkSync(join(out, 'pkg', 'real.age'), join(out, 'pkg', 'link.age'))
+  writeFileSync(join(out, 'local', 'btc-rpc.auth'), 'synthetic:not-a-credential')
+  writeFileSync(join(out, 'pkg', 'big.age'), `${SCRYPT_ARMOR}${'\n'.repeat(PASTE_MAX)}`)
+  writeFileSync(dir('fx2-id.txt'), '# synthetic\n')
+  writeFileSync(join(out, 'pkg', 'id.txt'), '# synthetic\n')
+  const d = { stdin: new PassThrough(), stdinIsTty: false, stdoutIsTty: false, note: () => {}, flush: () => {}, protectedRoots: [out] }
+  const cases: Array<[string[], RegExp]> = [
+    [['decrypt', join(out, 'pkg', 'restored', 'x.age'), '--stdout'], /restored\//],
+    [['decrypt', join(out, 'pkg', 'link.age'), '--stdout'], /link/],
+    [['decrypt', join(out, 'pkg'), '--stdout'], /not a regular file/],
+    [['decrypt', join(out, 'local', 'btc-rpc.auth'), '--stdout'], /credential/],
+    [['decrypt', dir('fx-plain.age'), '--identity', join(out, 'pkg', 'id.txt'), '--stdout'], /--identity/],
+    [['decrypt', join(dir('nowhere'), 'restored', 'y.age'), '--stdout'], /restored\//],
+  ]
+  for (const [argv, re] of cases) {
+    await assert.rejects(prepareDecrypt(argv, d), (e: unknown) => {
+      assert.equal((e as { guardId?: string }).guardId, 'vt.decrypt-input', `${argv[1]}: ${String(e)}`)
+      assert.match((e as Error).message, re)
+      assert.ok(!/^EPERM|: EPERM/.test((e as Error).message))
+      return true
+    })
+  }
+  await rejectsWith(() => prepareDecrypt(['decrypt', join(out, 'pkg', 'big.age'), '--stdout'], d), 'decrypt.size')
+})
+
+test('fix1 M-2: --out - / --out --stdout / --identity - are refused as ambiguous, and bin/vt never rewrites them into paths', { timeout: 30_000 }, () => {
+  assert.throws(() => args('f.age', '--out', '-'), /ambiguous/)
+  assert.throws(() => args('f.age', '--out', '--stdout'), /ambiguous/)
+  assert.throws(() => args('f.age', '--identity', '-', '--stdout'), /ambiguous|path/)
+  assert.deepEqual(decryptPositions(['decrypt', 'f.age', '--out', '-']), { handed: [1], out: null, input: 1, identity: null })
+  assert.deepEqual(decryptPositions(['decrypt', 'f.age', '--out', '--stdout']), { handed: [1], out: null, input: 1, identity: null })
+  assert.deepEqual(decryptPositions(['decrypt', 'f.age', '--identity', '-', '--stdout']), { handed: [1], out: null, input: 1, identity: null })
+})
+
+test('fix1 M-6: --out is written to an O_EXCL temporary beside it and LINKED into place: the final name never holds a partial file; a failure leaves nothing', { timeout: 30_000 }, () => {
+  const w = new OutputWriter({ kind: 'file', path: dir('fx6.txt') })
+  w.push(Buffer.from(`${JSON.stringify({ path: 'p', size: 10 })}\nhalf-`))
+  assert.equal(existsSync(dir('fx6.txt')), false, 'nothing at the final name mid-write')
+  const partials = (): string[] => readdirSync(T).filter((n) => n.startsWith('.fx6') && n.includes('.vt-partial-'))
+  const temps = readdirSync(T).filter((n) => n.startsWith('.fx6.txt.vt-partial-'))
+  assert.equal(temps.length, 1, 'a clearly named partial file beside it')
+  assert.equal(mode(join(T, temps[0])), 0o600)
+  w.push(Buffer.concat([Buffer.from('bytes'), END]))
+  assert.equal(w.finish(true)?.files, 1)
+  assert.equal(readFileSync(dir('fx6.txt'), 'utf8'), 'half-bytes')
+  assert.deepEqual(partials(), [], 'the temporary is gone')
+  // the final name appears meanwhile: link() refuses, nothing is overwritten, the temporary is removed
+  const w2 = new OutputWriter({ kind: 'file', path: dir('fx6b.txt') })
+  w2.push(frame('p', 'ours'))
+  writeFileSync(dir('fx6b.txt'), 'theirs')
+  w2.push(END)
+  throwsWith(() => w2.finish(true), 'vt.out-exists')
+  assert.equal(readFileSync(dir('fx6b.txt'), 'utf8'), 'theirs')
+  assert.deepEqual(partials(), [])
+  // a directory: built beside, renamed into place at the end
+  const wd = new OutputWriter({ kind: 'dir', path: dir('fx6d') })
+  wd.push(frame('items/a.json', '{}'))
+  assert.equal(existsSync(dir('fx6d')), false, 'the directory appears only when complete')
+  wd.push(END)
+  assert.equal(wd.finish(true)?.files, 1)
+  assert.equal(readFileSync(join(dir('fx6d'), 'items', 'a.json'), 'utf8'), '{}')
+  assert.equal(mode(dir('fx6d')), 0o700)
+  const wf = new OutputWriter({ kind: 'dir', path: dir('fx6e') })
+  wf.push(frame('a', 'x'))
+  assert.equal(wf.finish(false), null)
+  assert.deepEqual(partials(), [])
+})
+
+test('fix1 M-4: the age passphrase prompt switches echo off and discards type-ahead BEFORE it prints anything', { timeout: 30_000 }, async () => {
+  const events: string[] = []
+  const tty: BrokerTty = { available: () => true, passphrase: async () => { events.push('read'); return PASS }, word: async () => undefined, keys: () => () => {},
+    note: () => { events.push('note') }, quiet: () => { events.push('quiet') }, flush: () => { events.push('flush') }, loud: () => { events.push('loud') } }
+  await answerRequest(JSON.stringify({ id: 1, kind: 'age-passphrase' }), tty, decryptPolicy('p.age'), { asked: new Set(), left: new Map() }, noKeys)
+  assert.deepEqual(events.slice(0, 3), ['quiet', 'flush', 'note'], events.join(','))
+  assert.equal(events.at(-1), 'loud')
 })

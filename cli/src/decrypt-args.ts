@@ -11,7 +11,10 @@
 //                    checks before core;
 //   decrypt.size     the paste / pipe is over PASTE_LIMIT (1 MiB), or a file over core's input bound;
 //   vt.out-exists    --out names something that exists, its directory does not, or a file of the output would overwrite (or, on a
-//                    case- / normalization-insensitive disk such as APFS, merge with) one already written: never overwritten.
+//                    case- / normalization-insensitive disk such as APFS, merge with) one already written: never overwritten;
+//   vt.decrypt-input the input or --identity file cannot be used, and why (fix round 1, I-2): under a restored/ directory, a link, not a
+//                    regular file, a vt credential, an --identity in a protected place, or a file the sandbox may not read (never a bare
+//                    EPERM).
 import { refuse } from '@vault-timelock/core/text/guard.ts'
 
 export interface DecryptArgs {
@@ -45,8 +48,9 @@ export function parseDecryptArgs(args: readonly string[]): DecryptArgs {
       seen.add(a)
       if (FLAGS.has(a)) continue
       const val = args[i + 1]
-      if (val === undefined || val === '' || (val.startsWith('-') && val !== '-')) throw new DecryptUsage(`${a} needs a value`)
-      if (val === '-' && a !== '--only') throw new DecryptUsage(`${a} takes a path, not -`)
+      if (val === undefined || val === '') throw new DecryptUsage(`${a} needs a value`)
+      // fix round 1 (M-2): `--out -`, `--out --stdout`, `--identity -`: never guessed, never written as a file named so
+      if (a !== '--only' && val.startsWith('-')) throw new DecryptUsage(`${a} followed by - or another option is ambiguous: ${a === '--out' ? '--stdout prints the plaintext, --out takes a new file\'s path (./- for a file named -)' : '--identity takes the identity file\'s path (stdin is the input)'}`)
       v[a] = val
       i++
     } else if (a === '-' || !a.startsWith('-')) {
@@ -67,24 +71,28 @@ export function parseDecryptArgs(args: readonly string[]): DecryptArgs {
 
 // The positions (in the FULL argv, argv[0] === 'decrypt') of the input file and the --identity file (handed to the sandbox, read-only)
 // and of the --out path (rewritten to an absolute path by bin/vt, like the handed files: the broker runs in `/`; never handed).
-export function decryptPositions(argv: readonly string[]): { handed: number[]; out: number | null } {
+// Only a value the parser accepts is reported (M-2): `--out -` and `--out --stdout` are left as they are, so the parser refuses them.
+export function decryptPositions(argv: readonly string[]): { handed: number[]; out: number | null; input: number | null; identity: number | null } {
   const handed: number[] = []
-  let out: number | null = null
-  if (argv[0] !== 'decrypt') return { handed, out }
+  let out: number | null = null, input: number | null = null, identity: number | null = null
+  if (argv[0] !== 'decrypt') return { handed, out, input, identity }
   let gotInput = false
   for (let i = 1; i < argv.length; i++) {
     const a = argv[i]
     if (VALUED.has(a)) {
-      if (argv[i + 1] === undefined) break
-      if (a === '--identity') handed.push(i + 1)
+      const v = argv[i + 1]
+      if (v === undefined) break
+      if (v === '' || v.startsWith('-')) continue      // not a value the parser takes: the parser refuses the line
+      if (a === '--identity' && identity === null) { identity = i + 1; handed.push(i + 1) }
       else if (a === '--out' && out === null) out = i + 1
       i++
     } else if (!FLAGS.has(a) && !gotInput && a !== '-' && a !== '' && !a.startsWith('-')) {
       handed.push(i)
+      input = i
       gotInput = true
     } else if (a === '-') gotInput = true
   }
-  return { handed, out }
+  return { handed, out, input, identity }
 }
 
 // ---- the shared refusals (one marker each in this workspace)
@@ -97,6 +105,13 @@ export function refuseInputSize(message: string): never {
 }
 export function refuseOutExists(message: string): never {
   refuse('vt.out-exists', message) // @guard:vt.out-exists
+}
+export function refuseInputPath(message: string): never {
+  refuse('vt.decrypt-input', message) // @guard:vt.decrypt-input
+}
+// Anything under a restored/ directory holds decrypted package contents: vt decrypt never takes it as an input or identity (fix round 1).
+export function checkInputPath(path: string, what: string): void {
+  if (path.split('/').includes('restored')) refuseInputPath(`${what} lies under a restored/ directory, which holds decrypted contents: vt decrypt never reads there`)
 }
 
 // ---- the texts a paste may be (core's own markers: age.ts / sealed-from.ts)
@@ -118,22 +133,26 @@ export const OUT_FILE_MAX = 128 * 1024 * 1024        // one file (core's DECRYPT
 export const OUT_TOTAL_MAX = 256 * 1024 * 1024       // every file together
 export const OUT_FILES_MAX = 10_002                  // core's ARCHIVE_LIMITS.entries + identity.key + the archive itself
 
-// ---- display (M-5): an archive path as --list prints it
+// ---- display (M-5, fix round 1 M-1): an archive path as --list prints it
 
-// Every control, format (bidi, zero-width, BOM, soft hyphen, tag characters), separator and non-ASCII space character, the invisible
-// fillers the broker's output filter would drop (src/ops/sanitize.ts) and private-use / unassigned code points are written as [U+XXXX],
-// so a path can neither reorder nor hide text, nor look like another path, and survives the filter intact. A "[" that would start
-// something reading as that notation is itself written out (as the page's escapeName does), so the notation is unambiguous and
-// listName / unlistName are inverse: `--only` takes a path exactly as --list printed it.
-const HIDDEN = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}\p{Zs}\p{Co}\p{Cn}\p{Cs}\u3164\ufe00-\ufe0f\u{e0100}-\u{e01ef}\u2800\u115f\u1160\uffa0\u034f\u17b4\u17b5\u180b-\u180f]|\[(?=U\+[0-9A-F]{4,6}\])/gu
-const hex = (c: string): string => `[U+${(c.codePointAt(0) as number).toString(16).toUpperCase().padStart(4, '0')}]`
+// Printable ASCII is shown as itself; EVERY other code point (controls, bidi and format characters, zero-width and invisible fillers, every
+// non-ASCII letter, combining marks), and the three characters `\` `[` `]`, are written as \u{hex}. The result is printable ASCII with no
+// bracket at all, so the broker's output filter (which drops invisible characters, turns a non-ASCII or tag-like bracketed run into
+// parentheses, and writes non-ASCII as \u{..} in a non-UTF-8 locale) passes it through unchanged; and since `\` is always escaped, the
+// notation is unambiguous: listName / unlistName are inverse, and `--only` takes a path exactly as --list printed it. An NFC and an NFD
+// name print differently. (A strict superset of core's showPath escapes; test/decrypt.test.ts pins that over all of Unicode.)
 export function listName(path: string): string {
-  return path.replace(HIDDEN, (c) => (c === ' ' ? c : hex(c)))
+  let out = ''
+  for (const ch of path) {
+    const c = ch.codePointAt(0) as number
+    out += c >= 0x20 && c <= 0x7e && ch !== '\\' && ch !== '[' && ch !== ']' ? ch : `\\u{${c.toString(16)}}`
+  }
+  return out
 }
 export function unlistName(shown: string): string {
-  return shown.replace(/\[U\+([0-9A-F]{4,6})\]/g, (m, h: string) => {
+  return shown.replace(/\\u\{([0-9a-fA-F]{1,6})\}/g, (m, h: string) => {
     const n = parseInt(h, 16)
-    return n <= 0x10ffff ? String.fromCodePoint(n) : m
+    return n <= 0x10ffff && !(n >= 0xd800 && n <= 0xdfff) ? String.fromCodePoint(n) : m
   })
 }
 

@@ -31,6 +31,7 @@
   "release.mismatch": ["test/release.test.ts"],
   "release.test-only-present": ["test/release.test.ts"],
   "vt.backup-format": ["test/backup.test.ts"],
+  "vt.decrypt-input": ["test/decrypt-broker.test.ts"],
   "vt.decrypt-output": ["test/decrypt-broker.test.ts"],
   "vt.dev-dirs-required": ["test/paths.test.ts", "test/main.test.ts"],
   "vt.env": ["test/args.test.ts"],

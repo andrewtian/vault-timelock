@@ -240,16 +240,33 @@ case ${1-} in
 esac
 # Echo window: a passphrase command (job run | job clawback) switches echo OFF here, at once, before the slow profile build and the broker start (about a second), after saving
 # the terminal's settings; the broker takes over (VT_TERMIOS) and restores them on every path. Until the exec below, any exit restores them here.
+# vt decrypt (fix round 1, M-4): the same, whenever its passphrase could be asked without a paste first: a file is given, or stdin is not a
+# terminal (a pipe). A paste (no file, stdin a terminal) keeps echo ON: the broker reads it, and switches echo off itself after it.
 TERMIOS=
+quiet_now=0
 case ${1-}:${2-} in
-  job:run|job:clawback)
-    if TERMIOS=$( { /bin/stty -g </dev/tty; } 2>/dev/null ) && [ -n "$TERMIOS" ]; then
-      trap '{ /bin/stty "$TERMIOS" </dev/tty; } 2>/dev/null' EXIT
-      { /bin/stty -echo </dev/tty; } 2>/dev/null || true
-    else
-      TERMIOS=
-    fi ;;
+  job:run|job:clawback) quiet_now=1 ;;
+  decrypt:*)
+    d_first=1; d_skip=0; d_file=0
+    for a do
+      if [ "$d_first" = 1 ]; then d_first=0; continue; fi
+      if [ "$d_skip" = 1 ]; then d_skip=0; continue; fi
+      case $a in
+        --identity|--out|--only) d_skip=1 ;;
+        -*) ;;
+        *) d_file=1 ;;
+      esac
+    done
+    if [ "$d_file" = 1 ] || [ ! -t 0 ]; then quiet_now=1; fi ;;
 esac
+if [ "$quiet_now" = 1 ]; then
+  if TERMIOS=$( { /bin/stty -g </dev/tty; } 2>/dev/null ) && [ -n "$TERMIOS" ]; then
+    trap '{ /bin/stty "$TERMIOS" </dev/tty; } 2>/dev/null' EXIT
+    { /bin/stty -echo </dev/tty; } 2>/dev/null || true
+  else
+    TERMIOS=
+  fi
+fi
 PROFILE=
 profile_ok=1
 if [ "$sandboxed" = 1 ]; then

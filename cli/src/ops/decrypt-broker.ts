@@ -20,13 +20,14 @@
 // mode 0600, directories 0700, nothing ever overwritten or merged (two paths one case- / normalization-insensitive disk would store as
 // one file are refused: vt.out-exists), paths checked here again (relative, no `.` / `..` / empty segment, no backslash, no control
 // character), sizes bounded. If the command fails, ends early or breaks the frame rules, everything the writer created is removed.
-import { closeSync, constants, fchmodSync, fstatSync, lstatSync, mkdirSync, openSync, readSync, rmSync, statSync, unlinkSync, writeSync } from 'node:fs'
+import { closeSync, constants, fchmodSync, fstatSync, linkSync, lstatSync, mkdirSync, openSync, readSync, realpathSync, renameSync, rmSync, statSync, unlinkSync, writeSync } from 'node:fs'
+import { homedir, userInfo } from 'node:os'
 import { basename, dirname, join } from 'node:path'
-import { createHash } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import { refuse } from '@vault-timelock/core/text/guard.ts'
 import {
   AGE_MAGIC, ARMOR_BEGIN, ARMOR_END, DecryptUsage, FRAME_HEADER_MAX, OUT_FILES_MAX, OUT_FILE_MAX, OUT_TOTAL_MAX, PASTE_MAX, PUBLISHED_HEAD,
-  SEALED_END, SEALED_TITLE, foldKey, parseDecryptArgs, refuseInputFormat, refuseInputSize, refuseOutExists,
+  SEALED_END, SEALED_TITLE, checkInputPath, decryptPositions, foldKey, parseDecryptArgs, refuseInputFormat, refuseInputPath, refuseInputSize, refuseOutExists,
 } from '../decrypt-args.ts'
 import type { DecryptArgs } from '../decrypt-args.ts'
 
@@ -40,8 +41,45 @@ export interface DecryptPlan {
   readonly args: DecryptArgs
   readonly output: OutputSpec
   readonly passLabel: string | null   // the one passphrase prompt this command may ask (an age scrypt input), and what it is called; null: none
-  readonly stdin: Buffer | null       // the validated paste / pipe, for the child's stdin; null: the input is a handed file
+  readonly stdin: Buffer | null       // the validated paste / pipe (or a protected file the launcher read), for the child's stdin; null: a handed file
   readonly fromTty: boolean           // the input was pasted at the terminal
+  readonly childArgs: readonly string[]   // the argv the child gets (a launcher-read input becomes `-`)
+}
+
+// ---- inputs in protected places (fix round 1, I-2)
+// Every sandboxed profile denies reading the default package directory (~/.local/share/vault-timelock, for each home) and vt's credentials
+// there (denyProtectedFiles). vt decrypt never widens that: a file under $VAULT_TIMELOCK_DIR or a default package directory is opened HERE,
+// by the unsandboxed launcher — a regular file, never through a link, never a vt credential, at most PASTE_MAX bytes (as a paste) — and its
+// bytes reach the child on stdin exactly like a paste. An --identity there is refused (copy it out): a secret is never read by the launcher.
+const CREDENTIALS = new Set(['btc-rpc.auth', 'relay-ticket.key', 'api.token'])
+const realOrSelf = (p: string): string => { try { return realpathSync(p) } catch { return p } }
+const exists = (p: string): boolean => { try { lstatSync(p); return true } catch (e) { return (e as NodeJS.ErrnoException).code !== 'ENOENT' } }
+export function protectedRoots(env: Readonly<Record<string, string | undefined>>): string[] {
+  const set = (v: string | undefined): v is string => v !== undefined && v !== ''
+  const out = set(env.VAULT_TIMELOCK_DIR) ? env.VAULT_TIMELOCK_DIR : set(env.XDG_DATA_HOME) ? join(env.XDG_DATA_HOME, 'vault-timelock') : join(set(env.HOME) ? env.HOME : homedir(), '.local', 'share', 'vault-timelock')
+  const homes = [userInfo().homedir, ...(set(env.HOME) ? [env.HOME] : [])]
+  return [...new Set([out, ...homes.map((h) => join(h, '.local', 'share', 'vault-timelock'))].map(realOrSelf))]
+}
+const under = (p: string, roots: readonly string[]): boolean => roots.some((r) => p === r || p.startsWith(`${r}/`))
+
+// The launcher's read of a protected input: refuses (vt.decrypt-input / decrypt.size) naming the reason.
+export function launcherRead(path: string): Buffer {
+  if (CREDENTIALS.has(basename(path))) refuseInputPath('the input is one of vt\'s credential files: vt decrypt never reads it')
+  let fd = -1
+  try { fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK) } catch (e) {
+    const code = (e as NodeJS.ErrnoException).code
+    if (code === 'ELOOP') refuseInputPath('the input under $VAULT_TIMELOCK_DIR is a link: vt opens only the file itself there')
+    refuseInputPath(`the input under $VAULT_TIMELOCK_DIR cannot be opened (${code ?? 'error'})`)
+  }
+  try {
+    const st = fstatSync(fd)
+    if (!st.isFile()) refuseInputPath('the input under $VAULT_TIMELOCK_DIR is not a regular file')
+    if (st.size > PASTE_MAX) refuseInputSize(`the input is larger than ${PASTE_MAX} bytes: files under $VAULT_TIMELOCK_DIR are read by vt's launcher up to 1 MiB (as a paste); copy it out of there to decrypt a larger one`)
+    const b = Buffer.alloc(st.size)
+    let off = 0
+    while (off < b.length) { const n = readSync(fd, b, off, b.length - off, off); if (n === 0) break; off += n }
+    return b.subarray(0, off)
+  } finally { closeSync(fd) }
 }
 
 // No destination for the plaintext. The one vt.decrypt-output marker.
@@ -263,6 +301,7 @@ export function readInput(stdin: NodeJS.ReadableStream, o: { tty: boolean; quiet
 }
 
 export interface PrepareDeps {
+  protectedRoots?: readonly string[]   // where the sandbox may not read: the launcher reads an input there (default: none)
   stdin: NodeJS.ReadableStream
   stdinIsTty: boolean
   stdoutIsTty: boolean
@@ -274,11 +313,27 @@ export interface PrepareDeps {
 // Everything the broker decides for `vt decrypt` before the child starts. Throws DecryptUsage (exit 1) or a Refusal (exit 2).
 export async function prepareDecrypt(argv: readonly string[], d: PrepareDeps): Promise<DecryptPlan> {
   const args = parseDecryptArgs(argv.slice(1))
+  const roots = d.protectedRoots ?? []
+  if (args.identity !== null) {
+    checkInputPath(args.identity, 'the --identity file')
+    if (under(args.identity, roots)) refuseInputPath('the --identity file lies under $VAULT_TIMELOCK_DIR (or the default package directory), which sandboxed commands may not read and vt\'s launcher never reads a secret from: copy it out first')
+  }
   if (args.input !== null) {
+    checkInputPath(args.input, 'the input file')
+    if (under(args.input, roots)) {
+      outputFor(args, { stdoutIsTty: d.stdoutIsTty, sealed: false })     // refused before anything is read
+      const bytes = launcherRead(args.input)
+      const shape = shapeOfBytes(bytes)
+      const output = outputFor(args, { stdoutIsTty: d.stdoutIsTty, sealed: shape === 'sealed' })
+      const childArgs = [...argv]
+      const at = decryptPositions(argv).input
+      if (at !== null) childArgs[at] = '-'
+      return { args, output, passLabel: shape !== 'sealed' && isScrypt(bytes) ? basename(args.input) : null, stdin: bytes, fromTty: false, childArgs }
+    }
     const head = peekFile(args.input)
     const shape = shapeOfBytes(head)
     const output = outputFor(args, { stdoutIsTty: d.stdoutIsTty, sealed: shape === 'sealed' })
-    return { args, output, passLabel: shape !== 'sealed' && isScrypt(head) ? basename(args.input) : null, stdin: null, fromTty: false }
+    return { args, output, passLabel: shape !== 'sealed' && isScrypt(head) ? basename(args.input) : null, stdin: null, fromTty: false, childArgs: [...argv] }
   }
   // stdin: decide the output first (nothing is read when it would be refused). Whether a SEALED.txt comes is known after the paste: a
   // directory --out is checked now (it must not exist either way) and settled below.
@@ -295,7 +350,7 @@ export async function prepareDecrypt(argv: readonly string[], d: PrepareDeps): P
   const shape = shapeOfBytes(bytes)
   const output = args.list ? { kind: 'none' as const } : args.stdout ? { kind: 'stdout' as const }
     : { kind: args.only === null && shape === 'sealed' ? 'dir' as const : 'file' as const, path: args.out as string }
-  return { args, output, passLabel: shape !== 'sealed' && isScrypt(bytes) ? (d.stdinIsTty ? 'the pasted age file' : 'the piped age file') : null, stdin: bytes, fromTty: d.stdinIsTty }
+  return { args, output, passLabel: shape !== 'sealed' && isScrypt(bytes) ? (d.stdinIsTty ? 'the pasted age file' : 'the piped age file') : null, stdin: bytes, fromTty: d.stdinIsTty, childArgs: [...argv] }
 }
 export { DecryptUsage }
 
@@ -312,19 +367,20 @@ export function safeSegments(path: string): string[] {
   return segs
 }
 
-export interface Written { files: number; bytes: number; sha256: string | null }
+export interface Written { files: number; bytes: number }   // no digest of the plaintext is kept or printed (fix round 1, M-3)
+// The partial name beside --out (fix round 1, M-6): the output is built there and appears under its final name only when complete.
+const partialName = (out: string): string => join(dirname(out), `.${basename(out)}.vt-partial-${randomBytes(6).toString('hex')}`)
 
 export class OutputWriter {
   private buf: Buffer = Buffer.alloc(0)
-  private cur: { fd: number | null; left: number; hash: ReturnType<typeof createHash> } | null = null
+  private cur: { fd: number | null; left: number } | null = null
   private files = 0
   private total = 0
   private ended = false
   private rootMade = false
-  private readonly createdFiles: string[] = []
   private readonly dirs = new Map<string, string>()     // fold key of a directory path → the path as created
   private readonly names = new Set<string>()            // fold keys of every path written (files and directories)
-  private lastSha: string | null = null
+  private temp: string | null = null                   // the partial file / directory beside --out
   private readonly spec: OutputSpec
   private readonly data: (b: Buffer) => boolean
   constructor(spec: OutputSpec, data: (b: Buffer) => boolean = () => true) { this.spec = spec; this.data = data }
@@ -341,7 +397,6 @@ export class OutputWriter {
       if (this.cur !== null) {
         const n = Math.min(this.cur.left, b.length)
         const part = b.subarray(0, n)
-        this.cur.hash.update(part)
         if (this.cur.fd !== null) { let off = 0; while (off < part.length) off += writeSync(this.cur.fd, part, off, part.length - off) } else if (!this.data(Buffer.from(part))) ok = false
         this.cur.left -= n
         b = b.subarray(n)
@@ -376,21 +431,18 @@ export class OutputWriter {
     if (this.spec.kind !== 'dir' && this.files > 0) throw new OutputViolation('a second output file where one was asked')
     this.files++
     this.total += r.size
-    this.cur = { fd: this.open(r.path), left: r.size, hash: createHash('sha256') }
+    this.cur = { fd: this.open(r.path), left: r.size }
   }
 
   // The descriptor the next file's bytes go to (null: the stdout sink). O_EXCL: never an existing file; O_NOFOLLOW: never through a link.
   private open(path: string): number | null {
     if (this.spec.kind === 'stdout') return null
     const flags = constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW
-    let target: string = this.spec.kind === 'file' ? this.spec.path : ''
+    let target = ''
+    if (this.spec.kind === 'file') { this.temp = partialName(this.spec.path); target = this.temp }
     if (this.spec.kind === 'dir') {
       const segs = safeSegments(path)
-      const root = this.spec.path
-      if (!this.rootMade) {
-        try { mkdirSync(root, 0o700) } catch (e) { if ((e as NodeJS.ErrnoException).code === 'EEXIST') refuseOutExists('--out appeared while decrypting: vt never writes into an existing directory'); throw e }
-        this.rootMade = true
-      }
+      const root = this.makeRoot()
       let at = ''
       for (const s of segs.slice(0, -1)) {
         at = at === '' ? s : `${at}/${s}`
@@ -412,19 +464,61 @@ export class OutputWriter {
     }
     let fd: number
     try { fd = openSync(target, flags, 0o600) } catch (e) {
+      if (this.spec.kind === 'file') this.temp = null
       if ((e as NodeJS.ErrnoException).code === 'EEXIST' || (e as NodeJS.ErrnoException).code === 'ELOOP') refuseOutExists(this.spec.kind === 'file' ? '--out appeared while decrypting: vt never overwrites' : 'a file of the archive would overwrite one already written (the disk treats their names as one): nothing is kept')
       throw e
     }
-    this.createdFiles.push(target)
     try { fchmodSync(fd, 0o600) } catch { /* the create mode already is 0600 (umask can only narrow it) */ }
     return fd
+  }
+
+  // The directory's partial root beside --out (0700, exclusive), made on the first file or at the end for an empty archive.
+  private makeRoot(): string {
+    if (!this.rootMade) {
+      this.temp = partialName((this.spec as { path: string }).path)
+      mkdirSync(this.temp, 0o700)
+      this.rootMade = true
+    }
+    return this.temp as string
   }
 
   private closeFile(): void {
     if (this.cur === null) return
     if (this.cur.fd !== null) closeSync(this.cur.fd)
-    this.lastSha = this.cur.hash.digest('hex')
     this.cur = null
+  }
+
+  // The complete output takes its final name, never over anything: a file by link() (EEXIST: refused), a directory by rename() after
+  // checking the name is free (rename could only replace an EMPTY directory made in that instant: nothing is lost). Then the partial name
+  // is gone.
+  private commit(): void {
+    if (this.spec.kind !== 'file' && this.spec.kind !== 'dir') return
+    const final = this.spec.path
+    if (this.spec.kind === 'dir') this.makeRoot()
+    const temp = this.temp as string
+    if (this.spec.kind === 'file') {
+      try { linkSync(temp, final) } catch (e) {
+        const code = (e as NodeJS.ErrnoException).code
+        if (code === 'EEXIST') refuseOutExists('--out appeared while decrypting: vt never overwrites; nothing was written')
+        // a disk without hard links (FAT, some network shares): the same name check, then rename
+        if (code !== 'EPERM' && code !== 'ENOTSUP' && code !== 'EOPNOTSUPP' && code !== 'EMLINK') throw e
+        if (exists(final)) refuseOutExists('--out appeared while decrypting: vt never overwrites; nothing was written')
+        renameSync(temp, final)
+        this.temp = null
+        return
+      }
+      unlinkSync(temp)
+      this.temp = null
+      return
+    }
+    if (exists(final)) refuseOutExists('--out appeared while decrypting: vt never writes into an existing directory; nothing was written')
+    try { renameSync(temp, final) } catch (e) {
+      const code = (e as NodeJS.ErrnoException).code
+      if (code === 'EEXIST' || code === 'ENOTEMPTY' || code === 'ENOTDIR') refuseOutExists('--out appeared while decrypting: vt never writes into an existing directory; nothing was written')
+      throw e
+    }
+    this.temp = null
+    this.rootMade = false
   }
 
   // ok: the command exited 0. Returns what was written, or null after removing everything this writer created.
@@ -432,17 +526,17 @@ export class OutputWriter {
     const good = ok && this.ended && this.cur === null && (this.spec.kind === 'none' || this.files > 0 || this.spec.kind === 'dir')
     if (this.cur !== null && this.cur.fd !== null) { try { closeSync(this.cur.fd) } catch { /* closed */ } }
     this.cur = null
-    if (good && this.spec.kind === 'dir' && !this.rootMade) {
-      try { mkdirSync(this.spec.path, 0o700); this.rootMade = true } catch { refuseOutExists('--out appeared while decrypting: vt never writes into an existing directory') }
+    if (good) {
+      try { this.commit() } catch (e) { this.discard(); throw e }
+      return { files: this.files, bytes: this.total }
     }
-    if (good) return { files: this.files, bytes: this.total, sha256: this.files === 1 ? this.lastSha : null }
     this.discard()
     return null
   }
 
+  // Removes the partial output (never anything under the final name: that exists only once complete).
   discard(): void {
     if (this.cur !== null && this.cur.fd !== null) { try { closeSync(this.cur.fd) } catch { /* closed */ } this.cur = null }
-    if (this.spec.kind === 'dir' && this.rootMade) { try { rmSync(this.spec.path, { recursive: true, force: true }) } catch { /* best effort */ } this.rootMade = false }
-    else for (const f of this.createdFiles.splice(0)) { try { unlinkSync(f) } catch { /* gone */ } }
+    if (this.temp !== null) { try { rmSync(this.temp, { recursive: true, force: true }) } catch { /* best effort */ } this.temp = null; this.rootMade = false }
   }
 }

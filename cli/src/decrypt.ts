@@ -34,7 +34,7 @@ import { PORTS, Refusal, isRefusal, refuse } from '@vault-timelock/core/contract
 import { DECRYPT_LIMITS, PASTE_LIMIT, decryptAge, detectInput, extractAll, extractOne, listArchive } from '@vault-timelock/core/decrypt'
 import type { ArchiveFile, DecryptHow, DecryptResult, FetchRoundSignature } from '@vault-timelock/core/decrypt'
 import { UsageError } from './args.ts'
-import { DATA_FD, DecryptUsage, listName, parseDecryptArgs, refuseInputSize, unlistName } from './decrypt-args.ts'
+import { DATA_FD, DecryptUsage, listName, parseDecryptArgs, refuseInputPath, refuseInputSize, unlistName } from './decrypt-args.ts'
 import type { DecryptArgs } from './decrypt-args.ts'
 import { assertTerminal } from './job/client.ts'
 
@@ -165,15 +165,24 @@ async function frame(d: DecryptDeps, path: string, bytes: Uint8Array): Promise<v
 const what = (r: DecryptResult): string => r.kind === 'sealed' ? 'the SEALED.txt' : `the age file (${r.kind})`
 const via = (r: DecryptResult, round: number | null, at: string | null): string => r.via === 'timelock' ? `through its time lock (drand round ${round}, ${at}; the signature came through the relay)` : r.via === 'identity' ? 'with the identity' : 'with the passphrase'
 
+// fix round 1 (I-2): a handed file the sandbox may not read is refused with its reason, never a bare EPERM
+async function readable<T>(what: string, f: () => T | Promise<T>): Promise<T> {
+  try { return await f() } catch (e) {
+    const code = (e as NodeJS.ErrnoException | null)?.code
+    if (code === 'EPERM' || code === 'EACCES') refuseInputPath(`the sandbox may not read ${what}: vt's sandboxed commands never read vt's state and credentials, or (except through vt's launcher) its package directory; copy the file elsewhere and hand it again`)
+    throw e
+  }
+}
+
 export async function runDecrypt(argv: readonly string[], d: DecryptDeps): Promise<number> {
   let a: DecryptArgs
   try { a = parseDecryptArgs(argv) } catch (e) { if (e instanceof DecryptUsage) throw new UsageError(e.message); throw e }
-  const input = await d.input(a)
+  const input = await readable('the input file', () => d.input(a))
   // What the input is, before any secret is asked: decrypt.format / decrypt.size / decrypt.kind refuse here.
   const det = detectInput(input, a.input === null ? { input: PASTE_LIMIT } : undefined)
   const how: { passphrase?: string; identity?: string; fetchRoundSignature?: FetchRoundSignature; now?: () => number } = {}
   if (d.now !== undefined) how.now = d.now
-  if (a.identity !== null) how.identity = d.identity(a.identity)
+  if (a.identity !== null) { const p = a.identity; how.identity = await readable('the --identity file', () => d.identity(p)) }
   if (det.kind === 'passphrase') {
     assertTerminal(d.terminal, 'this input is passphrase-encrypted (age scrypt): vt asks the passphrase at the terminal only (never stdin, argv or the environment), and there is none')
     how.passphrase = await d.passphrase()
@@ -187,6 +196,7 @@ export async function runDecrypt(argv: readonly string[], d: DecryptDeps): Promi
     throw e
   }
   d.err(`vt decrypt: ${what(r)} opened ${via(r, det.round, det.opensAt)}\n`)
+  if (r.kind === 'sealed') d.err(`vt decrypt: ${r.blocks.length} block(s) match their [file] lines (size and sha256)\n`)
   for (const n of r.notes) d.err(`vt decrypt: ${n}\n`)
 
   if (a.list || a.only !== null) {

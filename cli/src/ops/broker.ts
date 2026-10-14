@@ -42,7 +42,7 @@ import { readPassphrase } from 'vt-broadcast/src/lifecycle/passphrase.ts'
 import { readTypedWord } from 'vt-broadcast/src/lifecycle/typed.ts'
 import { Sanitizer, localeIsUtf8, neutralizeTag, sanitize } from './sanitize.ts'
 import { echoOff, flushInput, ownsTerminal, rawKeys, restoreTermios, saveTermios, terminalAvailable, writeTty } from './ttyio.ts'
-import { DecryptUsage, OutputViolation, OutputWriter, prepareDecrypt } from './decrypt-broker.ts'
+import { DecryptUsage, OutputViolation, OutputWriter, prepareDecrypt, protectedRoots } from './decrypt-broker.ts'
 import type { DecryptPlan, Written } from './decrypt-broker.ts'
 import { DATA_FD } from '../decrypt-args.ts'
 
@@ -189,8 +189,10 @@ export async function answerRequest(line: string, tty: BrokerTty, policy: Policy
     if (state.ageAsked === true) throw new Violation('the passphrase a second time')
     if (tty.owns && !tty.owns()) throw new LostTerminal()
     state.ageAsked = true
-    tty.note(hl(tty, `\n${BROKER_TAG}passphrase of ${visible(label, ascii)} (age scrypt); typed here, not echoed, never shown to anyone\n`))
+    // fix round 1 (M-4): echo off and type-ahead discarded BEFORE anything is printed, so nothing typed ahead is ever shown
     tty.quiet?.(); tty.flush?.()
+    if (tty.owns && !tty.owns()) throw new LostTerminal()
+    tty.note(hl(tty, `\n${BROKER_TAG}passphrase of ${visible(label, ascii)} (age scrypt); typed here, not echoed, never shown to anyone\n`))
     if (tty.owns && !tty.owns()) throw new LostTerminal()
     tty.note(hl(tty, `${BROKER_TAG}type it now (nothing is shown)\n`))
     if (tty.owns && !tty.owns()) throw new LostTerminal()
@@ -276,12 +278,13 @@ function brokerFailure(e: unknown): { code: number; line: string } {
 const EXPLAIN = `${SGR_ON}[vt broker]${SGR_OFF} vt's own prompts appear highlighted like this; text that merely looks like them is not from vt.\n`
 
 // vt decrypt, before the child: the output decision, the paste, the prompt policy (src/ops/decrypt-broker.ts). A number: the exit status (refused).
-async function decryptPrologue(args: readonly string[], ttyIn: BrokerTty, sink: { err: (s: string) => boolean }, io: BrokerIo): Promise<DecryptPlan | number> {
+async function decryptPrologue(args: readonly string[], env: NodeJS.ProcessEnv, ttyIn: BrokerTty, sink: { err: (s: string) => boolean }, io: BrokerIo): Promise<DecryptPlan | number> {
   // Ctrl-C while pasting: the rest of the paste is discarded (never left for the shell), then the broker ends as interrupted
   const onInt = (): void => { flushInput(); process.exit(130) }
   if (io.stdinIsTty) process.once('SIGINT', onInt)
   try {
     return await prepareDecrypt(args, {
+      protectedRoots: protectedRoots(env),
       stdin: io.stdin, stdinIsTty: io.stdinIsTty, stdoutIsTty: io.stdoutIsTty,
       note: (t) => { if (ttyIn.style === true) ttyIn.note(EXPLAIN); ttyIn.note(hl(ttyIn, `${BROKER_TAG}${t}`)) },   // the paste instruction (once)
       flush: () => { (ttyIn.flush ?? flushInput)() },
@@ -300,7 +303,7 @@ export async function run(argv: readonly string[], env: NodeJS.ProcessEnv, ttyIn
   if (sandboxExec === undefined || profile === undefined || launcher === undefined) throw new Error('the broker needs sandbox-exec, a profile and the launcher')
   let plan: DecryptPlan | null = null
   if (args[0] === 'decrypt') {
-    const p = await decryptPrologue(args, ttyIn, sink, io)
+    const p = await decryptPrologue(args, env, ttyIn, sink, io)
     if (typeof p === 'number') return p
     plan = p
   }
@@ -332,10 +335,14 @@ export async function run(argv: readonly string[], env: NodeJS.ProcessEnv, ttyIn
     const dataPipe = plan !== null && plan.output.kind !== 'none'
     const stdio: Array<'ignore' | 'pipe' | number> = [plan?.stdin != null ? 'pipe' : 'ignore', 'pipe', 'pipe', prompts ? 'pipe' : nullFd, prompts ? 'pipe' : nullFd]
     if (dataPipe) { while (stdio.length < DATA_FD) stdio.push('ignore'); stdio[DATA_FD] = 'pipe' }
-    const child = spawn(sandboxExec, ['-p', profile, launcher, ...args], { env: childEnv, stdio, detached: true })
+    const child = spawn(sandboxExec, ['-p', profile, launcher, ...(plan?.childArgs ?? args)], { env: childEnv, stdio, detached: true })
     if (nullFd >= 0) closeSync(nullFd)
     if (plan?.stdin != null && child.stdin !== null) { child.stdin.on('error', () => { /* the command did not read it all: its own refusal says why */ }); child.stdin.end(plan.stdin) }
-    const writer = plan !== null && dataPipe ? new OutputWriter(plan.output, (b) => (outBroken ? true : io.data(b))) : null
+    // fix round 1 (I-1): --stdout on a TERMINAL goes through the same output filter as everything the child prints (no escape sequence, no
+    // invisible or format character; \n and \t kept), and one note says so; a pipe or a file gets the exact bytes.
+    const shown = plan?.output.kind === 'stdout' && io.stdoutIsTty ? new Sanitizer(ascii) : null
+    const sinkData = (b: Buffer): boolean => (outBroken ? true : io.data(shown === null ? b : Buffer.from(shown.push(b))))
+    const writer = plan !== null && dataPipe ? new OutputWriter(plan.output, sinkData) : null
     let wroteStdout = 0
     const out = new Sanitizer(ascii), err = new Sanitizer(ascii)
     let finished = false
@@ -365,9 +372,10 @@ export async function run(argv: readonly string[], env: NodeJS.ProcessEnv, ttyIn
         return code
       }
       const o = plan?.output
-      if (o?.kind === 'file') write(1, `vt: wrote ${visible(o.path, ascii)} (${w.bytes} bytes, sha256 ${w.sha256 ?? '-'}; mode 0600)\n`)
+      if (shown !== null && !outBroken) { io.data(Buffer.from(shown.end())); write(1, '\nvt: --stdout is a terminal: control sequences and invisible characters were removed; use --out <file> (or a pipe) for the exact bytes\n') }
+      if (o?.kind === 'file') write(1, `vt: wrote ${visible(o.path, ascii)} (${w.bytes} bytes; mode 0600)\n`)
       else if (o?.kind === 'dir') write(1, `vt: wrote ${w.files} file(s), ${w.bytes} bytes, under ${visible(o.path, ascii)}/ (directories 0700, files 0600)\n`)
-      else if (o?.kind === 'stdout') write(1, `vt: wrote ${w.bytes} bytes to stdout (sha256 ${w.sha256 ?? '-'})\n`)
+      else if (o?.kind === 'stdout') write(1, `vt: wrote ${w.bytes} bytes to stdout\n`)
       return code
     }
     const done = (code0: number): void => {

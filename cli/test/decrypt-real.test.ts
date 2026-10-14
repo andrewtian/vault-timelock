@@ -19,7 +19,7 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileS
 import { join } from 'node:path'
 import { runInPty } from 'vt-broadcast/test/offline/lifecycle/pty.ts'
 import { PORTS } from '@vault-timelock/core/contracts'
-import { CLI, NODE, PATH0, WRAPPER, connectOutcome, removeDir, tempDir, writeExe } from './lib.ts'
+import { CLI, NODE, PATH0, WRAPPER, connectOutcome, ptyLive, removeDir, tempDir, writeExe } from './lib.ts'
 import { denyTerminals } from '../src/ops/sandbox.ts'
 import type * as Fixtures from '../../packages/core/test/decrypt/fixtures.ts'
 
@@ -173,11 +173,11 @@ test('SEALED.txt by the identity path: --list on a TERMINAL (escaped names, no c
   const l = await runInPty(sh(vt(['decrypt', 'S.txt', '--identity', 'onetime.key', '--list'])), { env: env(), steps: [] })
   const lo = plainOut(l.out)
   assert.match(lo, /VT-EXIT=0/, lo)
-  assert.match(lo, /extra\/r\[U\+202E\]txt\.exe/)
+  assert.ok(lo.includes('extra/r\\u{202e}txt.exe'), lo)
   assert.match(lo, /\b20 {2}items\/bbbb\.json\b/)
   assert.ok(!lo.includes('synthetic attachment') && !lo.includes('"synthetic"'), 'no contents')
   assert.ok(!lo.includes(String(s.identity)))
-  const one = runVt(['decrypt', 'S.txt', '--identity', 'onetime.key', '--only', 'extra/r[U+202E]txt.exe', '--out', 'one.bin'])
+  const one = runVt(['decrypt', 'S.txt', '--identity', 'onetime.key', '--only', 'extra/r\\u{202e}txt.exe', '--out', 'one.bin'])
   assert.equal(one.code, 0, one.err)
   assert.equal(readFileSync(at('one.bin'), 'utf8'), files[odd])
   const full = runVt(['decrypt', 'S.txt', '--identity', 'onetime.key', '--out', 'restored'])
@@ -322,4 +322,90 @@ const tcp = (port) => new Promise((res) => { const s = net.connect({ host: '127.
   assert.deepEqual(got.out, { input: 'ok', identity: 'ok', sibling: 'EPERM', token: 'EPERM', write: 'EPERM', tty: 'EPERM', relay: got.out.relay === 'connected' ? 'connected' : 'ECONNREFUSED', api: 'EPERM', page: 'EPERM' })
   assert.notEqual(got.out.relay, 'EPERM', 'the relay port is reachable')
   assert.equal(existsSync(at('written-by-child.txt')), false)
+})
+
+// =============================== fix round 1 ===============================
+
+test('fix1 I-1: --stdout on a TERMINAL goes through the output filter: OSC 52 (clipboard) and OSC 0 / 2 (title) never arrive; one note says so; a pipe still gets the exact bytes', { timeout: 120_000 }, async () => {
+  const esc = '\u001b'
+  const evil = `line one\n${esc}]52;c;U1lOVEgtQ0xJUEJPQVJE\u0007${esc}]0;SYNTH-TITLE-0\u0007${esc}]2;SYNTH-TITLE-2${esc}\\tab\there\nend\n`
+  writeFileSync(at('osc.age'), await F.identityBin(evil, ID.recipient))
+  const r = await runInPty(sh(vt(['decrypt', 'osc.age', '--identity', 'id.txt', '--stdout'])), { env: env(), steps: [] })
+  assert.match(r.out, /VT-EXIT=0/, r.out)
+  assert.ok(!r.out.includes(`${esc}]`), 'no OSC sequence reached the terminal')
+  for (const p of ['U1lOVEgtQ0xJUEJPQVJE', 'SYNTH-TITLE-0', 'SYNTH-TITLE-2']) assert.ok(!r.out.includes(p), p)
+  assert.match(plainOut(r.out), /line one\ntab\there\nend\n/)
+  assert.match(plainOut(r.out), /vt: --stdout is a terminal: control sequences and invisible characters were removed; use --out <file> \(or a pipe\) for the exact bytes/)
+  assert.equal((plainOut(r.out).match(/were removed/g) ?? []).length, 1, 'said once')
+  const raw = runVt(['decrypt', 'osc.age', '--identity', 'id.txt', '--stdout'])
+  assert.equal(raw.out.toString('latin1'), Buffer.from(evil).toString('latin1'), 'a pipe gets the exact bytes')
+  assert.ok(!raw.err.includes('were removed'))
+})
+
+test('fix1 I-2: a package under the default $VAULT_TIMELOCK_DIR decrypts (the launcher reads it, the profile is not widened); restored/, --identity there, a vt credential and > 1 MiB are refused with their reasons', { timeout: 180_000 }, async () => {
+  const home = at('fx-home'), out = join(home, '.local', 'share', 'vault-timelock')
+  mkdirSync(join(out, 'synthetic-pkg', 'restored'), { recursive: true })
+  mkdirSync(join(out, 'local'), { recursive: true })
+  const e = { ...env(), HOME: home, VAULT_TIMELOCK_DIR: out }
+  const s = await F.makeSealed({ vaultFiles: vault() })
+  writeFileSync(join(out, 'synthetic-pkg', 'SEALED.txt'), s.sealed)
+  writeFileSync(at('fx-onetime.key'), `${s.identity}\n`)
+  writeFileSync(join(out, 'synthetic-pkg', 'onetime.key'), `${s.identity}\n`)
+  writeFileSync(join(out, 'synthetic-pkg', 'restored', 'x.age'), SCRYPT_ARMOR)
+  writeFileSync(join(out, 'local', 'btc-rpc.auth'), 'synthetic:not-a-credential')
+  writeFileSync(join(out, 'synthetic-pkg', 'big.age'), `${SCRYPT_ARMOR}${'\n'.repeat(1024 * 1024)}`)
+  const go = (args: string[]): { code: number | null; out: string; err: string } => {
+    const r = spawnSync(WRAPPER, args, { env: e, cwd: T, encoding: 'utf8', timeout: 120_000 })
+    return { code: r.status, out: r.stdout, err: r.stderr }
+  }
+  const l = go(['decrypt', join(out, 'synthetic-pkg', 'SEALED.txt'), '--identity', at('fx-onetime.key'), '--list'])
+  assert.equal(l.code, 0, l.err)
+  assert.match(l.out, /items\/bbbb\.json/)
+  const full = go(['decrypt', join(out, 'synthetic-pkg', 'SEALED.txt'), '--identity', at('fx-onetime.key'), '--out', at('fx-restored')])
+  assert.equal(full.code, 0, full.err)
+  assert.ok(existsSync(join(at('fx-restored'), 'items', 'aaaa.json')))
+  for (const [args, guard, re] of [
+    [['decrypt', join(out, 'synthetic-pkg', 'restored', 'x.age'), '--stdout'], 'vt.decrypt-input', /restored\//],
+    [['decrypt', join(out, 'synthetic-pkg', 'SEALED.txt'), '--identity', join(out, 'synthetic-pkg', 'onetime.key'), '--list'], 'vt.decrypt-input', /--identity/],
+    [['decrypt', join(out, 'local', 'btc-rpc.auth'), '--stdout'], 'vt.decrypt-input', /credential/],
+    [['decrypt', join(out, 'synthetic-pkg', 'big.age'), '--stdout'], 'decrypt.size', /copy it out/],
+  ] as Array<[string[], string, RegExp]>) {
+    const r = go(args)
+    assert.equal(r.code, 2, `${args[1]}: ${r.err}`)
+    assert.match(r.err, new RegExp(`^refused ${guard.replace('.', '\\.')}: `, 'm'))
+    assert.match(r.err, re)
+    assert.ok(!/EPERM/.test(r.err), r.err)
+  }
+  // a file the sandbox's denies cover elsewhere (vt's own state): the child names the reason
+  mkdirSync(join(at('vt-home'), 'testnet'), { recursive: true })
+  writeFileSync(join(at('vt-home'), 'testnet', 'relay-ticket.key'), 'synthetic-not-a-key')
+  const t = runVt(['decrypt', join(at('vt-home'), 'testnet', 'relay-ticket.key'), '--stdout'])
+  assert.equal(t.code, 2, t.err); assert.match(t.err, /^refused vt\.decrypt-input: .*may not read/m); assert.ok(!/EPERM: operation/.test(t.err))
+})
+
+test('fix1 M-2: through bin/vt, --out - and --out --stdout are refused as ambiguous and NO file named - or --stdout is written; --identity - too', { timeout: 120_000 }, () => {
+  for (const args of [['--out', '-'], ['--out', '--stdout'], ['--identity', '-', '--stdout']]) {
+    const r = runVt(['decrypt', 'x.age', ...(args[0] === '--identity' ? [] : ['--identity', 'id.txt']), ...args])
+    assert.equal(r.code, 1, r.err); assert.match(r.err, /^vt: .*ambiguous/m)
+  }
+  assert.equal(existsSync(at('-')), false); assert.equal(existsSync(at('--stdout')), false)
+})
+
+test('fix1 M-3: no digest of the plaintext is printed (stdout, --out)', { timeout: 120_000 }, () => {
+  const a = runVt(['decrypt', 'x.age', '--identity', 'id.txt', '--stdout'])
+  const b = runVt(['decrypt', 'x.age', '--identity', 'id.txt', '--out', 'fx3.bin'])
+  const digest = sha(Buffer.from([0x1b, 0x5d, 0x35, 0x32, 0x3b, 0x00, 0xff, 0x0a]))
+  for (const r of [a, b]) { assert.equal(r.code, 0, r.err); assert.ok(!r.err.includes(digest) && !/sha256 [0-9a-f]{64}/.test(r.err), r.err) }
+})
+
+test('fix1 M-4: a passphrase typed AHEAD (while vt is still starting) is never echoed; the prompt then works', { timeout: 120_000 }, async () => {
+  const early = 'SYNTH-EARLY-TYPEAHEAD-DECRYPT'
+  let sentEarly = false, sentPass = false
+  const r = await ptyLive(['/bin/sh', '-c', `cd ${q(T)} && echo START-VT && ${vt(['decrypt', 'p.age.txt', '--out', 'fx4.txt'])}; echo "VT-EXIT=$?"`], { env: env(), on: (out, type) => {
+    if (!sentEarly && out.includes('START-VT')) { sentEarly = true; setTimeout(() => type(`${early}\r`), 400) }
+    if (!sentPass && out.includes('Passphrase: ')) { sentPass = true; type(`${PASS}\r`) }
+  } })
+  assert.match(r.out, /VT-EXIT=0/, r.out)
+  assert.ok(!r.out.includes(early) && !r.out.includes('EARLY'), `the early input was echoed: ${r.out}`)
+  assert.equal(readFileSync(at('fx4.txt'), 'utf8'), PLAIN)
 })

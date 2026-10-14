@@ -70,7 +70,7 @@ test('the shared constants and positions: PASTE_MAX is core\'s PASTE_LIMIT; data
   assert.equal(PASTE_MAX, PASTE_LIMIT)
   assert.equal(DATA_FD, 5)
   const argv = ['decrypt', 'S.txt', '--identity', 'k.txt', '--out', 'o', '--only', 'x/y']
-  assert.deepEqual(decryptPositions(argv), { handed: [1, 3], out: 5 })
+  assert.deepEqual(decryptPositions(argv), { handed: [1, 3], out: 5, input: 1, identity: 3 })
   assert.deepEqual(handedIndices(argv), [1, 3])
   assert.deepEqual(pathIndices(argv), [1, 3, 5])
   assert.deepEqual(handedIndices(['decrypt', '-', '--stdout']), [], 'stdin is no file')
@@ -184,10 +184,10 @@ test('--list: path + size per file (no contents), on stdout; bidi / zero-width /
   const r = await go(['S.txt', '--identity', 'k', '--list'], s.sealed, { idText: s.identity as string })
   assert.equal(r.frames.length, 0); assert.equal(r.ended, false, 'no data channel output at all')
   for (const body of Object.values(files)) assert.ok(!r.out.includes(body.trim()), 'never a file\'s contents')
-  assert.match(r.out, /files\/aaaa\/r\[U\+202E\]evil\.txt/)
-  assert.match(r.out, /zero\[U\+200B\]width/)
-  assert.match(r.out, /tab\[U\+3164\]fill/)
-  assert.match(r.out, /\[U\+005B\]U\+0041\]literal/)
+  assert.ok(r.out.includes('files/aaaa/r\\u{202e}evil.txt'), r.out)
+  assert.ok(r.out.includes('zero\\u{200b}width'))
+  assert.ok(r.out.includes('tab\\u{3164}fill'))
+  assert.ok(r.out.includes('\\u{5b}U+0041\\u{5d}literal'), 'brackets are written out: nothing reads as an escape, and the filter has no bracket to rewrite')
   assert.ok(!/[\u202e\u200b\u3164]/.test(r.out))
   const filtered = new Sanitizer(false); assert.equal(filtered.push(r.out) + filtered.end(), r.out, 'the broker\'s output filter leaves the list intact')
   for (const n of odd) assert.equal(unlistName(listName(n)), n)
@@ -200,6 +200,61 @@ test('--list: path + size per file (no contents), on stdout; bidi / zero-width /
   // an input with no archive: --list / --only are usage errors
   await assert.rejects(go(['x.age', '--list'], await F.passphraseBin('synthetic\n', PASS)), UsageError)
   assert.equal(foldKey('A'), foldKey('a')); assert.equal(foldKey('caf\u00e9'), foldKey('cafe\u0301'))
+})
+
+// =============================== fix round 1 ===============================
+
+test('fix1 M-1: --list escapes survive the broker\'s output filter exactly (UTF-8 and ASCII locales): bracketed non-ASCII names, NFC / NFD pairs, a tag lookalike, a backslash; --only takes them back', { timeout: 30_000 }, async () => {
+  // core's strict reader refuses a backslash in a path, so those two are checked on the escaper alone
+  const names = ['extra/[caf\u00e9]', 'extra/(caf\u00e9)', 'extra/x\u00e9.txt', 'extra/xe\u0301.txt', 'extra/[vt broker] y', 'extra/[U+0041]']
+  const all = [...names, 'extra/back\\slash', 'extra/\\u{41}']
+  const shown = all.map(listName)
+  assert.equal(new Set(shown).size, all.length, 'distinct names stay distinct')
+  for (const [i, n] of all.entries()) {
+    assert.match(shown[i], /^[\x20-\x7e]*$/, 'printable ASCII only')
+    for (const ascii of [false, true]) { const f = new Sanitizer(ascii); assert.equal(f.push(shown[i]) + f.end(), shown[i], `the filter leaves ${shown[i]} intact`) }
+    assert.equal(unlistName(shown[i]), n)
+  }
+  const files = vault({ names })
+  const s = await F.makeSealed({ vaultFiles: files })
+  const l = await go(['S.txt', '--identity', 'k', '--list'], s.sealed, { idText: s.identity as string })
+  for (const n of names) {
+    assert.ok(l.out.includes(listName(n)), n)
+    const one = await go(['S.txt', '--identity', 'k', '--only', listName(n), '--stdout'], s.sealed, { idText: s.identity as string })
+    assert.equal(one.frames[0].path, n)
+  }
+})
+
+test('fix1 M-5: the CLI escaper covers at least every code point core\'s showPath escapes (all of Unicode, pinned)', { timeout: 120_000 }, async () => {
+  const { showPath } = await import('@vault-timelock/core/decrypt')
+  let checked = 0
+  for (let cp = 0; cp <= 0x10ffff; cp++) {
+    if (cp >= 0xd800 && cp <= 0xdfff) continue
+    const ch = String.fromCodePoint(cp)
+    if (showPath(ch) === ch) continue
+    checked++
+    assert.notEqual(listName(ch), ch, `U+${cp.toString(16)} is escaped by showPath but not by listName`)
+    assert.equal(unlistName(listName(ch)), ch)
+  }
+  assert.ok(checked > 200, `showPath escapes ${checked} code points`)
+})
+
+test('fix1 I-2: a handed file the sandbox may not read is refused with its reason (vt.decrypt-input), never a bare EPERM', { timeout: 30_000 }, async () => {
+  const eperm = (): never => { const e = new Error('EPERM: operation not permitted, open \'/x\'') as NodeJS.ErrnoException; e.code = 'EPERM'; throw e }
+  await assert.rejects(go(['f.age', '--out', 'o'], '', { input: async () => eperm() }), (e: unknown) => {
+    assert.equal((e as { guardId?: string }).guardId, 'vt.decrypt-input')
+    assert.match((e as Error).message, /the input file/); assert.match((e as Error).message, /may not read/)
+    return true
+  })
+  const bin = await F.identityBin('synthetic\n', (await F.newIdentity()).recipient)
+  await assert.rejects(go(['x.age', '--identity', 'k', '--stdout'], bin, { identity: () => eperm() }), (e: unknown) => (e as { guardId?: string }).guardId === 'vt.decrypt-input' && /--identity/.test((e as Error).message))
+})
+
+test('fix1 M-3: the summary names the verified blocks and manifests, never a digest of the plaintext', { timeout: 30_000 }, async () => {
+  const s = await F.makeSealed({ vaultFiles: vault() })
+  const r = await go(['S.txt', '--out', 'd'], s.sealed)
+  assert.match(r.err, /2 block\(s\) match their \[file\] lines/)
+  for (const f of r.frames) assert.ok(!r.err.includes(sha(f.bytes)), 'no plaintext digest')
 })
 
 test('detectInput first: a non-age input is refused before any secret is asked or anything fetched; the paste cap applies to stdin', { timeout: 30_000 }, async () => {
