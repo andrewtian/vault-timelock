@@ -77,7 +77,7 @@ flowchart TB
     copy["anyone: SEALED.txt, rebuilt<br/>from a public chain copy"]
     hand["by hand: tle + age<br/>(the steps in SEALED.txt)"]
     tools["the sealers' open"]
-    page["the page: Open or Decrypt tab"]
+    page["the page: Open or Decrypt tab,<br/>or vt decrypt at the terminal"]
     sig(["drand round signature, through Tor"])
     plain["the plaintext"]
     copy --> hand & tools & page
@@ -310,6 +310,9 @@ sequenceDiagram
 - After the round, the round's signature is public. `tle`, or tlock-js in the page's tab, decrypts with it; a vault's
   data key then opens `vault.tar.gz.age` with `age`. The page never contacts drand itself: it goes through the relay's
   `/relay/drand/…` route, which uses Tor, and the beacon is checked against the pinned quicknet key.
+- `vt decrypt` does the same at the terminal, through the same relay route (so `vt up` must be running for a
+  timelocked input): `--list` prints only each archived file's path and size, `--only <path>` opens one,
+  and plaintext is written only with `--out` (a new 0600 file, never an overwrite) or `--stdout` (filtered on a terminal).
 - In the run, `tle` by hand, `timelock-key.sh open` and the page's decrypt code (over the same relay route) gave the
   same file, with the original's sha256.
 
