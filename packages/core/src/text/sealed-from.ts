@@ -223,20 +223,32 @@ export const CUT = `awk '/^\\[file [A-Za-z0-9][A-Za-z0-9._-]* bytes=[0-9]+ sha25
 export const CHECK = `sed -n 's/^\\[file \\([A-Za-z0-9][A-Za-z0-9._-]*\\) bytes=\\([0-9]*\\) sha256=\\([0-9a-f]*\\)\\]$/\\1 \\2 \\3/p' SEALED.txt | while read -r n b s; do [ "$(sed '1d;$d' "$n" | base64 -d | wc -c | tr -d ' ') $(sed '1d;$d' "$n" | base64 -d | shasum -a 256 | cut -c1-64)" = "$b $s" ] && echo "OK $n" || { echo "BAD $n"; exit 1; }; done`
 export const TOR = 'env -u NO_PROXY -u no_proxy HTTPS_PROXY=socks5h://127.0.0.1:9050 '
 export const MANIFEST_CHECK = `(cd restored && { tail -n +2 MANIFEST.csv | awk -F, '{ print $2 "  items/" $1 ".json" }'; [ ! -f ATTACHMENTS.csv ] || tail -n +2 ATTACHMENTS.csv | awk -F, '{ print $4 "  files/" $1 "/" $2 }'; } | shasum -a 256 -c)`
-// Format /2's literal commands (v2-format.md). CUT_ONE: the awk program that writes the ONE armor block whose [file ...]
-// line names `n` (the -v variable) to the file `n` and stops there; a name only ever matches a [file ...] line's plain
-// name, so nothing lands outside the directory. cutCheck(name, bytes, sha): cut it out and compare its DECODED size and
-// SHA-256 with its [file ...] line's (the values written into the command), printing OK or BAD. indexOpen(gzip): open
-// the index with identity.key, keep its first `gzip` bytes (any rest is padding), gunzip into index.tsv and check its
-// first line. BLOCKS_OPEN: for each index.tsv line (block, path, bytes, sha256, gzip bytes; TAB-separated) cut the block
-// out, open it, keep its first <gzip bytes>, gunzip into restored/<path> (a relative path of [A-Za-z0-9._/-], no ".."),
-// and compare that file's bytes and SHA-256 with the line's, printing OK <path> or BAD <path> (and stopping).
+// Format /2's literal commands (v2-format.md). Each runs in a subshell `( ... )`: its `exit 1` never closes the reader's own
+// shell. CUT_ONE: the awk program that writes the ONE armor block whose [file ...] line names `n` (the -v variable) to the
+// file `n` and stops there; a name only ever matches a [file ...] line's plain name, so nothing lands outside the
+// directory. cutCheck(name, bytes, sha): cut it out and compare its DECODED size and SHA-256 with its [file ...] line's (the
+// values written into the command), printing OK or BAD. indexOpen(gzip): open the index with identity.key, keep its
+// first `gzip` bytes (any rest is padding), gunzip into index.tsv and check its first line.
+// ★ index.tsv is AUTHOR-CONTROLLED for whoever opens someone else's text (fix round 1, C-1): INDEX_CHECK reads every line of
+// it BEFORE any field is used, against the exact grammar (INDEX_GRAMMAR), and refuses the WHOLE index on any mismatch,
+// printing only line numbers (I-1: never a field), writing nothing. BLOCKS_OPEN runs it first, then only on a checked index:
+// for each line cut the block out (`./` before it: never an option), open it, keep its first <gzip bytes>, gunzip into
+// restored/<path> (a NEW directory; the path is the checked grammar), and check the SHA-256 with `shasum -c` (no field in
+// a command substitution, arithmetic or eval; every expansion quoted), printing OK <path> or BAD <path> (and stopping).
+// The grammar of an index line (TAB-separated): block ^b[0-9]{4,}$ that a [file ...] line of this text names, path exactly
+// INDEX_PATH (what 1password-timelock.sh seals: relative, no "..", no empty or "." segment, [a-z0-9] ids), bytes and gzip
+// bytes ^[0-9]{1,12}$, sha256 ^[0-9a-f]{64}$; no block and no path twice; the header vault-timelock-index/1 and >= 1 line.
+export const INDEX_PATH = '^(items/[a-z0-9]+[.]json|files/[a-z0-9]+/[a-z0-9]+|MANIFEST[.]csv|ATTACHMENTS[.]csv)$'
+export const INDEX_GRAMMAR = {
+  block: /^b[0-9]{4,}$/, path: new RegExp(INDEX_PATH), bytes: /^[0-9]{1,12}$/, sha256: /^[0-9a-f]{64}$/, gzip: /^[0-9]{1,12}$/,
+} as const
 export const CUT_ONE = `'/^\\[file [A-Za-z0-9][A-Za-z0-9._-]* bytes=[0-9]+ sha256=[0-9a-f]+( gzip=[0-9]+)?\\]$/ { f = ($2 == n); next } f && /^-----BEGIN AGE ENCRYPTED FILE-----$/ { w = 1 } w { print > n } w && /^-----END AGE ENCRYPTED FILE-----$/ { close(n); exit }'`
 export const cutCheck = (name: string, bytes: number, sha: string): string =>
-  `awk -v n=${name} ${CUT_ONE} SEALED.txt && [ "$(sed '1d;$d' ${name} | base64 -d | wc -c | tr -d ' ') $(sed '1d;$d' ${name} | base64 -d | shasum -a 256 | cut -c1-64)" = "${bytes} ${sha}" ] && echo "OK ${name}" || { echo "BAD ${name}"; exit 1; }`
+  `( awk -v n=${name} ${CUT_ONE} SEALED.txt && [ "$(sed '1d;$d' ${name} | base64 -d | wc -c | tr -d ' ') $(sed '1d;$d' ${name} | base64 -d | shasum -a 256 | cut -c1-64)" = "${bytes} ${sha}" ] && echo "OK ${name}" || { echo "BAD ${name}"; exit 1; } )`
 export const indexOpen = (gzip: number): string =>
-  `age -d -i identity.key ${INDEX_FILE} | head -c ${gzip} | gunzip > index.tsv && [ "$(head -n 1 index.tsv)" = ${INDEX_HEADER} ] && echo "OK index.tsv" || { echo "BAD index.tsv"; exit 1; }`
-export const BLOCKS_OPEN = `mkdir restored && tail -n +2 index.tsv | while IFS="$(printf '\\t')" read -r b p n s g; do case $p in ''|/*|*..*|*[!A-Za-z0-9._/-]*) echo "BAD $p"; exit 1 ;; esac; awk -v n="$b" ${CUT_ONE} SEALED.txt && mkdir -p "$(dirname "restored/$p")" && age -d -i identity.key "$b" | head -c "$g" | gunzip > "restored/$p" && [ "$(wc -c < "restored/$p" | tr -d ' ') $(shasum -a 256 "restored/$p" | cut -c1-64)" = "$n $s" ] && echo "OK $p" || { echo "BAD $p"; exit 1; }; done`
+  `( age -d -i identity.key ${INDEX_FILE} | head -c ${gzip} | gunzip > index.tsv && [ "$(head -n 1 index.tsv)" = ${INDEX_HEADER} ] && echo "OK index.tsv" || { echo "BAD index.tsv"; exit 1; } )`
+export const INDEX_CHECK = `LC_ALL=C awk -F '\\t' -v P='${INDEX_PATH}' 'NR == FNR { if ($0 ~ /^\\[file b[0-9][0-9][0-9][0-9]+ bytes=[0-9]+ sha256=[0-9a-f]+\\]$/) { split($0, w, " "); h[w[2]] = 1 } next } { x++ } FNR == 1 { if ($0 != "${INDEX_HEADER}") { print "BAD index.tsv line 1"; e = 1 } next } NF != 5 || $1 !~ /^b[0-9][0-9][0-9][0-9]+$/ || !($1 in h) || u[$1]++ || $2 !~ P || q[$2]++ || $3 !~ /^[0-9]+$/ || length($3) > 12 || $4 !~ /^[0-9a-f]+$/ || length($4) != 64 || $5 !~ /^[0-9]+$/ || length($5) > 12 { print "BAD index.tsv line " FNR; e = 1 } END { if (x < 2) { print "BAD index.tsv line " x + 1; e = 1 } exit e }' SEALED.txt index.tsv`
+export const BLOCKS_OPEN = `( ${INDEX_CHECK} && mkdir restored && tail -n +2 index.tsv | while IFS="$(printf '\\t')" read -r b p n s g || [ -n "$b" ]; do awk -v n="$b" ${CUT_ONE} SEALED.txt && mkdir -p "restored/$p" && rmdir "restored/$p" && age -d -i identity.key "./$b" | head -c "$g" | gunzip > "restored/$p" && printf '%s  %s\\n' "$s" "restored/$p" | shasum -a 256 -c > /dev/null && echo "OK $p" || { echo "BAD $p"; exit 1; }; done )`
 
 // what-this-is and layers, per shape
 function describe(kind: Kind, round: string, hash: string, last = ''): { what: string[]; layers: string[] } {
@@ -346,23 +358,26 @@ function perFileSteps(round: string, files: ReadonlyMap<string, Uint8Array>, pf:
     '     block, path, bytes, sha256, gzip bytes:',
     `     $ ${cutCheck(INDEX_FILE, ix.length, sha256(ix))}`,
     `     $ ${indexOpen(pf.indexGzip)}`,
-    '  3. for each line of index.tsv: cut out its block, open it with identity.key, keep its first',
-    "     <gzip bytes>, gunzip them into restored/<path> and check that file's bytes and SHA-256; it",
-    '     prints OK for every file (one file only: put grep -F <its path> index.tsv in place of',
-    '     tail -n +2 index.tsv):',
+    '  3. check EVERY line of index.tsv first (a block of this text, a sealed path, digits, a SHA-256;',
+    '     anything else refuses the whole index, naming only line numbers, and nothing is written);',
+    '     then for each line: cut out its block, open it with identity.key, keep its first <gzip bytes>,',
+    "     gunzip them into restored/<path> and check that file's SHA-256; it prints OK for every file",
+    "     (one file only: put grep -F -- '<its path>' index.tsv in place of tail -n +2 index.tsv):",
     `     $ ${BLOCKS_OPEN}`,
     '  4. check every item and attachment against the manifests sealed inside; every line must end in OK:',
     `     $ ${MANIFEST_CHECK}`,
   ]
 }
 const perFileNotes = (pf: PerFile): string[] => pf.padding === 'buckets' ? [
-  `  - without the key this text shows how many files the vault holds (blocks: ${pf.blocks.length}) and each`,
-  "    block's size: its gzip stream zero-padded up to 1, 2, 4, 8, 16, 32, 64 or 128 KiB, or a multiple",
-  '    of 128 KiB. Which file is which, the paths and the digests are only in the encrypted index.',
+  `  - without the key this text shows how many files the vault holds (blocks: ${pf.blocks.length}) and, from each`,
+  "    block's size, the size bucket of that file's gzip-compressed size (padding: buckets: 1, 2, 4, 8,",
+  '    16, 32, 64 or 128 KiB, or a multiple of 128 KiB), and the index\'s exact compressed size (its',
+  '    gzip=). Which file is which, the paths and the digests are only in the encrypted index.',
 ] : [
-  `  - without the key this text shows how many files the vault holds (blocks: ${pf.blocks.length}) and each`,
-  "    block's size (padding: none, so each file's compressed size plus age's fixed overhead). Which",
-  '    file is which, the paths and the digests are only in the encrypted index.',
+  `  - without the key this text shows how many files the vault holds (blocks: ${pf.blocks.length}) and, from each`,
+  "    block's size, that file's exact gzip-compressed size (padding: none), and the index's exact",
+  '    compressed size (its gzip=). Which file is which, the paths and the digests are only in the',
+  '    encrypted index.',
 ]
 
 const sha256 = sha256Hex

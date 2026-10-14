@@ -5,11 +5,11 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { gzipSync } from 'node:zlib'
-import { agePlaintextLength, padBucket } from '../../src/text/sealed-from.ts'
+import { BLOCKS_OPEN, INDEX_CHECK, INDEX_GRAMMAR, INDEX_PATH, agePlaintextLength, padBucket } from '../../src/text/sealed-from.ts'
 import { sealedFiles, checkPayload } from '../../src/text/payload.ts'
 import { Refusal } from '../../src/text/guard.ts'
 import { buildSealed } from './build-sealed.ts'
@@ -48,8 +48,10 @@ function makeV2(o: V2 = {}): { dir: string; files: Record<string, Buffer>; gz: n
 
 // ---- the expected text, written out here independently of src ----------------------------------------------------------
 const AWK = `'/^\\[file [A-Za-z0-9][A-Za-z0-9._-]* bytes=[0-9]+ sha256=[0-9a-f]+( gzip=[0-9]+)?\\]$/ { f = ($2 == n); next } f && /^-----BEGIN AGE ENCRYPTED FILE-----$/ { w = 1 } w { print > n } w && /^-----END AGE ENCRYPTED FILE-----$/ { close(n); exit }'`
-const cut = (n: string, b: Buffer) => `awk -v n=${n} ${AWK} SEALED.txt && [ "$(sed '1d;$d' ${n} | base64 -d | wc -c | tr -d ' ') $(sed '1d;$d' ${n} | base64 -d | shasum -a 256 | cut -c1-64)" = "${b.length} ${sha(b)}" ] && echo "OK ${n}" || { echo "BAD ${n}"; exit 1; }`
-const LOOP = `mkdir restored && tail -n +2 index.tsv | while IFS="$(printf '\\t')" read -r b p n s g; do case $p in ''|/*|*..*|*[!A-Za-z0-9._/-]*) echo "BAD $p"; exit 1 ;; esac; awk -v n="$b" ${AWK} SEALED.txt && mkdir -p "$(dirname "restored/$p")" && age -d -i identity.key "$b" | head -c "$g" | gunzip > "restored/$p" && [ "$(wc -c < "restored/$p" | tr -d ' ') $(shasum -a 256 "restored/$p" | cut -c1-64)" = "$n $s" ] && echo "OK $p" || { echo "BAD $p"; exit 1; }; done`
+const cut = (n: string, b: Buffer) => `( awk -v n=${n} ${AWK} SEALED.txt && [ "$(sed '1d;$d' ${n} | base64 -d | wc -c | tr -d ' ') $(sed '1d;$d' ${n} | base64 -d | shasum -a 256 | cut -c1-64)" = "${b.length} ${sha(b)}" ] && echo "OK ${n}" || { echo "BAD ${n}"; exit 1; } )`
+// fix round 1 (C-1): the whole index is checked against the exact grammar before any field is used
+const CHECK = `LC_ALL=C awk -F '\\t' -v P='^(items/[a-z0-9]+[.]json|files/[a-z0-9]+/[a-z0-9]+|MANIFEST[.]csv|ATTACHMENTS[.]csv)$' 'NR == FNR { if ($0 ~ /^\\[file b[0-9][0-9][0-9][0-9]+ bytes=[0-9]+ sha256=[0-9a-f]+\\]$/) { split($0, w, " "); h[w[2]] = 1 } next } { x++ } FNR == 1 { if ($0 != "vault-timelock-index/1") { print "BAD index.tsv line 1"; e = 1 } next } NF != 5 || $1 !~ /^b[0-9][0-9][0-9][0-9]+$/ || !($1 in h) || u[$1]++ || $2 !~ P || q[$2]++ || $3 !~ /^[0-9]+$/ || length($3) > 12 || $4 !~ /^[0-9a-f]+$/ || length($4) != 64 || $5 !~ /^[0-9]+$/ || length($5) > 12 { print "BAD index.tsv line " FNR; e = 1 } END { if (x < 2) { print "BAD index.tsv line " x + 1; e = 1 } exit e }' SEALED.txt index.tsv`
+const LOOP = `( ${CHECK} && mkdir restored && tail -n +2 index.tsv | while IFS="$(printf '\\t')" read -r b p n s g || [ -n "$b" ]; do awk -v n="$b" ${AWK} SEALED.txt && mkdir -p "restored/$p" && rmdir "restored/$p" && age -d -i identity.key "./$b" | head -c "$g" | gunzip > "restored/$p" && printf '%s  %s\\n' "$s" "restored/$p" | shasum -a 256 -c > /dev/null && echo "OK $p" || { echo "BAD $p"; exit 1; }; done )`
 const MF = `(cd restored && { tail -n +2 MANIFEST.csv | awk -F, '{ print $2 "  items/" $1 ".json" }'; [ ! -f ATTACHMENTS.csv ] || tail -n +2 ATTACHMENTS.csv | awk -F, '{ print $4 "  files/" $1 "/" $2 }'; } | shasum -a 256 -c)`
 const NOTES = [
   'notes:',
@@ -106,23 +108,26 @@ function golden(p: { files: Record<string, Buffer>; gz: number; blocks: string[]
     '     index.tsv: a first line vault-timelock-index/1, then one TAB-separated line per block:',
     '     block, path, bytes, sha256, gzip bytes:',
     `     $ ${cut('index', p.files.index)}`,
-    `     $ age -d -i identity.key index | head -c ${p.gz} | gunzip > index.tsv && [ "$(head -n 1 index.tsv)" = vault-timelock-index/1 ] && echo "OK index.tsv" || { echo "BAD index.tsv"; exit 1; }`,
-    '  3. for each line of index.tsv: cut out its block, open it with identity.key, keep its first',
-    "     <gzip bytes>, gunzip them into restored/<path> and check that file's bytes and SHA-256; it",
-    '     prints OK for every file (one file only: put grep -F <its path> index.tsv in place of',
-    '     tail -n +2 index.tsv):',
+    `     $ ( age -d -i identity.key index | head -c ${p.gz} | gunzip > index.tsv && [ "$(head -n 1 index.tsv)" = vault-timelock-index/1 ] && echo "OK index.tsv" || { echo "BAD index.tsv"; exit 1; } )`,
+    '  3. check EVERY line of index.tsv first (a block of this text, a sealed path, digits, a SHA-256;',
+    '     anything else refuses the whole index, naming only line numbers, and nothing is written);',
+    '     then for each line: cut out its block, open it with identity.key, keep its first <gzip bytes>,',
+    "     gunzip them into restored/<path> and check that file's SHA-256; it prints OK for every file",
+    "     (one file only: put grep -F -- '<its path>' index.tsv in place of tail -n +2 index.tsv):",
     `     $ ${LOOP}`,
     '  4. check every item and attachment against the manifests sealed inside; every line must end in OK:',
     `     $ ${MF}`,
     ...NOTES,
     ...(padding === 'buckets' ? [
-      `  - without the key this text shows how many files the vault holds (blocks: ${p.blocks.length}) and each`,
-      "    block's size: its gzip stream zero-padded up to 1, 2, 4, 8, 16, 32, 64 or 128 KiB, or a multiple",
-      '    of 128 KiB. Which file is which, the paths and the digests are only in the encrypted index.',
+      `  - without the key this text shows how many files the vault holds (blocks: ${p.blocks.length}) and, from each`,
+      "    block's size, the size bucket of that file's gzip-compressed size (padding: buckets: 1, 2, 4, 8,",
+      "    16, 32, 64 or 128 KiB, or a multiple of 128 KiB), and the index's exact compressed size (its",
+      '    gzip=). Which file is which, the paths and the digests are only in the encrypted index.',
     ] : [
-      `  - without the key this text shows how many files the vault holds (blocks: ${p.blocks.length}) and each`,
-      "    block's size (padding: none, so each file's compressed size plus age's fixed overhead). Which",
-      '    file is which, the paths and the digests are only in the encrypted index.',
+      `  - without the key this text shows how many files the vault holds (blocks: ${p.blocks.length}) and, from each`,
+      "    block's size, that file's exact gzip-compressed size (padding: none), and the index's exact",
+      '    compressed size (its gzip=). Which file is which, the paths and the digests are only in the',
+      '    encrypted index.',
     ]),
     '',
   ].join('\n')
@@ -174,7 +179,8 @@ test('v2: the text is pure ASCII, \\n only, no trailing blank; gzip= only on the
 
 // ---- a REAL per-file package: age-keygen + age + gzip, as 1password-timelock.sh seal --list makes one (the time-locked
 //      file is a fixture: tle is not run here; the steps after it are run exactly as printed) ---------------------------
-function realV2(padding: 'none' | 'buckets', content: Record<string, Buffer>, order: string[]): { dir: string; key: string; text: () => string } {
+type Real = { dir: string; key: string; index: string; text: () => string; setIndex: (index: string) => void }
+function realV2(padding: 'none' | 'buckets', content: Record<string, Buffer>, order: string[]): Real {
   const dir = tmp('vt-v2real-')
   const key = join(dir, '.key')
   const kg = spawnSync('age-keygen', ['-o', key], { encoding: 'utf8' })
@@ -194,12 +200,16 @@ function realV2(padding: 'none' | 'buckets', content: Record<string, Buffer>, or
     const b = `b${String(i + 1).padStart(w, '0')}`
     index += `${b}\t${path}\t${content[path].length}\t${sha(content[path])}\t${enc(b, content[path])}\n`
   })
-  const igz = enc('index', Buffer.from(index))
-  writeFileSync(join(dir, 'layout'), `layout: per-file\npadding: ${padding}\nindex-gzip: ${igz}\n`)
+  // setIndex: an index of the caller's own (the author of a text controls it), sealed to the same key
+  const setIndex = (ix: string) => {
+    const igz = enc('index', Buffer.from(ix, 'latin1'))
+    writeFileSync(join(dir, 'layout'), `layout: per-file\npadding: ${padding}\nindex-gzip: ${igz}\n`)
+  }
+  setIndex(index)
   writeFileSync(join(dir, UL), tlockFile())
   writeFileSync(join(dir, 'chain-info.json'), JSON.stringify(CHAIN_INFO))
   writeFileSync(join(dir, 'round'), `${ROUND}\n`)
-  return { dir, key, text: () => buildSealed(dir, full) }
+  return { dir, key, index, text: () => buildSealed(dir, full), setIndex }
 }
 // a synthetic vault: two items, one attachment, the two manifests (their digests right)
 function vault(): Record<string, Buffer> {
@@ -280,13 +290,86 @@ test('v2 literal, negative controls: a damaged block, a swapped block, a wrong g
   assert.ok(!r.ok && r.out.includes('BAD index.tsv'), r.out)
 })
 
-test('v2 literal: a path in index.tsv outside [A-Za-z0-9._/-] or with ".." is refused before anything is written', () => {
-  for (const evil of ['../escape', '/abs/x', 'items/a b.json', 'items/../../x']) {
-    const v = { ...vault(), [evil]: Buffer.from('synthetic\n') }
-    const p = realV2('none', v, [evil, ...ORDER])
+// ---- fix round 1 (C-1, I-1): index.tsv is AUTHOR-CONTROLLED for whoever opens someone else's text. The printed steps
+//      check EVERY line against the exact grammar before any field is used; a hostile value in ANY column refuses the
+//      whole index (only line numbers printed), and nothing is written: no restored/, no canary, nothing outside. --------
+// the index's last line with column `col` (0 block, 1 path, 2 bytes, 3 sha256, 4 gzip bytes) set to `v`
+const withCol = (ix: string, col: number, v: string) => {
+  const l = ix.split('\n'); const k = l.length - 2; const f = l[k].split('\t'); f[col] = v; l[k] = f.join('\t'); return l.join('\n')
+}
+const PRINTABLE = /^[\n\x20-\x7e]*$/
+function hostile(p: Real, cases: Array<[string, string]>, canaries: string[]) {
+  for (const [why, ix] of cases) {
+    p.setIndex(ix)
     const r = literal(p.text(), p.key)
-    assert.ok(!r.ok && r.out.includes(`BAD ${evil}`), `${evil}: ${r.out}`)
+    assert.ok(!r.ok, `${why}: the crafted index was OPENED:\n${r.out}`)
+    assert.match(r.out, /^BAD index\.tsv( line \d+)?$/m, `${why}: not refused by the index check (step 3's, or step 2's header check):\n${r.out}`)
+    assert.ok(!r.out.includes('OK items/') && !r.out.includes('OK files/'), `${why}: a block was opened`)
+    assert.ok(!existsSync(join(r.dir, 'restored')), `${why}: restored/ was created`)
+    for (const c of canaries) assert.ok(!existsSync(c), `${why}: ${c} was created`)
+    assert.deepEqual(readdirSync(r.dir).sort(), ['SEALED.txt', 'identity.key', 'index', 'index.tsv', UL].sort(), `${why}: the work dir holds more`)
+    assert.ok(PRINTABLE.test(r.out), `${why}: a byte outside printable ASCII reached the terminal`)
   }
+}
+test('C-1: a hostile value in EVERY column of index.tsv (block, path, bytes, sha256, gzip bytes) refuses the whole index before anything runs: no restored/, no canary, nothing outside, only printable output', () => {
+  const p = realV2('none', vault(), ORDER)
+  const out = tmp('vt-v2out-')
+  const C = join(out, 'CANARY')
+  const U = `ZZCANARYV2OUT${process.pid}`
+  const ix = p.index
+  const z = sha('x')
+  const cols: Array<[number, string[]]> = [
+    [0, [`-o${C}`, `$(touch ${C})`, `b0005;touch ${C}`, 'b1', 'b9999', 'B0005', ' b0005', 'b0005\x1b[2J', '../b0005', 'b0001', '']],
+    [1, [`../${U}`, C, `items/../../${U}`, 'items//x.json', './items/x.json', 'items/./x.json', 'items/x.json/', `$(touch ${C})`, '-rf', 'items/x y.json',
+      'items/x.json\x1b]0;pwned\x07', 'items/X.json', 'MANIFEST.csv', '']],
+    [2, ['-1', '1e5', '$((1+1))', `$(touch ${C})`, '1234567890123', ' 5', '']],
+    [3, [z.slice(1), z.toUpperCase(), `${z}x`, `$(touch ${C})`, '']],
+    [4, ['-5', '0x10', '$((1+1))', `$(touch ${C})`, '1234567890123', '+5', '']],
+  ]
+  const cases: Array<[string, string]> = []
+  for (const [col, vals] of cols) for (const v of vals) cases.push([`column ${col} = ${JSON.stringify(v)}`, withCol(ix, col, v)])
+  const lines = ix.split('\n')
+  cases.push(
+    ['4 fields', ix.replace(/\t[0-9]+\n$/, '\n')],
+    ['6 fields', ix.replace(/\n$/, '\textra\n')],
+    ['a CR at the end of a line', ix.replace(/\n$/, '\r\n')],
+    ['another header', ix.replace(/^vault-timelock-index\/1/, 'vault-timelock-index/2')],
+    ['the header only', `${lines[0]}\n`],
+    ['an empty line', `${ix}\n`],
+  )
+  hostile(p, cases, [C, join(tmpdir(), U), join(p.dir, '..', U)])
+})
+
+test('C-1 control: the same steps WITHOUT the index check write restored/ for a crafted index (the test above has teeth)', () => {
+  const p = realV2('none', vault(), ORDER)
+  p.setIndex(withCol(p.index, 1, 'items/x y.json'))
+  const t = p.text()
+  const check = t.slice(t.indexOf('( LC_ALL=C awk -F '), t.indexOf(' && mkdir restored && tail -n +2 index.tsv'))
+  assert.ok(check.length > 100)
+  const r = literal(t.replace(`${check} && mkdir restored`, '( mkdir restored'), p.key)
+  assert.ok(!r.ok && existsSync(join(r.dir, 'restored', 'items')), r.out)
+})
+
+test('minor b: an index whose last line has no trailing newline is checked and restored like the others (nothing skipped)', () => {
+  const v = vault()
+  const p = realV2('none', v, ORDER)
+  p.setIndex(p.index.replace(/\n$/, ''))
+  const r = literal(p.text(), p.key)
+  assert.ok(r.ok, r.out)
+  for (const x of ORDER) assert.ok(r.out.split('\n').includes(`OK ${x}`), `${x}:\n${r.out}`)
+  for (const [path, bytes] of Object.entries(v)) assert.ok(readFileSync(join(r.dir, 'restored', path)).equals(bytes), path)
+})
+
+test('C-1: the grammar the steps check (INDEX_GRAMMAR, INDEX_PATH) covers every column: the writer\'s own shapes pass, hostile ones fail', () => {
+  const ok = { block: ['b0001', 'b10000'], path: ['items/ab12.json', 'files/ab12/cd34', 'MANIFEST.csv', 'ATTACHMENTS.csv'], bytes: ['0', '123456789012'], sha256: [sha('x')], gzip: ['1', '123456789012'] }
+  const bad = {
+    block: ['b001', 'B0001', '-o', 'b0001 ', '$(x)', '../b0001', ''], path: ['../x', '/x', 'items/../x', 'items//x.json', './items/x.json', 'items/x.json/', 'items/X.json', 'x', 'items/a b.json', ''],
+    bytes: ['-1', '1e5', '1234567890123', ' 1', ''], sha256: [sha('x').toUpperCase(), sha('x').slice(1), ''], gzip: ['-5', '0x10', '+5', '1234567890123', ''],
+  }
+  for (const [k, vs] of Object.entries(ok)) for (const v of vs) assert.ok(INDEX_GRAMMAR[k as keyof typeof INDEX_GRAMMAR].test(v), `${k} ${v}`)
+  for (const [k, vs] of Object.entries(bad)) for (const v of vs) assert.ok(!INDEX_GRAMMAR[k as keyof typeof INDEX_GRAMMAR].test(v), `${k} ${JSON.stringify(v)}`)
+  const t = buildSealed(realV2('none', vault(), ORDER).dir, full)
+  assert.ok(t.includes(`-v P='${INDEX_PATH}'`) && t.includes(BLOCKS_OPEN) && BLOCKS_OPEN.startsWith(`( ${INDEX_CHECK} && mkdir restored `))
 })
 
 // ---- the guards --------------------------------------------------------------------------------------------------------

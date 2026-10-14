@@ -1298,8 +1298,11 @@ seal_v2_prepare() {
   NB=$(wc -l < "$_V/paths" | tr -d ' ')
   [ "$NB" -eq $(( CAPTURED + NATT + 2 )) ] || die "★ --list: $NB file(s) to seal, but $CAPTURED item(s), $NATT attachment(s) and 2 manifests were captured: REFUSING"
   # the block order: 8 random bytes per file, sorted (a uniform permutation; never printed)
-  od -An -tx1 -N $(( 8 * NB + 8 )) < "${TL_ORDER_SOURCE:-/dev/urandom}" | tr -d ' \n' | fold -w 16 | head -n "$NB" > "$_V/keys"
+  # (od -v: never "*" for a repeated line; a repeated key is then the check below's to refuse)
+  od -v -An -tx1 -N $(( 8 * NB + 8 )) < "${TL_ORDER_SOURCE:-/dev/urandom}" | tr -d ' \n' | fold -w 16 | head -n "$NB" > "$_V/keys"
   [ "$(wc -l < "$_V/keys" | tr -d ' ')" = "$NB" ] && ! grep -qv '^[0-9a-f]\{16\}$' "$_V/keys" || die "★ --list: could not draw the block order"
+  # (fix round 1, minor c) the keys must be distinct: a repeated key would leave that pair's order to the paths
+  [ "$(LC_ALL=C sort -u "$_V/keys" | wc -l | tr -d ' ')" = "$NB" ] || die "★ --list: the block order's random keys repeat (TL_ORDER_SOURCE?): REFUSING"   # @mut:v2-order-distinct
   paste -d ' ' "$_V/keys" "$_V/paths" | LC_ALL=C sort | cut -d ' ' -f 2- > "$_V/order"   # @mut:v2-order
   _w=${#NB}; [ "$_w" -ge 4 ] || _w=4
   printf '%s\n' "$V2_INDEX_HEADER" > "$_V/index.tsv"
@@ -1317,7 +1320,7 @@ seal_v2_prepare() {
   gzip -n -9 -c "$_V/index.tsv" > "$_V/index.gz" || die "★ gzip FAILED on the index: refusing"
   IGZ=$(wc -c < "$_V/index.gz" | tr -d ' ')
   v2_pad "$_V/index.gz" "$IGZ"
-  echo "  blocks     $NB file(s) as $NB block(s) + the index: each gzip -n -9'd$( [ "$PAD" = 0 ] || echo ', zero-padded to its size bucket (--pad)'), numbered in a random order$( [ -z "${TL_ORDER_SOURCE:-}" ] || echo ' (drawn from TL_ORDER_SOURCE: self-test)')"
+  echo "  blocks     $NB file(s) as $NB block(s) + the index: each gzip -n -9'd$( [ "$PAD" = 0 ] || echo ', zero-padded to its size bucket (--pad)'), numbered in a random order$( [ -z "${TL_ORDER_SOURCE:-}" ] || echo ' (drawn from TL_ORDER_SOURCE, a self-test seam: NOT random)')"
 }
 # seal_v2_encrypt: every prepared block, then the index, age-encrypted to the data key's recipient into the package; the
 # layout file last
@@ -1342,14 +1345,15 @@ v2_restore() {
   _ri=$1; _rp=$2; _rk=$3; _rd=$4; _rpad=$5
   [ "$(head -n 1 "$_ri")" = "$V2_INDEX_HEADER" ] || die "★ the index is not a $V2_INDEX_HEADER text"
   tail -n +2 "$_ri" > "$WORK/v2.lines" && [ -s "$WORK/v2.lines" ] || die "★ the index lists no block"
-  LC_ALL=C awk -F '\t' -v re="$V2_PATH" 'NF != 5 || $1 !~ /^b[0-9]+$/ || $2 !~ re || $3 !~ /^(0|[1-9][0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?)$/ || $4 !~ /^[0-9a-f]+$/ || length($4) != 64 || $5 !~ /^[1-9][0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?$/ || b[$1]++ || p[$2]++ { bad = 1 } END { exit bad }' "$WORK/v2.lines" \
+  LC_ALL=C awk -F '\t' -v re="$V2_PATH" 'NF != 5 || $1 !~ /^b[0-9][0-9][0-9][0-9]+$/ || $2 !~ re || $3 !~ /^[0-9]+$/ || length($3) > 12 || $4 !~ /^[0-9a-f]+$/ || length($4) != 64 || $5 !~ /^[0-9]+$/ || length($5) > 12 || b[$1]++ || p[$2]++ { bad = 1 } END { exit bad }' "$WORK/v2.lines" \
     || die "★ the index has a malformed or repeated line (not printed)"   # @mut:v2-index
   cut -f1 "$WORK/v2.lines" | LC_ALL=C sort > "$WORK/v2.want"
   find "$_rp" -mindepth 1 -maxdepth 1 -name 'b[0-9]*' > "$WORK/v2.found" || die "★ the package dir could not be listed"
   sed 's|.*/||' "$WORK/v2.found" | LC_ALL=C sort > "$WORK/v2.have"
   cmp -s "$WORK/v2.want" "$WORK/v2.have" || die "★ the package's blocks are not exactly the index's: $(wc -l < "$WORK/v2.want" | tr -d ' ') listed, $(wc -l < "$WORK/v2.have" | tr -d ' ') present (a block is missing, or one is not the index's)"   # @mut:v2-blockset
   _rn=0
-  while IFS="$TAB" read -r _b _p _n _h _g; do
+  # (fix round 1, minor b) `|| [ -n "$_b" ]`: a last line with no trailing newline is restored too, never skipped
+  while IFS="$TAB" read -r _b _p _n _h _g || [ -n "$_b" ]; do
     [ -f "$_rp/$_b" ] && [ ! -L "$_rp/$_b" ] || die "★ block $_b is not a regular file"
     age -d -i "$_rk" -o "$WORK/v2.blk" "$_rp/$_b" 2>/dev/null || die "★ block $_b did not open with the data key: damaged or tampered"
     v2_unpad "$WORK/v2.blk" "$_g" "$_rpad" "$WORK/v2.gz" || die "★ block $_b is not its gzip stream of $_g bytes$( [ "$_rpad" = none ] || echo ' + zero padding to its bucket')"
@@ -1441,6 +1445,8 @@ readme_v2() {
   if [ "$V2_PADDING" = buckets ]; then _v2p="gzip-compressed, zero-padded up to a size bucket (--pad: 1, 2, 4 ...
                      128 KiB, then a multiple of 128 KiB),"
   else _v2p="gzip-compressed (no padding: its size is the compressed file's),"; fi
+  _v2o=; [ -z "${TL_ORDER_SOURCE:-}" ] || _v2o=" -- here drawn from TL_ORDER_SOURCE,
+                     a SELF-TEST seam: NOT random (never seal a real vault so)"
   cat > "$PKG/README.txt" <<EOF
 ================================================================================
  1PASSWORD VAULT "$VAULT" — SEALED UNTIL $WHEN
@@ -1453,7 +1459,7 @@ file of the vault is its own age block, so one file can be opened alone.
   b0001 ... $_lb   $NB blocks: each file of the vault (an item's JSON, an attachment,
                      MANIFEST.csv, ATTACHMENTS.csv) on its own, $_v2p
                      then age-encrypted to a one-time X25519 key; numbered in a
-                     random order
+                     random order${_v2o}
   index              which block is which file (block, path, bytes, SHA-256, gzip
                      bytes), gzip-compressed, padded the same way, age-encrypted to
                      the same key
@@ -1488,8 +1494,10 @@ ${_v2s}${BLANKLINE}  chain-info.json    drand quicknet's parameters, as pinned a
     pairing assumptions fail -- a large quantum computer would break them, and every
     copy kept or published now stays exposed until then; (c) recovery.key is used, if
     unlock-KEY.age exists (section 2). Short of these, fewer than t shares cannot
-    produce the signature. Public until then: how many files ($NB) and each block's
-    size$( [ "$V2_PADDING" = buckets ] && echo ' (rounded up to its bucket)' || echo ' (each compressed file, to the byte)'); never a path, a name or a digest.
+    produce the signature. Public until then: how many files ($NB) and, from each
+    block's size, $( [ "$V2_PADDING" = buckets ] && echo "the size bucket of that file's gzip-compressed size
+    (--pad)" || echo "that file's exact gzip-compressed size (no --pad)"), and the index's exact compressed size
+    (SEALED.txt's gzip=); never a path, a name or a digest.
 
  2. HOW TO OPEN IT — TWO PATHS, either one is enough
     The blocks are encrypted to one fresh age key. That key is sealed twice, so
@@ -4237,11 +4245,17 @@ arm_v2_order() {
   arm_dir v2order; : > "$T/v2order.src"
   _i=9; while [ "$_i" -ge 1 ]; do printf "\\000\\000\\000\\000\\000\\000\\000\\$(printf %03o "$_i")" >> "$T/v2order.src"; _i=$((_i - 1)); done
   offline TL_ORDER_SOURCE="$T/v2order.src" sh "$1" seal V2o 10 --list --recovery-recipient "$RECIP" || { echo "    the seeded --list seal failed:"; show "$T/out.log"; return 1; }
-  grep -q 'numbered in a random order (drawn from TL_ORDER_SOURCE: self-test)' "$T/out.log" || { echo "    the banner does not name the seam"; return 1; }
-  P=$(pkg_in V2o); v2_index "$P" || { echo "    the index did not decrypt"; return 1; }
+  grep -q 'numbered in a random order (drawn from TL_ORDER_SOURCE, a self-test seam: NOT random)' "$T/out.log" || { echo "    the banner does not name the seam"; return 1; }
+  P=$(pkg_in V2o); grep -q 'here drawn from TL_ORDER_SOURCE,$' "$P/README.txt" && grep -q 'a SELF-TEST seam: NOT random (never seal a real vault so)' "$P/README.txt" \
+    || { echo "    README.txt does not say the order came from the self-test seam"; return 1; }
+  v2_index "$P" || { echo "    the index did not decrypt"; return 1; }
   _first=$(awk -F '\t' 'NR > 1 && $2 ~ /^(items|files)\// { print $2 }' "$T/v2.tsv" | LC_ALL=C sort | head -n 1)
   [ "$(sed -n 2p "$T/v2.tsv" | cut -f1,2)" = "b0001${TAB}ATTACHMENTS.csv" ] && [ "$(sed -n 3p "$T/v2.tsv" | cut -f1,2)" = "b0002${TAB}MANIFEST.csv" ] \
     && [ "$(sed -n 8p "$T/v2.tsv" | cut -f1,2)" = "b0007${TAB}$_first" ] || { echo "    b0001 is not the path the drawn order puts first:"; cut -f1,2 "$T/v2.tsv" | show; return 1; }
+  # (fix round 1, minor c) a source whose keys repeat (all zero bytes) refuses before anything is encrypted
+  arm_dir v2order0; head -c 72 /dev/zero > "$T/v2order0.src"
+  if offline TL_ORDER_SOURCE="$T/v2order0.src" sh "$1" seal V2o0 10 --list; then echo "    SEALED although the order's keys repeat"; return 1; fi
+  grep -q "the block order's random keys repeat (TL_ORDER_SOURCE?): REFUSING" "$T/out.log" && [ -z "$(pkg_in V2o0)" ] || { echo "    repeated keys: refused for another reason, or a package was left:"; show "$T/out.log"; return 1; }
 }
 # the index is audited before anything is encrypted: an operator string found only there (a login name "b0001", the
 # first block's name) refuses the --list seal (counts and category only; no package, nothing left); the same vault
@@ -4259,6 +4273,80 @@ arm_v2_audit() {
 flip() {
   _fo=$(( $(wc -c < "$1") - 3 )); _fb=$(tail -c 3 "$1" | head -c 1 | od -An -tu1 | tr -d ' ')
   printf "\\$(printf %03o $(( (_fb + 1) % 256 )))" | dd of="$1" bs=1 seek="$_fo" conv=notrunc 2>/dev/null
+}
+# v2_reindex P FILE: P's index replaced by FILE (re-encrypted to P's own data key, $T/v2.id from v2_index; padding none),
+#   and P's SEALED.txt rewritten by vt-broadcast seal-text for it: the text an author of a hostile index would publish
+v2_reindex() {
+  gzip -n -9 -c "$2" > "$T/v2.rgz" && age -r "$(age-keygen -y "$T/v2.id")" -o "$1/index" "$T/v2.rgz" \
+    && printf 'layout: per-file\npadding: none\nindex-gzip: %s\n' "$(wc -c < "$T/v2.rgz" | tr -d ' ')" > "$1/layout" \
+    && rm -f "$1/SEALED.txt" && "$VT_BROADCAST" seal-text "$1" > "$1/SEALED.txt" 2> "$T/v2.rerr"
+}
+# (fix round 1, C-1 + I-1) the PRINTED steps against a hostile index (an author controls it): one hostile value in every
+# column (block, path, bytes, sha256, gzip bytes; option-, substitution-, arithmetic-, traversal-, control-byte-shaped)
+# and the structural shapes (4 or 6 fields, CR, an empty line, a block this text does not carry, a repeated block or
+# path), each as the LAST line, so earlier lines are good: the steps, run literally in a new directory, refuse the WHOLE
+# index (only "BAD index.tsv line N"), write nothing (no restored/, no canary, nothing beside the directory) and print
+# only printable ASCII; and the same text with its index check cut out DOES write restored/ (the arm has teeth)
+arm_v2_hostile() {
+  arm_dir v2host
+  offline sh "$1" seal V2h 10 --list --recovery-recipient "$RECIP" || { echo "    the --list seal failed:"; show "$T/out.log"; return 1; }
+  P=$(pkg_in V2h); v2_index "$P" || { echo "    the index did not decrypt"; return 1; }
+  cp "$T/v2.tsv" "$T/v2h.good"; _n=$(wc -l < "$T/v2h.good" | tr -d ' ')
+  _C="$T/v2h-box/CANARY"; _z=$(printf x | shasum -a 256 | cut -c1-64); _p2=$(sed -n 2p "$T/v2h.good" | cut -f2)   # (line 2's path: a repeat)
+  for c in "1=-o$_C" "1=\$(touch $_C)" '1=b9999' '1=b0001' '1=b01' "2=../ZZCANARYV2H" "2=\$(touch $_C)" '2=items/../../ZZCANARYV2H' '2=items//x.json' '2=-rf' \
+           '2=items/x.json\033]0;pwned\007\033[2J' "2=$_p2" '3=-1' "3=\$(touch $_C)" '3=1234567890123' "4=$(printf '%s' "$_z" | tr a-f A-F)" "4=\$(touch $_C)" \
+           '5=-5' '5=$((1+1))' "5=\$(touch $_C)" '5=0x10' 'nf4' 'nf6' 'cr' 'empty'; do
+    case $c in
+      nf4) awk -v n="$_n" 'NR == n { sub(/\t[0-9]+$/, "") } 1' "$T/v2h.good" > "$T/v2h.tsv" ;;
+      nf6) awk -v n="$_n" 'NR == n { $0 = $0 "\textra" } 1' "$T/v2h.good" > "$T/v2h.tsv" ;;
+      cr) awk -v n="$_n" 'NR == n { $0 = $0 "\r" } 1' "$T/v2h.good" > "$T/v2h.tsv" ;;
+      empty) { cat "$T/v2h.good"; echo; } > "$T/v2h.tsv" ;;
+      *) awk -F '\t' -v OFS='\t' -v n="$_n" -v k="${c%%=*}" -v v="${c#*=}" 'NR == n { $k = v } 1' "$T/v2h.good" > "$T/v2h.tsv" ;;
+    esac
+    ! cmp -s "$T/v2h.good" "$T/v2h.tsv" || { echo "    the case ($c) changed nothing"; return 1; }
+    v2_reindex "$P" "$T/v2h.tsv" || { echo "    could not re-seal the crafted index ($c):"; show "$T/v2.rerr"; return 1; }
+    rm -rf "$T/v2h-box" "$T/ZZCANARYV2H"; mkdir "$T/v2h-box"
+    if v2_lit "$T/v2h-box/w" "$P/SEALED.txt" 1 4 > "$T/v2h.log" 2>&1; then echo "    a hostile index ($c) was OPENED:"; show "$T/v2h-box/w.out"; return 1; fi
+    grep -qE '^BAD index[.]tsv( line [0-9]+)?$' "$T/v2h-box/w.out" && ! grep -q '^OK items/\|^OK files/' "$T/v2h-box/w.out" \
+      || { echo "    a hostile index ($c): not refused by the index check:"; show "$T/v2h-box/w.out"; return 1; }
+    [ ! -e "$T/v2h-box/w/restored" ] && [ ! -e "$_C" ] && [ ! -e "$T/ZZCANARYV2H" ] && [ ! -e "$T/v2h-box/ZZCANARYV2H" ] \
+      && [ "$(ls -A "$T/v2h-box" | tr '\n' ' ')" = 'w w.cmds w.out ' ] && [ "$(ls -A "$T/v2h-box/w" | LC_ALL=C sort | tr '\n' ' ')" = 'SEALED.txt identity.key index index.tsv unlock-TIME.age ' ] \
+      || { echo "    a hostile index ($c): something was written:"; ls -A "$T/v2h-box" "$T/v2h-box/w" | show; return 1; }
+    [ "$(LC_ALL=C tr -d '\n\040-\176' < "$T/v2h-box/w.out" | wc -c | tr -d ' ')" = 0 ] || { echo "    a hostile index ($c): a byte outside printable ASCII reached the terminal"; return 1; }
+  done
+  # the teeth: a path with a space on the last line, and the text's index check cut out: restored/ IS written
+  awk -F '\t' -v OFS='\t' -v n="$_n" 'NR == n { $2 = "items/x y.json" } 1' "$T/v2h.good" > "$T/v2h.tsv" && v2_reindex "$P" "$T/v2h.tsv" || { echo "    could not re-seal"; return 1; }
+  sed 's/( LC_ALL=C awk -F .* SEALED[.]txt index[.]tsv && mkdir restored/( mkdir restored/' "$P/SEALED.txt" > "$T/v2h.cut"
+  ! cmp -s "$P/SEALED.txt" "$T/v2h.cut" || { echo "    the index check could not be cut out of the text"; return 1; }
+  rm -rf "$T/v2h-box"; mkdir "$T/v2h-box"
+  v2_lit "$T/v2h-box/w" "$T/v2h.cut" 1 4 > "$T/v2h.log" 2>&1
+  [ -d "$T/v2h-box/w/restored/items" ] || { echo "    without its index check the text still wrote nothing (the arm tests nothing)"; show "$T/v2h-box/w.out"; return 1; }
+}
+# (fix round 1, minor b) an index whose last line has no trailing newline: open restores and verifies every block (none is
+# skipped), and so do the printed steps
+arm_v2_nonl() {
+  arm_dir v2nonl
+  offline sh "$1" seal V2n 10 --list --recovery-recipient "$RECIP" || { echo "    the --list seal failed:"; show "$T/out.log"; return 1; }
+  P=$(pkg_in V2n); v2_index "$P" || { echo "    the index did not decrypt"; return 1; }
+  printf '%s' "$(cat "$T/v2.tsv")" > "$T/v2n.tsv"; [ "$(tail -c 1 "$T/v2n.tsv" | od -An -tx1 | tr -d ' \n')" != 0a ] || { echo "    the index still ends in a newline"; return 1; }
+  v2_reindex "$P" "$T/v2n.tsv" || { echo "    could not re-seal the index"; show "$T/v2.rerr"; return 1; }
+  offline sh "$1" open "$P" --identity "$T/recovery.key" || { echo "    open refused an index without a final newline:"; show "$T/out.log"; return 1; }
+  grep -q '^  blocks     7/7 block(s) opened' "$T/out.log" && grep -q '3/3 items match' "$T/out.log" && grep -q '2/2 attachments match' "$T/out.log" \
+    || { echo "    open skipped the last index line:"; show "$T/out.log"; return 1; }
+  v2_lit "$T/v2n-lit" "$P/SEALED.txt" 1 4 > "$T/v2n.log" 2>&1 && v2_lit_ok "$T/v2n-lit" 7 || { echo "    the printed steps skipped the last index line:"; show "$T/v2n.log"; return 1; }
+}
+# (fix round 1, minor e) open's TIME path on a --list package (the fake drand): locked before the round ("locked until",
+# nothing restored), and once it "opens", every block restored and verified through the index
+arm_v2_time() {
+  arm_dir v2time
+  offline sh "$1" seal V2w 10 --list || { echo "    the --list seal failed:"; show "$T/out.log"; return 1; }
+  P=$(pkg_in V2w)
+  if offline sh "$1" open "$P"; then echo "    the TIME path opened before the round"; return 1; fi
+  grep -q 'locked until' "$T/out.log" && [ ! -e "$P/restored" ] || { echo "    the TIME path was not refused as locked, or restored/ was written:"; show "$T/out.log"; return 1; }
+  offline FAKE_TLE_DECRYPT=open sh "$1" open "$P" || { echo "    the TIME path did not open:"; show "$T/out.log"; return 1; }
+  grep -q '^  path       TIME (drand round [0-9]*)$' "$T/out.log" && grep -q '^  blocks     7/7 block(s) opened' "$T/out.log" && grep -q '3/3 items match' "$T/out.log" \
+    && grep -q '2/2 attachments match' "$T/out.log" && grep -q '^  structure ✓ .* binds to this index$' "$T/out.log" \
+    || { echo "    the TIME path did not restore and verify the 7 blocks:"; show "$T/out.log"; return 1; }
 }
 # v2_tamper P CASE SCRIPT: a copy of P (in $T/v2t) changed one way; open (KEY path) must refuse it for its reason, and
 # leave no restored/
@@ -5012,8 +5100,9 @@ FAKE
   check "--list --pad: every block and the index decrypt to exactly their size bucket, zeros after the gzip stream; without --pad to exactly the stream; no gzip name or MTIME; pad-bucket's table; --pad without --list refused" arm_v2_pad "$SELF"
   mut_arm v2-pad d arm_v2_pad "dropping the zero padding (the layout still says buckets)" "the --list --pad seal failed"
   mut_arm v2-gzip 's/gzip -n -9 -c "\$WORK\/s/gzip -9 -c "$WORK\/s/' arm_v2_pad "gzip without -n for the blocks" "its gzip header carries"
-  check "--list: the block numbers follow the drawn order (a seeded TL_ORDER_SOURCE), not the paths; the banner names the seam" arm_v2_order "$SELF"
+  check "--list: the block numbers follow the drawn order (a seeded TL_ORDER_SOURCE), not the paths; the banner and README say the seam is a self-test one, NOT random; repeated keys refuse" arm_v2_order "$SELF"
   mut_arm v2-order 's/ | LC_ALL=C sort | cut/ | cut/' arm_v2_order "numbering the blocks in path order" "b0001 is not the path the drawn order puts first"
+  mut_arm v2-order-distinct 's/|| die /|| true /' arm_v2_order "accepting repeated order keys" "SEALED although the order's keys repeat"
   check "--list: the index is audited before encryption: an operator string only it holds refuses (category only; no package, nothing left); the same vault seals without --list" arm_v2_audit "$SELF"
   mut_arm v2-audit 's/|| die /|| true /' arm_v2_audit "accepting a hit in the index" "SEALED although the index holds"
   mut_arm v2-audit-call d arm_v2_audit "not auditing the index" "SEALED although the index holds"
@@ -5022,6 +5111,9 @@ FAKE
   check "--list open: a crafted index (a '..' path, a repeated block, 4 fields) refuses before anything is written; a line whose SHA-256 is not its file's refuses, restored/ removed" arm_v2_index "$SELF"
   mut_arm v2-index 's/|| die /|| true /' arm_v2_index "accepting a malformed index" "crafted index"
   mut_arm v2-digest 's/|| die /|| true /' arm_v2_index "accepting a file whose digest is not the index's" "crafted index"
+  check "--list printed steps vs a HOSTILE index (fix round 1, C-1/I-1): a hostile value in every column and every structural shape refuses the whole index, writes nothing (no restored/, no canary, nothing beside), prints only printable ASCII; without its check the text does write restored/" arm_v2_hostile "$SELF"
+  check "--list: an index whose last line has no trailing newline: open and the printed steps restore all 7 blocks (none skipped)" arm_v2_nonl "$SELF"
+  check "--list open, the TIME path (the fake drand): locked before the round, nothing restored; then all 7 blocks restored and verified, structure ✓" arm_v2_time "$SELF"
   check "--list: a block that does not come back in the seal's round trip refuses the seal, naming the block; nothing left" arm_v2_rt "$SELF"
   mut_arm v2-rt 's/|| die /|| true /' arm_v2_rt "ignoring the per-block round trip" "refused for another reason"
   check "--list: SIGTERM while the blocks are encrypted: exit 130, nothing under TMPDIR, no half package" arm_v2_signal "$SELF"
