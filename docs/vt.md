@@ -5,7 +5,7 @@ Sections: [start commands](#start-commands-per-network) · [the local environmen
 [first mainnet run](#first-mainnet-run) · [funding](#funding-testnet-and-local) · [backups](#backups) ·
 [reassembling by hand](#reassembling-parts-by-hand) · [recovery](#recovery) · building a release · vt's tmux server ·
 jobs (message file, run, clawback) · [the BTC lane](#the-btc-lane-local-only-for-now) ·
-[Open (timelocked texts)](#open-timelocked-texts-open) · [the funding tabs](#the-funding-tabs-railgun-and-privacy-cash) ·
+[Open (timelocked texts)](#open-timelocked-texts-open) · [`vt decrypt`](#decrypting-at-the-terminal-vt-decrypt) · [the funding tabs](#the-funding-tabs-railgun-and-privacy-cash) ·
 [the mainnet Arm gate (R76)](#the-mainnet-arm-gate-r76) · [the M2 flip (applied)](#the-m2-flip-applied-r78).
 
 **Agents and sessions: never run `op`, never read 1Password item data, never send on testnet or mainnet.** Every
@@ -863,6 +863,61 @@ Run only a verified release.
    the tab's memory only (never in storage, a URL or a request), and **Clear** drops it.
 
 Timelocked *publishing* is switched off in this build ("not enabled yet"): the page can open such texts, not make them.
+
+## Decrypting at the terminal: `vt decrypt`
+
+```
+vt decrypt [<file> | -] [--identity F] [--out <path|dir>] [--stdout] [--list] [--only <path>]
+```
+
+One command for every age file vt deals with, on the same core as the page's Decrypt tab:
+
+| input | what it needs |
+|---|---|
+| age **passphrase** file (scrypt), armored or binary | the passphrase, typed at the terminal when vt asks (not echoed) |
+| age **identity** file (X25519, e.g. a `--recovery-recipient` key) | `--identity F`, an age-keygen identity file |
+| **time-locked** file (tlock, e.g. `unlock-TIME.age`) | the drand round's signature, fetched through the running stack's relay: `vt up --network <n>` first |
+| a whole **SEALED.txt** (bare or the published text) | its full open chain: through its time lock (the relay), or with `--identity` (the one-time key, e.g. recovered from `unlock-KEY.age`) straight to `vault.tar.gz.age`, at any time |
+
+**Input.** A file, or none / `-` for stdin. On a terminal vt reads a **paste** itself: the text is shown as you paste
+(ciphertext is not secret) and the paste ends at `-----END AGE ENCRYPTED FILE-----`, at a SEALED.txt's `== end ==`, or with
+Ctrl-D. It must be age armor or a SEALED.txt (its first line says which) and at most 1 MiB, and that is checked **before
+anything is asked**: anything else is refused at once (`decrypt.format`, `decrypt.size`). Whatever follows the end line
+is thrown away, never left for your shell. A pipe (`pbpaste | vt decrypt - --out x`) is read to its end under the same
+cap and checks (binary age too). Bigger inputs: give the file.
+
+**Passphrase.** Asked once, by vt's broker on the terminal (echo off), and only when the input really is an age
+passphrase file — also when the input comes through a pipe. Never from stdin, argv or the environment; no terminal is
+refused (`vt.tty-required`).
+
+**Output: only where you say.**
+- `--out <path>` writes the plaintext to a NEW file, mode 0600; it never overwrites (`vt.out-exists`).
+- For a SEALED.txt, `--out <dir>` is a NEW directory (0700) holding every file of its archive (0600). Before anything is
+  written, the files are checked against the archive's `MANIFEST.csv` / `ATTACHMENTS.csv` digests when it has them. A
+  mismatch writes nothing (`vt.manifest`). Two archive paths that the disk would store as one file (`A` / `a`, or
+  NFC / NFD `é` on APFS) are refused, never merged. On any failure, whatever was written is removed.
+- `--stdout` prints the plaintext (for a SEALED.txt: the archive, e.g. `vault.tar.gz`), and only when asked.
+- With neither, nothing is decrypted (`vt.decrypt-output`): a decrypted key never lands on screen by accident.
+- `--list` prints `<size>  <path>` for each file of the archive and never its contents. It is allowed on a terminal.
+  Invisible characters (bidi, zero-width, controls) are shown as `[U+XXXX]`.
+- `--only <path> --out <file>` (or `--stdout`) extracts one file. Give the path exactly as `--list` printed it.
+
+**Time locks.** Before the round vt refuses with the unlock time (`decrypt.too-early`) and fetches nothing. After it,
+vt asks the relay of the network (`--network`, default local) for the round. If that stack is not up, vt refuses and
+tells you to run `vt up` for that network (`vt.relay-down`). The relay reaches drand through Tor, as for the page's Open.
+
+**Confinement.** The decrypting process runs in its own sandbox. It can reach only the network's relay port. It can
+read only the files it was handed (the input and `--identity`). It cannot write any file and has no terminal. vt's
+unsandboxed broker reads the paste, asks the passphrase and writes `--out`. Nothing is logged: no passphrase, identity
+or plaintext.
+
+```
+vt decrypt unlock-KEY.age --identity ~/recovery.key --out one-time.key      # the recovery path, step 1
+vt decrypt SEALED.txt --identity one-time.key --list                         # what is inside (paths, sizes)
+vt decrypt SEALED.txt --identity one-time.key --out restored                 # every file, checked against MANIFEST.csv
+vt --network testnet decrypt SEALED.txt --out restored                       # after the round, through the testnet relay
+pbpaste | vt decrypt - --out note.txt                                        # a pasted passphrase-encrypted note
+```
 
 ## The funding tabs: Railgun and Privacy Cash
 
