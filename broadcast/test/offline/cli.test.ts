@@ -72,7 +72,7 @@ import { mkdtempSync, readFileSync, writeFileSync, existsSync, readdirSync, chmo
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { buildSealed } from '../../src/sealed.ts'
-import { AR, makePkg } from './fixtures.ts'
+import { AR, makePkg, x25519File } from './fixtures.ts'
 
 test('seal-text prints exactly the sealed text on stdout', () => {
   const { dir } = makePkg('two-layer')
@@ -149,6 +149,26 @@ test('SP: seal-text --write on a package holding SEALED-plaintext.txt: SEALED.tx
   assert.ok(!sealed.includes(canary) && !sealed.includes('SEALED-plaintext'))
   assert.ok(!r.out.includes(canary) && !r.err.includes(canary))
   assert.equal(readFileSync(join(dir, 'SEALED-plaintext.txt'), 'utf8'), body)
+})
+
+// lane B (seal --list, SEALED.txt format /2): a per-file package (layout, unlock-TIME.age, index, b0001 ... ; synthetic,
+// parsing only) is written as format /2 by the same --write; key-only is refused for it (core: sealed.per-file-full-only)
+test('lane B: seal-text --write on a per-file package writes format /2 (layout per-file, the index with gzip=, the blocks); key-only refused', () => {
+  const { dir } = makePkg('two-layer')
+  rmSync(join(dir, 'vault.tar.gz.age'))
+  writeFileSync(join(dir, 'index'), x25519File('index', 500 + 32))
+  for (const b of ['b0001', 'b0002']) writeFileSync(join(dir, b), x25519File(b, 300))
+  writeFileSync(join(dir, 'layout'), 'layout: per-file\npadding: none\nindex-gzip: 500\n')
+  const r = run(['seal-text', dir, '--write'], '')
+  assert.equal(r.code, 0, r.err)
+  const sealed = readFileSync(join(dir, 'SEALED.txt'), 'utf8')
+  assert.equal(sealed, buildSealed(dir, { contents: 'full' }))
+  assert.deepEqual(sealed.split('\n').slice(1, 3), ['format: vault-timelock-sealed/2', 'layout: per-file'])
+  assert.ok(sealed.includes('\nblocks: 2\npadding: none\n') && / gzip=500\]\n/.test(sealed) && sealed.includes('\n[file b0002 bytes='))
+  const k = run(['seal-text', dir, '--contents', 'key-only', '--ar', AR], '')
+  assert.equal(k.code, 2)
+  assert.match(k.err, /^refused sealed\.per-file-full-only: /)
+  assert.equal(k.out, '')
 })
 
 test('R16: --write with key-only refuses and writes nothing', () => {

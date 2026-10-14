@@ -223,8 +223,10 @@ export const GUARDS = {
   envelope: ['ar-id', 'unlock', 'too-long'],
   armor: ['malformed'],
   published: ['unlock-mismatch', 'sealed-form', 'too-long', 'sol-too-long', 'dest'],
+  // lane B (2026-10-14, seal --list = SEALED.txt format /2): sealed.layout, .blocks, .per-file-full-only, .index-gzip (text-module
+  // refusals like the rest of the family: no API status of their own, the family default 500)
   sealed: ['already-open', 'armor-noncanonical', 'chain-info', 'file', 'format', 'key-only-needs-ar', 'non-ascii', 'not-age', 'round',
-    'selfcheck', 'stanza'],
+    'selfcheck', 'stanza', 'layout', 'blocks', 'per-file-full-only', 'index-gzip'],
   drand: ['chain-info'],
   payload: ['empty', 'control', 'bidi', 'nfc', 'header', 'sealed-missing', 'sealed-end', 'sealed-non-ascii', 'unlock-mismatch', 'contents',
     'armor', 'not-age', 'block-mismatch', 'no-blocks', 'too-long', 'invisible', 'sealed-duplicate', 'note-structure', 'trailing-blank',

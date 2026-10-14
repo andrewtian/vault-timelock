@@ -13,6 +13,9 @@
 // and notes on what keeps it shut, worded per the crypto expert review (docs/CRYPTO.md). It names
 // no requested duration and no random offset (both would help date the seal, E6), no MANIFEST.csv
 // or README.txt content (R44) and never unlock-KEY.age (R45).
+// Lane B (2026-10-14; .superpowers/sdd/2026-10-14-vt-decrypt/v2-format.md): a `seal --list` package (a `layout` file
+// saying "layout: per-file", unlock-TIME.age, `index`, b0001 ... bN) gets format vault-timelock-sealed/2: every captured
+// file is its own age block, the paths only inside the encrypted index. Every other package keeps format /1, byte for byte.
 import { refuse } from './guard.ts'
 import { armor, dearmor } from './armor.ts'
 import { QUICKNET } from './drand.ts'
@@ -39,8 +42,41 @@ export type SealedOpts = {
 }
 
 type Info = { hash: string; genesis: number; period: number; schemeID: string }
-type Kind = 'two-layer' | 'vault' | 'secret' | 'raw' | 'tar+gzip'
+type Kind = 'two-layer' | 'vault' | 'secret' | 'raw' | 'tar+gzip' | 'per-file'
 type Layout = { kind: Kind; tlock: string[]; others: string[] }
+
+// ---- format /2, layout per-file (v2-format.md) --------------------------------------------------
+// The package's `layout` file, written by `1password-timelock.sh seal --list`: exactly these three lines. index-gzip is
+// where the index's gzip stream ends inside its decrypted (and, with padding: buckets, zero-padded) plaintext; SEALED.txt
+// carries it as the `gzip=` of the index's [file] line. The blocks are b0001 ... bN (zero-padded to max(4, digits of N)).
+export const LAYOUT_FILE = 'layout'
+export const INDEX_FILE = 'index'
+export const INDEX_HEADER = 'vault-timelock-index/1'
+const LAYOUT_TEXT = /^layout: per-file\npadding: (none|buckets)\nindex-gzip: ([1-9]\d{0,14})\n$/
+const BLOCK_NAME = /^b\d+$/
+export type PerFile = { padding: 'none' | 'buckets'; indexGzip: number; blocks: string[] }
+
+// --pad's size buckets (after gzip): 1, 2, 4, 8, 16, 32, 64, 128 KiB, then multiples of 128 KiB.
+export function padBucket(n: number): number {
+  if (n > 131072) return Math.ceil(n / 131072) * 131072
+  let b = 1024
+  while (b < n) b *= 2
+  return b
+}
+
+// The plaintext length of a binary age file (null when it is not age-shaped): the payload after the header's MAC line is a
+// 16-byte nonce, then 64 KiB chunks, each followed by a 16-byte tag (the last chunk shorter; an empty plaintext is one tag).
+export function agePlaintextLength(b: Uint8Array): number | null {
+  const head = latin1(b.subarray(0, 16384))
+  const mac = head.indexOf('\n--- ')
+  const end = mac < 0 ? -1 : head.indexOf('\n', mac + 1)
+  if (end < 0) return null
+  const ct = b.length - (end + 1) - 16
+  if (ct < 16) return null
+  const chunks = Math.ceil(ct / (65536 + 16))
+  const plain = ct - 16 * chunks
+  return plain >= 0 && (plain === 0 || plain > 65536 * (chunks - 1)) ? plain : null
+}
 
 function readRegular(pkg: PackageReader, name: string): Uint8Array {
   const b = pkg.read(name)
@@ -146,8 +182,28 @@ function detect(pkg: PackageReader): Layout {
       found = { kind: enc, tlock: ['payload.age'], others: [] }
     }
   }
+  // format /2 (seal --list): a layout file means per-file and nothing else: unlock-TIME.age as the only .age file, the
+  // index and the blocks; any other shape beside a layout file is no known format
+  if (names.includes(LAYOUT_FILE)) {
+    count++
+    found = has('unlock-TIME.age') && ages.length === 1 && names.includes(INDEX_FILE)
+      ? { kind: 'per-file', tlock: ['unlock-TIME.age'], others: [INDEX_FILE, ...names.filter((n) => BLOCK_NAME.test(n)).sort()] }
+      : null
+  }
   if (count !== 1 || found === null) refuse('sealed.format', 'package layout is not exactly one known format') // @guard:sealed.format
   return found
+}
+
+// The layout file and the block names of a per-file package: exactly the three layout lines, and blocks b0001 ... bN
+// with no gap, no repeat and one width (max(4, digits of N)).
+function readPerFile(pkg: PackageReader, layout: Layout): PerFile {
+  const m = LAYOUT_TEXT.exec(new TextDecoder('utf-8', { ignoreBOM: true }).decode(readRegular(pkg, LAYOUT_FILE)))
+  if (m === null) refuse('sealed.layout', 'the layout file is not exactly "layout: per-file", "padding: none|buckets", "index-gzip: <n>"') // @guard:sealed.layout
+  const blocks = layout.others.slice(1)
+  const w = Math.max(4, String(blocks.length).length)
+  const want = blocks.map((_, i) => `b${String(i + 1).padStart(w, '0')}`)
+  if (blocks.length === 0 || blocks.join(' ') !== want.join(' ')) refuse('sealed.blocks', 'the blocks are not exactly b0001 ... bN (no gap, no other name, one width)') // @guard:sealed.blocks
+  return { padding: m[1] as 'none' | 'buckets', indexGzip: Number(m[2]), blocks }
 }
 
 // ---- the self-contained text (Task S2 §5) ------------------------------------------------------
@@ -167,11 +223,36 @@ export const CUT = `awk '/^\\[file [A-Za-z0-9][A-Za-z0-9._-]* bytes=[0-9]+ sha25
 export const CHECK = `sed -n 's/^\\[file \\([A-Za-z0-9][A-Za-z0-9._-]*\\) bytes=\\([0-9]*\\) sha256=\\([0-9a-f]*\\)\\]$/\\1 \\2 \\3/p' SEALED.txt | while read -r n b s; do [ "$(sed '1d;$d' "$n" | base64 -d | wc -c | tr -d ' ') $(sed '1d;$d' "$n" | base64 -d | shasum -a 256 | cut -c1-64)" = "$b $s" ] && echo "OK $n" || { echo "BAD $n"; exit 1; }; done`
 export const TOR = 'env -u NO_PROXY -u no_proxy HTTPS_PROXY=socks5h://127.0.0.1:9050 '
 export const MANIFEST_CHECK = `(cd restored && { tail -n +2 MANIFEST.csv | awk -F, '{ print $2 "  items/" $1 ".json" }'; [ ! -f ATTACHMENTS.csv ] || tail -n +2 ATTACHMENTS.csv | awk -F, '{ print $4 "  files/" $1 "/" $2 }'; } | shasum -a 256 -c)`
+// Format /2's literal commands (v2-format.md). CUT_ONE: the awk program that writes the ONE armor block whose [file ...]
+// line names `n` (the -v variable) to the file `n` and stops there; a name only ever matches a [file ...] line's plain
+// name, so nothing lands outside the directory. cutCheck(name, bytes, sha): cut it out and compare its DECODED size and
+// SHA-256 with its [file ...] line's (the values written into the command), printing OK or BAD. indexOpen(gzip): open
+// the index with identity.key, keep its first `gzip` bytes (any rest is padding), gunzip into index.tsv and check its
+// first line. BLOCKS_OPEN: for each index.tsv line (block, path, bytes, sha256, gzip bytes; TAB-separated) cut the block
+// out, open it, keep its first <gzip bytes>, gunzip into restored/<path> (a relative path of [A-Za-z0-9._/-], no ".."),
+// and compare that file's bytes and SHA-256 with the line's, printing OK <path> or BAD <path> (and stopping).
+export const CUT_ONE = `'/^\\[file [A-Za-z0-9][A-Za-z0-9._-]* bytes=[0-9]+ sha256=[0-9a-f]+( gzip=[0-9]+)?\\]$/ { f = ($2 == n); next } f && /^-----BEGIN AGE ENCRYPTED FILE-----$/ { w = 1 } w { print > n } w && /^-----END AGE ENCRYPTED FILE-----$/ { close(n); exit }'`
+export const cutCheck = (name: string, bytes: number, sha: string): string =>
+  `awk -v n=${name} ${CUT_ONE} SEALED.txt && [ "$(sed '1d;$d' ${name} | base64 -d | wc -c | tr -d ' ') $(sed '1d;$d' ${name} | base64 -d | shasum -a 256 | cut -c1-64)" = "${bytes} ${sha}" ] && echo "OK ${name}" || { echo "BAD ${name}"; exit 1; }`
+export const indexOpen = (gzip: number): string =>
+  `age -d -i identity.key ${INDEX_FILE} | head -c ${gzip} | gunzip > index.tsv && [ "$(head -n 1 index.tsv)" = ${INDEX_HEADER} ] && echo "OK index.tsv" || { echo "BAD index.tsv"; exit 1; }`
+export const BLOCKS_OPEN = `mkdir restored && tail -n +2 index.tsv | while IFS="$(printf '\\t')" read -r b p n s g; do case $p in ''|/*|*..*|*[!A-Za-z0-9._/-]*) echo "BAD $p"; exit 1 ;; esac; awk -v n="$b" ${CUT_ONE} SEALED.txt && mkdir -p "$(dirname "restored/$p")" && age -d -i identity.key "$b" | head -c "$g" | gunzip > "restored/$p" && [ "$(wc -c < "restored/$p" | tr -d ' ') $(shasum -a 256 "restored/$p" | cut -c1-64)" = "$n $s" ] && echo "OK $p" || { echo "BAD $p"; exit 1; }; done`
 
 // what-this-is and layers, per shape
-function describe(kind: Kind, round: string, hash: string): { what: string[]; layers: string[] } {
+function describe(kind: Kind, round: string, hash: string, last = ''): { what: string[]; layers: string[] } {
   const tl = (f: string, inner: string) => `  - ${f}: ${inner}, tlock-encrypted to drand round ${round} (one "-> tlock ${round} ${hash.slice(0, 8)}..." age stanza)`
   switch (kind) {
+    case 'per-file': return {
+      what: ['a vault, one block per file: each file gzip-compressed and encrypted with age to one',
+        'one-time key, its path and digest only in an encrypted index; that key is time-locked to a',
+        'drand round with tlock. Once drand publishes the round, anyone holding this text can open it;',
+        'the notes say what keeps it shut until then.'],
+      layers: [tl('unlock-TIME.age', 'the one-time key, one AGE-SECRET-KEY-1... line'),
+        `  - ${INDEX_FILE}: which block is which file (${INDEX_HEADER}: block, path, bytes, sha256, gzip bytes),`,
+        '    gzip-compressed, age-encrypted to that key (one "-> X25519" stanza)',
+        `  - b0001 ... ${last}: one file each, gzip-compressed, age-encrypted to that key (one "-> X25519"`,
+        '    stanza), numbered in a random order: only the index says which file is which'],
+    }
     case 'two-layer': return {
       what: ['an archive (vault.tar.gz) encrypted with age to a one-time key; that key is time-locked',
         'to a drand round with tlock. Once drand publishes the round, anyone holding this text can',
@@ -212,6 +293,7 @@ function openSteps(kind: Kind, round: string): Array<[string[], string[]]> {
   ], [`${TOR}tle --decrypt --output=${out} ${inFile}`]]
   const extract = (tgz: string): [string[], string[]] => [['extract it into a new directory:'], [`mkdir restored && tar -xzf ${tgz} -C restored`]]
   switch (kind) {
+    case 'per-file': return [] // perFileSteps: its four steps replace 1-2 as well
     case 'two-layer': return [
       tle('identity.key', 'unlock-TIME.age'),
       [['open the archive with that key:'], ['age -d -i identity.key -o vault.tar.gz vault.tar.gz.age']],
@@ -242,6 +324,47 @@ const NOTES = [
   '  - if drand quicknet stops before the round, this cannot be opened.',
 ]
 
+// format /2: its four open steps (v2-format.md: 1 unlock-TIME.age -> identity.key; 2 index -> index.tsv; 3 every block
+// -> restored/<path>, checked; 4 the manifests, as format /1), and what the text shows without the key
+function perFileSteps(round: string, files: ReadonlyMap<string, Uint8Array>, pf: PerFile): string[] {
+  const ul = files.get('unlock-TIME.age')!
+  const ix = files.get(INDEX_FILE)!
+  return [
+    'open after unlock-after (POSIX sh; type each line that starts with "$ ", without the "$ "):',
+    '  1. save this whole text as SEALED.txt in an empty directory and cd there. Cut out',
+    '     unlock-TIME.age and check its size and SHA-256 (of the decoded bytes) against its [file ...]',
+    `     line (it prints OK); then recover identity.key with drand's signature for round ${round},`,
+    '     through Tor (SOCKS on 127.0.0.1:9050; without Tor, drop the env prefix and drand sees your IP',
+    '     ask for this round). If it fails (too early, or a network error), delete the empty',
+    `     identity.key it leaves, then retry; if api.drand.sh is gone, add --network=${MIRRORS[0]}`,
+    `     (or ${MIRRORS[1]}):`,
+    `     $ ${cutCheck('unlock-TIME.age', ul.length, sha256(ul))}`,
+    `     $ ${TOR}tle --decrypt --output=identity.key unlock-TIME.age`,
+    '  2. cut out the index and check it the same way; open it with identity.key, keep its first',
+    `     ${pf.indexGzip} bytes (the gzip= of its [file ...] line; any rest is padding) and gunzip them into`,
+    `     index.tsv: a first line ${INDEX_HEADER}, then one TAB-separated line per block:`,
+    '     block, path, bytes, sha256, gzip bytes:',
+    `     $ ${cutCheck(INDEX_FILE, ix.length, sha256(ix))}`,
+    `     $ ${indexOpen(pf.indexGzip)}`,
+    '  3. for each line of index.tsv: cut out its block, open it with identity.key, keep its first',
+    "     <gzip bytes>, gunzip them into restored/<path> and check that file's bytes and SHA-256; it",
+    '     prints OK for every file (one file only: put grep -F <its path> index.tsv in place of',
+    '     tail -n +2 index.tsv):',
+    `     $ ${BLOCKS_OPEN}`,
+    '  4. check every item and attachment against the manifests sealed inside; every line must end in OK:',
+    `     $ ${MANIFEST_CHECK}`,
+  ]
+}
+const perFileNotes = (pf: PerFile): string[] => pf.padding === 'buckets' ? [
+  `  - without the key this text shows how many files the vault holds (blocks: ${pf.blocks.length}) and each`,
+  "    block's size: its gzip stream zero-padded up to 1, 2, 4, 8, 16, 32, 64 or 128 KiB, or a multiple",
+  '    of 128 KiB. Which file is which, the paths and the digests are only in the encrypted index.',
+] : [
+  `  - without the key this text shows how many files the vault holds (blocks: ${pf.blocks.length}) and each`,
+  "    block's size (padding: none, so each file's compressed size plus age's fixed overhead). Which",
+  '    file is which, the paths and the digests are only in the encrypted index.',
+]
+
 const sha256 = sha256Hex
 const same = equal
 
@@ -250,6 +373,9 @@ export function buildSealedFrom(pkg: PackageReader, opts: SealedOpts): string {
     refuse('sealed.key-only-needs-ar', 'key-only needs a valid 43-char Arweave id') // @guard:sealed.key-only-needs-ar
   }
   const layout = detect(pkg)
+  // format /2 (per-file): its layout file and block names; published in full only (key-only is a format /1 form)
+  const pf = layout.kind === 'per-file' ? readPerFile(pkg, layout) : null
+  if (pf !== null && opts.contents !== 'full') refuse('sealed.per-file-full-only', 'a per-file package (format /2) is written in full only: key-only is a format /1 form') // @guard:sealed.per-file-full-only
   const info = readInfo(pkg)
   const round = readRound(pkg)
 
@@ -270,6 +396,12 @@ export function buildSealedFrom(pkg: PackageReader, opts: SealedOpts): string {
     const ok = h !== null && !(layout.others.includes(n) && h.stanzas.some((st) => st.type === 'tlock'))
     if (!ok) refuse('sealed.not-age', `${n}: not an age file (version line, stanza, MAC line), or a tlock stanza in the payload`) // @guard:sealed.not-age
   }
+  // format /2: the index's plaintext is exactly its gzip stream (padding: none) or that stream's bucket (buckets), so the
+  // gzip= the text prints is where the stream ends
+  if (pf !== null) {
+    const plain = agePlaintextLength(files.get(INDEX_FILE)!)
+    if (plain === null || plain !== (pf.padding === 'buckets' ? padBucket(pf.indexGzip) : pf.indexGzip)) refuse('sealed.index-gzip', `${INDEX_FILE}: its plaintext length does not agree with index-gzip ${pf.indexGzip} and padding ${pf.padding}`) // @guard:sealed.index-gzip
+  }
 
   const roundN = Number(round)
   const unlockSec = info.genesis + (roundN - 1) * info.period
@@ -282,9 +414,9 @@ export function buildSealedFrom(pkg: PackageReader, opts: SealedOpts): string {
   const contentsLine = opts.contents === 'full' ? 'contents: full' : `contents: key-only (payload: ar://${opts.arId})`
   const arm = opts._armor ?? armor
   const genesisIso = new Date(info.genesis * 1000).toISOString().replace('.000Z', 'Z')
-  const { what, layers } = describe(layout.kind, round, info.hash)
+  const { what, layers } = describe(layout.kind, round, info.hash, pf?.blocks[pf.blocks.length - 1])
   const keyOnlyOut = opts.contents === 'key-only' && layout.others.length > 0
-  const steps: string[] = [
+  const steps: string[] = pf !== null ? perFileSteps(round, files, pf) : [
     'open after unlock-after (POSIX sh; type each line that starts with "$ ", without the "$ "):',
     '  1. save this whole text as SEALED.txt in an empty directory, cd there, and cut out each',
     '     block below into the file named in its [file ...] line:',
@@ -297,13 +429,16 @@ export function buildSealedFrom(pkg: PackageReader, opts: SealedOpts): string {
     '     it prints OK for every file:',
     `     $ ${CHECK}`,
   ]
+  // (per-file: none; its four steps are all in perFileSteps)
   openSteps(layout.kind, round).forEach(([text, cmds], i) => {
     steps.push(`  ${i + 3}. ${text[0]}`, ...text.slice(1).map((t) => `     ${t}`), ...cmds.map((c) => `     $ ${c}`))
   })
 
+  const twoTools = layout.kind === 'two-layer' || pf !== null
   let out = [
     '== vault-timelock sealed package: self-contained, age + drand timelock ==',
-    'format: vault-timelock-sealed/1',
+    pf !== null ? 'format: vault-timelock-sealed/2' : 'format: vault-timelock-sealed/1',
+    ...(pf !== null ? ['layout: per-file'] : []),
     `what-this-is: ${what[0]}`, ...what.slice(1).map((w) => `  ${w}`),
     'layers:', ...layers,
     `unlock-after: ${unlock}  (drand round ${round})`,
@@ -311,11 +446,13 @@ export function buildSealedFrom(pkg: PackageReader, opts: SealedOpts): string {
     `drand: quicknet ${info.hash}  scheme ${info.schemeID}`,
     `drand-signature: https://api.drand.sh/${info.hash}/public/${round}`,
     `  mirrors: ${MIRRORS.map((m) => `${m}/${info.hash}/public/${round}`).join(' ')}`,
-    layout.kind === 'two-layer' ? `tools: ${TLE} | ${AGE}` : `tools: ${TLE}`,
-    `  install: ${TLE_INSTALL}${layout.kind === 'two-layer' ? `; age: ${AGE_INSTALL}` : ''}`,
+    twoTools ? `tools: ${TLE} | ${AGE}` : `tools: ${TLE}`,
+    `  install: ${TLE_INSTALL}${twoTools ? `; age: ${AGE_INSTALL}` : ''}`,
     contentsLine,
+    ...(pf !== null ? [`blocks: ${pf.blocks.length}`, `padding: ${pf.padding}`] : []),
     ...steps,
     ...NOTES,
+    ...(pf !== null ? perFileNotes(pf) : []),
     '',
   ].join('\n')
   const blocks: Array<[string, string]> = []
@@ -323,7 +460,7 @@ export function buildSealedFrom(pkg: PackageReader, opts: SealedOpts): string {
     const bin = files.get(n)!
     const block = arm(bin)
     blocks.push([n, block])
-    out += `[file ${n} bytes=${bin.length} sha256=${sha256(bin)}]\n${block}`
+    out += `[file ${n} bytes=${bin.length} sha256=${sha256(bin)}${pf !== null && n === INDEX_FILE ? ` gzip=${pf.indexGzip}` : ''}]\n${block}`
   }
   out += '== end ==\n'
 

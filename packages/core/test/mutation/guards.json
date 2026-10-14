@@ -293,6 +293,18 @@
   "sealed.stanza": [
     "test/text/sealed-from.test.ts"
   ],
+  "sealed.layout": [
+    "test/text/sealed-v2.test.ts"
+  ],
+  "sealed.blocks": [
+    "test/text/sealed-v2.test.ts"
+  ],
+  "sealed.per-file-full-only": [
+    "test/text/sealed-v2.test.ts"
+  ],
+  "sealed.index-gzip": [
+    "test/text/sealed-v2.test.ts"
+  ],
   "drand.chain-info": [
     "test/text/drand.test.ts"
   ],
