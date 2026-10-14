@@ -306,6 +306,7 @@ export async function run(argv: readonly string[], env: NodeJS.ProcessEnv, ttyIn
     const p = await decryptPrologue(args, env, ttyIn, sink, io)
     if (typeof p === 'number') return p
     plan = p
+    for (const n of plan.notes) sink.err(`${sanitize(n).slice(0, 600)}\n`)
   }
   const policy = plan !== null ? decryptPolicy(plan.passLabel) : policyFor(args, env.VT_NETWORK === 'mainnet' ? 'mainnet' : 'local')
   // vt decrypt: a piped input still gets its passphrase from the terminal (/dev/tty), so only the device counts there

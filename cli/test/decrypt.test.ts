@@ -7,9 +7,9 @@
 import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer, type Server } from 'node:http'
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { PASTE_LIMIT } from '@vault-timelock/core/decrypt'
-import { DATA_FD, PASTE_MAX, decryptPositions, foldKey, listName, unlistName } from '../src/decrypt-args.ts'
+import { DATA_FD, FILE_MAX, PASTE_MAX, decryptPositions, foldKey, listName, parseDecryptArgs, unlistName } from '../src/decrypt-args.ts'
 import { relayFetcher, runDecrypt, verifyManifests } from '../src/decrypt.ts'
 import type { DecryptDeps } from '../src/decrypt.ts'
 import { Sanitizer } from '../src/ops/sanitize.ts'
@@ -255,6 +255,29 @@ test('fix1 M-3: the summary names the verified blocks and manifests, never a dig
   const r = await go(['S.txt', '--out', 'd'], s.sealed)
   assert.match(r.err, /2 block\(s\) match their \[file\] lines/)
   for (const f of r.frames) assert.ok(!r.err.includes(sha(f.bytes)), 'no plaintext digest')
+})
+
+// =============================== fix round 2 ===============================
+
+test('fix2 cap: one cap for every FILE input (FILE_MAX = core\'s DECRYPT_LIMITS.input); a launcher-read file on stdin (--from-launcher) gets it, a paste or pipe keeps 1 MiB', { timeout: 60_000 }, async () => {
+  const { DECRYPT_LIMITS } = await import('@vault-timelock/core/decrypt')
+  assert.equal(FILE_MAX, DECRYPT_LIMITS.input)
+  // synthetic random bytes (incompressible), so the SEALED.txt is well over 2 MiB
+  const files: Record<string, string | Uint8Array> = { ...vault(), 'extra/big.bin': randomBytes(1_800_000) }
+  const s = await F.makeSealed({ vaultFiles: files })
+  assert.ok(Buffer.byteLength(s.sealed) > 2 * 1024 * 1024, `a ${Buffer.byteLength(s.sealed)}-byte SEALED.txt`)
+  const r = await go(['-', '--identity', 'k', '--list', '--from-launcher'], '', { input: async () => Buffer.from(s.sealed), idText: s.identity as string })
+  assert.match(r.out, /extra\/big\.bin/)
+  await rejectsWith(() => go(['-', '--identity', 'k', '--list'], '', { input: async () => Buffer.from(s.sealed), idText: s.identity as string }), 'decrypt.size')
+  // the user's argv can never carry the broker's flag (parsed without { child: true }: an unknown option)
+  assert.throws(() => parseDecryptArgs(['-', '--from-launcher']), /unknown option/)
+})
+
+test('fix2 N-4: the --list summary names the \\u{hex} notation the entries use (no stale [U+XXXX])', { timeout: 30_000 }, async () => {
+  const s = await F.makeSealed({ vaultFiles: vault() })
+  const r = await go(['S.txt', '--identity', 'k', '--list'], s.sealed, { idText: s.identity as string })
+  assert.ok(!r.err.includes('[U+XXXX]'), r.err)
+  assert.ok(r.err.includes('\\u{hex}'), r.err)
 })
 
 test('detectInput first: a non-age input is refused before any secret is asked or anything fetched; the paste cap applies to stdin', { timeout: 30_000 }, async () => {

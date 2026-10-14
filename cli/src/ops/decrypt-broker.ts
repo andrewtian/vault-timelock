@@ -20,14 +20,14 @@
 // mode 0600, directories 0700, nothing ever overwritten or merged (two paths one case- / normalization-insensitive disk would store as
 // one file are refused: vt.out-exists), paths checked here again (relative, no `.` / `..` / empty segment, no backslash, no control
 // character), sizes bounded. If the command fails, ends early or breaks the frame rules, everything the writer created is removed.
-import { closeSync, constants, fchmodSync, fstatSync, linkSync, lstatSync, mkdirSync, openSync, readSync, realpathSync, renameSync, rmSync, statSync, unlinkSync, writeSync } from 'node:fs'
+import { closeSync, constants, fchmodSync, fstatSync, linkSync, lstatSync, mkdirSync, openSync, readSync, readdirSync, realpathSync, renameSync, rmSync, statSync, unlinkSync, writeSync } from 'node:fs'
 import { homedir, userInfo } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { randomBytes } from 'node:crypto'
 import { refuse } from '@vault-timelock/core/text/guard.ts'
 import {
   AGE_MAGIC, ARMOR_BEGIN, ARMOR_END, DecryptUsage, FRAME_HEADER_MAX, OUT_FILES_MAX, OUT_FILE_MAX, OUT_TOTAL_MAX, PASTE_MAX, PUBLISHED_HEAD,
-  SEALED_END, SEALED_TITLE, checkInputPath, decryptPositions, foldKey, parseDecryptArgs, refuseInputFormat, refuseInputPath, refuseInputSize, refuseOutExists,
+  FILE_MAX, LAUNCHER_FLAG, SEALED_END, SEALED_TITLE, checkInputName, checkInputPath, decryptPositions, foldKey, parseDecryptArgs, refuseInputFormat, refuseInputPath, refuseInputSize, refuseOutExists,
 } from '../decrypt-args.ts'
 import type { DecryptArgs } from '../decrypt-args.ts'
 
@@ -43,14 +43,16 @@ export interface DecryptPlan {
   readonly passLabel: string | null   // the one passphrase prompt this command may ask (an age scrypt input), and what it is called; null: none
   readonly stdin: Buffer | null       // the validated paste / pipe (or a protected file the launcher read), for the child's stdin; null: a handed file
   readonly fromTty: boolean           // the input was pasted at the terminal
-  readonly childArgs: readonly string[]   // the argv the child gets (a launcher-read input becomes `-`)
+  readonly childArgs: readonly string[]   // the argv the child gets (a launcher-read input becomes `-`, plus LAUNCHER_FLAG)
+  readonly notes: readonly string[]       // lines the broker prints on stderr before the child starts (a leftover partial output)
 }
 
 // ---- inputs in protected places (fix round 1, I-2)
 // Every sandboxed profile denies reading the default package directory (~/.local/share/vault-timelock, for each home) and vt's credentials
 // there (denyProtectedFiles). vt decrypt never widens that: a file under $VAULT_TIMELOCK_DIR or a default package directory is opened HERE,
-// by the unsandboxed launcher — a regular file, never through a link, never a vt credential, at most PASTE_MAX bytes (as a paste) — and its
-// bytes reach the child on stdin exactly like a paste. An --identity there is refused (copy it out): a secret is never read by the launcher.
+// by the unsandboxed launcher — a regular file, never through a link, never a vt credential, never one of the package's plaintext / key files
+// by name, at most FILE_MAX bytes, and VALIDATED like a pipe before anything is handed on (fix round 2) — and its bytes reach the child on
+// stdin like a paste, with LAUNCHER_FLAG so the child applies the file cap. An --identity there is refused (copy it out): a secret is never read by the launcher.
 const CREDENTIALS = new Set(['btc-rpc.auth', 'relay-ticket.key', 'api.token'])
 const realOrSelf = (p: string): string => { try { return realpathSync(p) } catch { return p } }
 const exists = (p: string): boolean => { try { lstatSync(p); return true } catch (e) { return (e as NodeJS.ErrnoException).code !== 'ENOENT' } }
@@ -62,8 +64,21 @@ export function protectedRoots(env: Readonly<Record<string, string | undefined>>
 }
 const under = (p: string, roots: readonly string[]): boolean => roots.some((r) => p === r || p.startsWith(`${r}/`))
 
-// The launcher's read of a protected input: refuses (vt.decrypt-input / decrypt.size) naming the reason.
+// The launcher's read of a protected input: refuses (vt.decrypt-input / decrypt.size) naming the reason. Fix round 2 (N-1): the bytes are
+// VALIDATED like a pipe (age armor, a binary age header, or a SEALED.txt / published text, by PasteScanner's pipe rules) before anything is
+// handed to the sandboxed child: any other file there (a plaintext view, a manifest, an archive) is refused HERE and never reaches it.
+// The cap is the one for every file input (FILE_MAX), not the paste cap.
 export function launcherRead(path: string): Buffer {
+  const b = readProtected(path)
+  const sc = new PasteScanner(false, FILE_MAX)
+  try { sc.push(b); sc.end() } catch (e) {
+    if (isRefusalOf(e, 'decrypt.format')) refuseInputPath('the file is not age armor, a binary age file or a SEALED.txt: vt\'s launcher hands only encrypted inputs from the package directory to the sandbox')
+    throw e
+  }
+  return b
+}
+const isRefusalOf = (e: unknown, id: string): boolean => (e as { guardId?: unknown } | null)?.guardId === id
+function readProtected(path: string): Buffer {
   if (CREDENTIALS.has(basename(path))) refuseInputPath('the input is one of vt\'s credential files: vt decrypt never reads it')
   let fd = -1
   try { fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK) } catch (e) {
@@ -74,7 +89,7 @@ export function launcherRead(path: string): Buffer {
   try {
     const st = fstatSync(fd)
     if (!st.isFile()) refuseInputPath('the input under $VAULT_TIMELOCK_DIR is not a regular file')
-    if (st.size > PASTE_MAX) refuseInputSize(`the input is larger than ${PASTE_MAX} bytes: files under $VAULT_TIMELOCK_DIR are read by vt's launcher up to 1 MiB (as a paste); copy it out of there to decrypt a larger one`)
+    if (st.size > FILE_MAX) refuseInputSize(`the input is larger than ${FILE_MAX} bytes (vt decrypt's bound for a file)`)
     const b = Buffer.alloc(st.size)
     let off = 0
     while (off < b.length) { const n = readSync(fd, b, off, b.length - off, off); if (n === 0) break; off += n }
@@ -318,8 +333,11 @@ export async function prepareDecrypt(argv: readonly string[], d: PrepareDeps): P
     checkInputPath(args.identity, 'the --identity file')
     if (under(args.identity, roots)) refuseInputPath('the --identity file lies under $VAULT_TIMELOCK_DIR (or the default package directory), which sandboxed commands may not read and vt\'s launcher never reads a secret from: copy it out first')
   }
+  const notes = args.out !== null ? leftoverPartials(args.out) : []
   if (args.input !== null) {
     checkInputPath(args.input, 'the input file')
+    checkInputName(args.input)
+    if (statSizeOver(args.input)) refuseInputSize(`the input is larger than ${FILE_MAX} bytes (vt decrypt's bound for a file)`)
     if (under(args.input, roots)) {
       outputFor(args, { stdoutIsTty: d.stdoutIsTty, sealed: false })     // refused before anything is read
       const bytes = launcherRead(args.input)
@@ -328,12 +346,13 @@ export async function prepareDecrypt(argv: readonly string[], d: PrepareDeps): P
       const childArgs = [...argv]
       const at = decryptPositions(argv).input
       if (at !== null) childArgs[at] = '-'
-      return { args, output, passLabel: shape !== 'sealed' && isScrypt(bytes) ? basename(args.input) : null, stdin: bytes, fromTty: false, childArgs }
+      childArgs.push(LAUNCHER_FLAG)
+      return { args, output, passLabel: shape !== 'sealed' && isScrypt(bytes) ? basename(args.input) : null, stdin: bytes, fromTty: false, childArgs, notes }
     }
     const head = peekFile(args.input)
     const shape = shapeOfBytes(head)
     const output = outputFor(args, { stdoutIsTty: d.stdoutIsTty, sealed: shape === 'sealed' })
-    return { args, output, passLabel: shape !== 'sealed' && isScrypt(head) ? basename(args.input) : null, stdin: null, fromTty: false, childArgs: [...argv] }
+    return { args, output, passLabel: shape !== 'sealed' && isScrypt(head) ? basename(args.input) : null, stdin: null, fromTty: false, childArgs: [...argv], notes }
   }
   // stdin: decide the output first (nothing is read when it would be refused). Whether a SEALED.txt comes is known after the paste: a
   // directory --out is checked now (it must not exist either way) and settled below.
@@ -350,7 +369,7 @@ export async function prepareDecrypt(argv: readonly string[], d: PrepareDeps): P
   const shape = shapeOfBytes(bytes)
   const output = args.list ? { kind: 'none' as const } : args.stdout ? { kind: 'stdout' as const }
     : { kind: args.only === null && shape === 'sealed' ? 'dir' as const : 'file' as const, path: args.out as string }
-  return { args, output, passLabel: shape !== 'sealed' && isScrypt(bytes) ? (d.stdinIsTty ? 'the pasted age file' : 'the piped age file') : null, stdin: bytes, fromTty: d.stdinIsTty, childArgs: [...argv] }
+  return { args, output, passLabel: shape !== 'sealed' && isScrypt(bytes) ? (d.stdinIsTty ? 'the pasted age file' : 'the piped age file') : null, stdin: bytes, fromTty: d.stdinIsTty, childArgs: [...argv], notes }
 }
 export { DecryptUsage }
 
@@ -370,6 +389,15 @@ export function safeSegments(path: string): string[] {
 export interface Written { files: number; bytes: number }   // no digest of the plaintext is kept or printed (fix round 1, M-3)
 // The partial name beside --out (fix round 1, M-6): the output is built there and appears under its final name only when complete.
 const partialName = (out: string): string => join(dirname(out), `.${basename(out)}.vt-partial-${randomBytes(6).toString('hex')}`)
+// fix round 2 (N-5): a run killed outright leaves its partial output beside --out under exactly that name pattern (12 hex). The next run with
+// the same --out REPORTS each such entry (it may hold plaintext) and deletes nothing: vt cannot prove which run made it.
+export function leftoverPartials(out: string): string[] {
+  const re = new RegExp(`^\\.${basename(out).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.vt-partial-[0-9a-f]{12}$`)
+  let names: string[] = []
+  try { names = readdirSync(dirname(out)).filter((n) => re.test(n)) } catch { return [] }
+  return names.map((n) => `vt: note: ${join(dirname(out), n)} is the partial output of an earlier, interrupted vt decrypt (it may hold plaintext; mode 0600). vt does not remove it: delete it yourself when you have checked it`)
+}
+const statSizeOver = (p: string): boolean => { try { return statSync(p).size > FILE_MAX } catch { return false } }
 
 export class OutputWriter {
   private buf: Buffer = Buffer.alloc(0)

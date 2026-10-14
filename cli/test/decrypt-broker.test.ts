@@ -7,13 +7,13 @@
 import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { PassThrough } from 'node:stream'
-import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, statSync, symlinkSync, truncateSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type * as Fixtures from '../../packages/core/test/decrypt/fixtures.ts'
 import { OutputViolation, OutputWriter, checkOutPath, isScrypt, outputFor, peekFile, prepareDecrypt, readInput, safeSegments, shapeOfBytes, stanzaTypes, PasteScanner } from '../src/ops/decrypt-broker.ts'
 import { BROKER_TAG, Violation, answerRequest, decryptPolicy, policyFor } from '../src/ops/broker.ts'
 import type { BrokerTty } from '../src/ops/broker.ts'
-import { ARMOR_END, PASTE_MAX, decryptPositions, parseDecryptArgs } from '../src/decrypt-args.ts'
+import { ARMOR_END, FILE_MAX, PASTE_MAX, decryptPositions, parseDecryptArgs } from '../src/decrypt-args.ts'
 import { rejectsWith, removeDir, tempDir, throwsWith } from './lib.ts'
 
 const PASS = 'decrypt-broker-synthetic-passphrase'
@@ -63,9 +63,9 @@ test('vt.out-exists: --out that exists (a file, a directory, a dangling link) or
 })
 
 test('usage: the argv rules both sides share (repeats, values, combinations)', { timeout: 30_000 }, () => {
-  assert.deepEqual(args(), { input: null, identity: null, out: null, stdout: false, list: false, only: null })
-  assert.deepEqual(args('-', '--stdout'), { input: null, identity: null, out: null, stdout: true, list: false, only: null })
-  assert.deepEqual(args('--identity', 'k', 'S.txt', '--only', 'a/b', '--out', 'x'), { input: 'S.txt', identity: 'k', out: 'x', stdout: false, list: false, only: 'a/b' })
+  assert.deepEqual(args(), { input: null, identity: null, out: null, stdout: false, list: false, only: null, fromLauncher: false })
+  assert.deepEqual(args('-', '--stdout'), { input: null, identity: null, out: null, stdout: true, list: false, only: null, fromLauncher: false })
+  assert.deepEqual(args('--identity', 'k', 'S.txt', '--only', 'a/b', '--out', 'x'), { input: 'S.txt', identity: 'k', out: 'x', stdout: false, list: false, only: 'a/b', fromLauncher: false })
   for (const bad of [['a', 'b'], ['--out'], ['--out', 'x', '--out', 'y'], ['--stdout', '--out', 'x'], ['--list', '--out', 'x'], ['--list', '--only', 'a'], ['--list', '--stdout'], ['--bogus'], ['--identity', '-'], ['--out', '--stdout']]) {
     assert.throws(() => args(...bad), /usage: vt decrypt/, bad.join(' '))
   }
@@ -316,7 +316,7 @@ test('fix1 I-2: an input under a protected location ($VAULT_TIMELOCK_DIR, the de
   const argv = ['decrypt', join(out, 'pkg', 'p.age.txt'), '--out', dir('fx-o1')]
   const plan = await prepareDecrypt(argv, d)
   assert.equal(plan.stdin?.toString(), SCRYPT_ARMOR)
-  assert.deepEqual(plan.childArgs, ['decrypt', '-', '--out', dir('fx-o1')])
+  assert.deepEqual(plan.childArgs, ['decrypt', '-', '--out', dir('fx-o1'), '--from-launcher'])
   assert.equal(plan.passLabel, 'p.age.txt')
   // outside a protected location: handed as before
   writeFileSync(dir('fx-plain.age'), SCRYPT_ARMOR)
@@ -352,7 +352,10 @@ test('fix1 I-2: vt.decrypt-input — the launcher refuses, naming the reason: un
       return true
     })
   }
-  await rejectsWith(() => prepareDecrypt(['decrypt', join(out, 'pkg', 'big.age'), '--stdout'], d), 'decrypt.size')
+  // fix round 2: one cap for every FILE input (128 MiB), wherever it lies; a sparse file over it is refused before it is read
+  const huge = join(out, 'pkg', 'huge.age')
+  writeFileSync(huge, SCRYPT_ARMOR); truncateSync(huge, FILE_MAX + 1)
+  await rejectsWith(() => prepareDecrypt(['decrypt', huge, '--stdout'], d), 'decrypt.size')
 })
 
 test('fix1 M-2: --out - / --out --stdout / --identity - are refused as ambiguous, and bin/vt never rewrites them into paths', { timeout: 30_000 }, () => {
@@ -405,4 +408,85 @@ test('fix1 M-4: the age passphrase prompt switches echo off and discards type-ah
   await answerRequest(JSON.stringify({ id: 1, kind: 'age-passphrase' }), tty, decryptPolicy('p.age'), { asked: new Set(), left: new Map() }, noKeys)
   assert.deepEqual(events.slice(0, 3), ['quiet', 'flush', 'note'], events.join(','))
   assert.equal(events.at(-1), 'loud')
+})
+
+// =============================== fix round 2 ===============================
+
+const fx2 = (): { out: string; d: Parameters<typeof prepareDecrypt>[1] } => {
+  const out = dir(`f2-out-${Math.random().toString(16).slice(2)}`)
+  mkdirSync(join(out, 'pkg'), { recursive: true })
+  return { out, d: { stdin: new PassThrough(), stdinIsTty: false, stdoutIsTty: false, note: () => {}, flush: () => {}, protectedRoots: [out] } }
+}
+
+test('fix2 N-1: the launcher VALIDATES a package-directory file like a pipe before handing it on: a plaintext stand-in is refused (vt.decrypt-input) by the broker', { timeout: 30_000 }, async () => {
+  const { out, d } = fx2()
+  writeFileSync(join(out, 'pkg', 'notes.txt'), 'synthetic stand-in for a plaintext view: item one, item two\n')
+  writeFileSync(join(out, 'pkg', 'half.age'), SCRYPT_ARMOR.split('\n').slice(0, 3).join('\n') + '\n')
+  writeFileSync(join(out, 'pkg', 'bin.age'), Buffer.from('age-encryption.org/v1\n-> scrypt c2FsdA 10\n'))
+  for (const n of ['notes.txt', 'half.age', 'bin.age']) {
+    await assert.rejects(prepareDecrypt(['decrypt', join(out, 'pkg', n), '--stdout'], d), (e: unknown) => {
+      assert.equal((e as { guardId?: string }).guardId, 'vt.decrypt-input', `${n}: ${String(e)}`)
+      assert.match((e as Error).message, /not age armor, a binary age file or a SEALED\.txt/)
+      return true
+    })
+  }
+  // valid inputs still pass: armor (with blank lines after its end), binary age, a SEALED.txt
+  writeFileSync(join(out, 'pkg', 'ok.age'), `${SCRYPT_ARMOR}\n\n`)
+  writeFileSync(join(out, 'pkg', 'ok-bin.age'), X_BIN)
+  for (const n of ['ok.age', 'ok-bin.age']) assert.ok((await prepareDecrypt(['decrypt', join(out, 'pkg', n), '--stdout'], d)).stdin !== null, n)
+})
+
+test('fix2 N-1: the package\'s plaintext / key files are refused BY NAME (case-insensitively) even when they would validate; --identity identity.key elsewhere stays allowed', { timeout: 30_000 }, async () => {
+  const { out, d } = fx2()
+  const names = ['SEALED-plaintext.txt', 'sealed-PLAINTEXT.TXT', '.SEALED-plaintext.txt.ab12', 'identity.key', 'IDENTITY.KEY', 'MANIFEST.local.csv', 'STRUCTURE.txt', 'vault.tar', 'vault.TAR.GZ', 'secret.tgz']
+  mkdirSync(dir('f2-elsewhere'), { recursive: true })
+  for (const n of names) {
+    writeFileSync(join(out, 'pkg', n), SCRYPT_ARMOR)
+    writeFileSync(join(dir('f2-elsewhere'), n), SCRYPT_ARMOR)
+    for (const p of [join(out, 'pkg', n), join(dir('f2-elsewhere'), n)]) {
+      await assert.rejects(prepareDecrypt(['decrypt', p, '--stdout'], d), (e: unknown) => {
+        assert.equal((e as { guardId?: string }).guardId, 'vt.decrypt-input', `${p}: ${String(e)}`)
+        return true
+      })
+    }
+  }
+  writeFileSync(dir('f2-x.age'), X_BIN)
+  writeFileSync(dir('identity.key'), '# synthetic\n')
+  assert.equal((await prepareDecrypt(['decrypt', dir('f2-x.age'), '--identity', dir('identity.key'), '--stdout'], d)).passLabel, null)
+})
+
+test('fix2 N-2: restored/ is refused case-insensitively (RESTORED/, Restored/), for the input and for --identity', { timeout: 30_000 }, async () => {
+  const { d } = fx2()
+  for (const seg of ['RESTORED', 'Restored', 'restoreD']) {
+    await rejectsWith(() => prepareDecrypt(['decrypt', join(dir('f2-any'), seg, 'x.age'), '--stdout'], d), 'vt.decrypt-input')
+    writeFileSync(dir('f2-in.age'), X_BIN)
+    await rejectsWith(() => prepareDecrypt(['decrypt', dir('f2-in.age'), '--identity', join(dir('f2-any'), seg, 'k.txt'), '--stdout'], d), 'vt.decrypt-input')
+  }
+})
+
+test('fix2 cap: a package-directory file over 1 MiB (under 128 MiB) is handed in place, marked for the child as a FILE (its cap, not the paste cap)', { timeout: 30_000 }, async () => {
+  const { out, d } = fx2()
+  const big = `${SCRYPT_ARMOR}${'\n'.repeat(PASTE_MAX + 10)}`
+  writeFileSync(join(out, 'pkg', 'big.age'), big)
+  const p = await prepareDecrypt(['decrypt', join(out, 'pkg', 'big.age'), '--out', dir('f2-big-out')], d)
+  assert.equal(p.stdin?.length, Buffer.byteLength(big))
+  assert.deepEqual(p.childArgs, ['decrypt', '-', '--out', dir('f2-big-out'), '--from-launcher'])
+  assert.equal(FILE_MAX, 128 * 1024 * 1024)
+  // the flag is the broker's own: a user cannot give it
+  assert.throws(() => args('-', '--stdout', '--from-launcher'), /unknown option/)
+  assert.equal(parseDecryptArgs(['-', '--stdout', '--from-launcher'], { child: true }).fromLauncher, true)
+})
+
+test('fix2 N-5: a leftover partial output of an earlier, killed run beside --out is REPORTED (by its name pattern) and left alone', { timeout: 30_000 }, async () => {
+  const { d } = fx2()
+  const left = dir('.f2-report.txt.vt-partial-0123456789ab')
+  writeFileSync(left, 'synthetic partial')
+  writeFileSync(dir('.f2-report.txt.vt-partial-not-ours'), 'x')
+  writeFileSync(dir('f2-r.age'), X_BIN)
+  const p = await prepareDecrypt(['decrypt', dir('f2-r.age'), '--out', dir('f2-report.txt')], d)
+  assert.equal(p.notes.length, 1)
+  assert.match(p.notes[0], /\.f2-report\.txt\.vt-partial-0123456789ab/)
+  assert.match(p.notes[0], /interrupted/)
+  assert.equal(readFileSync(left, 'utf8'), 'synthetic partial', 'never deleted')
+  assert.deepEqual((await prepareDecrypt(['decrypt', dir('f2-r.age'), '--out', dir('f2-clean.txt')], d)).notes, [])
 })

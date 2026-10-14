@@ -34,7 +34,7 @@ import { PORTS, Refusal, isRefusal, refuse } from '@vault-timelock/core/contract
 import { DECRYPT_LIMITS, PASTE_LIMIT, decryptAge, detectInput, extractAll, extractOne, listArchive } from '@vault-timelock/core/decrypt'
 import type { ArchiveFile, DecryptHow, DecryptResult, FetchRoundSignature } from '@vault-timelock/core/decrypt'
 import { UsageError } from './args.ts'
-import { DATA_FD, DecryptUsage, listName, parseDecryptArgs, refuseInputPath, refuseInputSize, unlistName } from './decrypt-args.ts'
+import { DATA_FD, DecryptUsage, FILE_MAX, listName, parseDecryptArgs, refuseInputPath, refuseInputSize, unlistName } from './decrypt-args.ts'
 import type { DecryptArgs } from './decrypt-args.ts'
 import { assertTerminal } from './job/client.ts'
 
@@ -176,11 +176,13 @@ async function readable<T>(what: string, f: () => T | Promise<T>): Promise<T> {
 
 export async function runDecrypt(argv: readonly string[], d: DecryptDeps): Promise<number> {
   let a: DecryptArgs
-  try { a = parseDecryptArgs(argv) } catch (e) { if (e instanceof DecryptUsage) throw new UsageError(e.message); throw e }
+  try { a = parseDecryptArgs(argv, { child: true }) } catch (e) { if (e instanceof DecryptUsage) throw new UsageError(e.message); throw e }
   const input = await readable('the input file', () => d.input(a))
-  // What the input is, before any secret is asked: decrypt.format / decrypt.size / decrypt.kind refuse here.
-  const det = detectInput(input, a.input === null ? { input: PASTE_LIMIT } : undefined)
-  const how: { passphrase?: string; identity?: string; fetchRoundSignature?: FetchRoundSignature; now?: () => number } = {}
+  // What the input is, before any secret is asked: decrypt.format / decrypt.size / decrypt.kind refuse here. A paste or pipe: 1 MiB; a file
+  // (handed, or read by the launcher: LAUNCHER_FLAG): FILE_MAX, core's own input bound.
+  const limits = a.input === null && !a.fromLauncher ? { input: PASTE_LIMIT } : { input: FILE_MAX }
+  const det = detectInput(input, limits)
+  const how: { passphrase?: string; identity?: string; fetchRoundSignature?: FetchRoundSignature; now?: () => number; limits?: { input: number } } = { limits }
   if (d.now !== undefined) how.now = d.now
   if (a.identity !== null) { const p = a.identity; how.identity = await readable('the --identity file', () => d.identity(p)) }
   if (det.kind === 'passphrase') {
@@ -205,7 +207,7 @@ export async function runDecrypt(argv: readonly string[], d: DecryptDeps): Promi
       const entries = await listArchive(r.archive)
       const w = Math.max(1, ...entries.map((e) => String(e.size).length))
       for (const e of entries) d.out(`${String(e.size).padStart(w)}  ${listName(e.path)}\n`)
-      d.err(`vt decrypt: ${entries.length} file(s), ${entries.reduce((s, e) => s + e.size, 0)} bytes in ${r.archive.name} (paths as stored; control and invisible characters shown as [U+XXXX])\n`)
+      d.err(`vt decrypt: ${entries.length} file(s), ${entries.reduce((s, e) => s + e.size, 0)} bytes in ${r.archive.name} (paths as stored; every character outside printable ASCII, and \\ [ ], shown as \\u{hex})\n`)
       return 0
     }
     const path = unlistName(a.only as string)
@@ -275,7 +277,7 @@ export async function decryptMain(argv: readonly string[], o: { network: Network
   const ch = dataChannel()
   return runDecrypt(argv, {
     network: o.network,
-    input: async (a) => (a.input === null ? readStdin(PASTE_LIMIT) : readHanded(a.input, DECRYPT_LIMITS.input, 'the input file')),
+    input: async (a) => (a.input === null ? readStdin(a.fromLauncher ? FILE_MAX : PASTE_LIMIT) : readHanded(a.input, FILE_MAX, 'the input file')),
     identity: (p) => readHanded(p, DECRYPT_LIMITS.secret, 'the identity file').toString('utf8'),
     terminal: o.env.VT_BROKER === '1' && o.env.VT_TTY === '1',
     passphrase: () => { const t = sharedBrokerTty(); if (t.agePassphrase === undefined) throw new Error('no passphrase channel'); return t.agePassphrase() },

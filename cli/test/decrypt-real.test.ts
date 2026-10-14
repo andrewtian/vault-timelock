@@ -13,9 +13,9 @@
 import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawn, spawnSync } from 'node:child_process'
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { createServer, type Server } from 'node:http'
-import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, symlinkSync, truncateSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { runInPty } from 'vt-broadcast/test/offline/lifecycle/pty.ts'
 import { PORTS } from '@vault-timelock/core/contracts'
@@ -353,7 +353,7 @@ test('fix1 I-2: a package under the default $VAULT_TIMELOCK_DIR decrypts (the la
   writeFileSync(join(out, 'synthetic-pkg', 'onetime.key'), `${s.identity}\n`)
   writeFileSync(join(out, 'synthetic-pkg', 'restored', 'x.age'), SCRYPT_ARMOR)
   writeFileSync(join(out, 'local', 'btc-rpc.auth'), 'synthetic:not-a-credential')
-  writeFileSync(join(out, 'synthetic-pkg', 'big.age'), `${SCRYPT_ARMOR}${'\n'.repeat(1024 * 1024)}`)
+  writeFileSync(join(out, 'synthetic-pkg', 'big.age'), SCRYPT_ARMOR); truncateSync(join(out, 'synthetic-pkg', 'big.age'), 128 * 1024 * 1024 + 1)   // sparse: over the file cap
   const go = (args: string[]): { code: number | null; out: string; err: string } => {
     const r = spawnSync(WRAPPER, args, { env: e, cwd: T, encoding: 'utf8', timeout: 120_000 })
     return { code: r.status, out: r.stdout, err: r.stderr }
@@ -368,7 +368,7 @@ test('fix1 I-2: a package under the default $VAULT_TIMELOCK_DIR decrypts (the la
     [['decrypt', join(out, 'synthetic-pkg', 'restored', 'x.age'), '--stdout'], 'vt.decrypt-input', /restored\//],
     [['decrypt', join(out, 'synthetic-pkg', 'SEALED.txt'), '--identity', join(out, 'synthetic-pkg', 'onetime.key'), '--list'], 'vt.decrypt-input', /--identity/],
     [['decrypt', join(out, 'local', 'btc-rpc.auth'), '--stdout'], 'vt.decrypt-input', /credential/],
-    [['decrypt', join(out, 'synthetic-pkg', 'big.age'), '--stdout'], 'decrypt.size', /copy it out/],
+    [['decrypt', join(out, 'synthetic-pkg', 'big.age'), '--stdout'], 'decrypt.size', /larger than 134217728 bytes/],
   ] as Array<[string[], string, RegExp]>) {
     const r = go(args)
     assert.equal(r.code, 2, `${args[1]}: ${r.err}`)
@@ -408,4 +408,85 @@ test('fix1 M-4: a passphrase typed AHEAD (while vt is still starting) is never e
   assert.match(r.out, /VT-EXIT=0/, r.out)
   assert.ok(!r.out.includes(early) && !r.out.includes('EARLY'), `the early input was echoed: ${r.out}`)
   assert.equal(readFileSync(at('fx4.txt'), 'utf8'), PLAIN)
+})
+
+// =============================== fix round 2 ===============================
+
+// A fake `node` first on PATH: profile.ts and broker.ts run for real; the sandboxed child (main.ts) only prints a marker. So a refusal that
+// comes with no marker was made by the BROKER, before any child existed.
+function markerNode(): string {
+  const pd = at('marker-bin')
+  if (!existsSync(pd)) {
+    mkdirSync(pd)
+    writeExe(join(pd, 'node'), `#!${NODE}
+const { spawnSync } = require('node:child_process')
+const argv = process.argv.slice(2)
+const flags = []
+while (argv.length > 0 && argv[0].startsWith('--')) flags.push(argv.shift())
+const [cli, ...args] = argv
+if (typeof cli === 'string' && (cli.endsWith('/src/ops/profile.ts') || cli.endsWith('/src/ops/broker.ts'))) {
+  const r = spawnSync(${JSON.stringify(NODE)}, [...flags, cli, ...args], { stdio: 'inherit', env: process.env }); process.exit(r.status ?? 1)
+}
+process.stdout.write('CHILD-STARTED ' + JSON.stringify(args) + '\\n')
+`)
+  }
+  return pd
+}
+
+test('fix2 N-1: a non-input file in the package directory (a plaintext stand-in, also through an innocent-named link) and the package\'s known plaintext / key names are refused by the BROKER: the child never starts', { timeout: 180_000 }, async () => {
+  const home = at('f2-home'), out = join(home, '.local', 'share', 'vault-timelock')
+  mkdirSync(join(out, 'synthetic-pkg'), { recursive: true })
+  writeFileSync(join(out, 'synthetic-pkg', 'plain-view.txt'), 'synthetic stand-in for a plaintext view: item one, item two\n')
+  symlinkSync(join(out, 'synthetic-pkg', 'plain-view.txt'), at('innocent.age'))
+  writeFileSync(join(out, 'synthetic-pkg', 'SEALED-plaintext.txt'), SCRYPT_ARMOR)       // would validate: refused by its name
+  writeFileSync(join(out, 'synthetic-pkg', 'Identity.Key'), SCRYPT_ARMOR)
+  writeFileSync(join(out, 'synthetic-pkg', 'ok.age'), SCRYPT_ARMOR)
+  const e = { ...env(), HOME: home, VAULT_TIMELOCK_DIR: out, PATH: `${markerNode()}:${PATH0}` }
+  const go = (args: string[]): { code: number | null; out: string; err: string } => {
+    const r = spawnSync(WRAPPER, args, { env: e, cwd: T, encoding: 'utf8', timeout: 120_000 })
+    return { code: r.status, out: r.stdout, err: r.stderr }
+  }
+  for (const [input, re] of [
+    [join(out, 'synthetic-pkg', 'plain-view.txt'), /not age armor, a binary age file or a SEALED\.txt/],
+    [at('innocent.age'), /not age armor, a binary age file or a SEALED\.txt/],
+    [join(out, 'synthetic-pkg', 'SEALED-plaintext.txt'), /SEALED-plaintext\.txt/],
+    [join(out, 'synthetic-pkg', 'Identity.Key'), /identity\.key/i],
+  ] as Array<[string, RegExp]>) {
+    const r = go(['decrypt', input, '--out', at('f2-never.txt')])
+    assert.equal(r.code, 2, `${input}: ${r.err}`)
+    assert.match(r.err, /^refused vt\.decrypt-input: /m); assert.match(r.err, re)
+    assert.ok(!r.out.includes('CHILD-STARTED') && !r.err.includes('CHILD-STARTED'), `${input}: the child never started`)
+  }
+  // control: a real package input there reaches the (fake) child, on stdin, marked as a launcher-read file
+  const ok = go(['decrypt', join(out, 'synthetic-pkg', 'ok.age'), '--stdout'])
+  assert.match(ok.out, /CHILD-STARTED \["decrypt","-","--stdout","--from-launcher"\]/, ok.err)
+  assert.equal(existsSync(at('f2-never.txt')), false)
+})
+
+test('fix2 N-2 + cap: RESTORED/ (any case) is refused; a 2+ MiB SEALED.txt under $VAULT_TIMELOCK_DIR decrypts IN PLACE (the file cap, not the paste cap)', { timeout: 180_000 }, async () => {
+  const home = at('f2c-home'), out = join(home, '.local', 'share', 'vault-timelock')
+  mkdirSync(join(out, 'synthetic-pkg', 'RESTORED'), { recursive: true })
+  writeFileSync(join(out, 'synthetic-pkg', 'RESTORED', 'x.age'), SCRYPT_ARMOR)
+  const s = await F.makeSealed({ vaultFiles: { ...vault(), 'extra/big.bin': randomBytes(1_800_000) } as Record<string, string | Uint8Array> })
+  assert.ok(Buffer.byteLength(s.sealed) > 2 * 1024 * 1024)
+  writeFileSync(join(out, 'synthetic-pkg', 'SEALED.txt'), s.sealed)
+  writeFileSync(at('f2c.key'), `${s.identity}\n`)
+  const e = { ...env(), HOME: home, VAULT_TIMELOCK_DIR: out }
+  const go = (args: string[]): { code: number | null; err: string } => { const r = spawnSync(WRAPPER, args, { env: e, cwd: T, encoding: 'utf8', timeout: 120_000 }); return { code: r.status, err: r.stderr } }
+  const rr = go(['decrypt', join(out, 'synthetic-pkg', 'RESTORED', 'x.age'), '--stdout'])
+  assert.equal(rr.code, 2); assert.match(rr.err, /^refused vt\.decrypt-input: .*restored\//m)
+  const r = go(['decrypt', join(out, 'synthetic-pkg', 'SEALED.txt'), '--identity', at('f2c.key'), '--out', at('f2c-restored')])
+  assert.equal(r.code, 0, r.err)
+  assert.equal(readFileSync(join(at('f2c-restored'), 'extra', 'big.bin')).length, 1_800_000)
+})
+
+test('fix2 N-5: after a hard kill, the next run with the same --out REPORTS the hidden partial file it left (and deletes nothing)', { timeout: 120_000 }, () => {
+  const left = at('.f2k.txt.vt-partial-0123456789ab')
+  writeFileSync(left, 'synthetic partial plaintext stand-in', { mode: 0o600 })
+  const r = runVt(['decrypt', 'x.age', '--identity', 'id.txt', '--out', 'f2k.txt'])
+  assert.equal(r.code, 0, r.err)
+  assert.match(r.err, /\.f2k\.txt\.vt-partial-0123456789ab/)
+  assert.match(r.err, /interrupted/)
+  assert.equal(readFileSync(left, 'utf8'), 'synthetic partial plaintext stand-in')
+  assert.ok(existsSync(at('f2k.txt')))
 })

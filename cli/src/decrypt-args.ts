@@ -24,7 +24,12 @@ export interface DecryptArgs {
   readonly stdout: boolean           // --stdout: the plaintext to stdout, only when asked (also on a terminal: asked is not by accident)
   readonly list: boolean             // --list: path + size of every file of the archive (no contents; allowed on a terminal)
   readonly only: string | null       // --only <path>: one file of the archive, as --list shows it
+  readonly fromLauncher: boolean     // (the child's parse only) stdin is a FILE the launcher read in a protected place: the file cap applies
 }
+
+// fix round 2: the flag the BROKER appends to the child's argv when stdin carries a file it read itself (not a paste or pipe). The user's argv
+// is parsed without { child: true }, so a user can never give it (an unknown option); the child then applies FILE_MAX, not PASTE_MAX.
+export const LAUNCHER_FLAG = '--from-launcher'
 
 export const DECRYPT_USAGE = 'usage: vt decrypt [<file>|-] [--identity F] [--out <path|dir>] [--stdout] [--list] [--only <path>]'
 export class DecryptUsage extends Error {
@@ -36,8 +41,9 @@ const FLAGS = new Set(['--stdout', '--list'])
 
 // The words after `decrypt` → DecryptArgs. A repeated flag, a missing value, an unknown flag or a second file is a usage error (exit 1);
 // values are never echoed (a path can name anything).
-export function parseDecryptArgs(args: readonly string[]): DecryptArgs {
+export function parseDecryptArgs(args: readonly string[], o: { child?: boolean } = {}): DecryptArgs {
   const seen = new Set<string>()
+  let fromLauncher = false
   const v: Record<string, string> = {}
   let input: string | null = null
   let gotInput = false
@@ -53,6 +59,8 @@ export function parseDecryptArgs(args: readonly string[]): DecryptArgs {
       if (a !== '--only' && val.startsWith('-')) throw new DecryptUsage(`${a} followed by - or another option is ambiguous: ${a === '--out' ? '--stdout prints the plaintext, --out takes a new file\'s path (./- for a file named -)' : '--identity takes the identity file\'s path (stdin is the input)'}`)
       v[a] = val
       i++
+    } else if (a === LAUNCHER_FLAG && o.child === true && !fromLauncher) {
+      fromLauncher = true
     } else if (a === '-' || !a.startsWith('-')) {
       if (gotInput) throw new DecryptUsage('one input only (a file, or - for stdin)')
       if (a === '') throw new DecryptUsage('an empty file name')
@@ -66,7 +74,7 @@ export function parseDecryptArgs(args: readonly string[]): DecryptArgs {
   const stdout = seen.has('--stdout'), list = seen.has('--list')
   if (list && (out !== null || stdout || only !== null)) throw new DecryptUsage('--list prints the archive\'s paths and sizes only: not with --out, --stdout or --only')
   if (out !== null && stdout) throw new DecryptUsage('--out or --stdout, not both')
-  return { input, identity: v['--identity'] ?? null, out, stdout, list, only }
+  return { input, identity: v['--identity'] ?? null, out, stdout, list, only, fromLauncher }
 }
 
 // The positions (in the FULL argv, argv[0] === 'decrypt') of the input file and the --identity file (handed to the sandbox, read-only)
@@ -109,9 +117,19 @@ export function refuseOutExists(message: string): never {
 export function refuseInputPath(message: string): never {
   refuse('vt.decrypt-input', message) // @guard:vt.decrypt-input
 }
-// Anything under a restored/ directory holds decrypted package contents: vt decrypt never takes it as an input or identity (fix round 1).
+// Anything under a restored/ directory holds decrypted package contents: vt decrypt never takes it as an input or identity (fix round 1;
+// fix round 2: case-insensitively, as APFS stores names: RESTORED/ and Restored/ are the same directory).
 export function checkInputPath(path: string, what: string): void {
-  if (path.split('/').includes('restored')) refuseInputPath(`${what} lies under a restored/ directory, which holds decrypted contents: vt decrypt never reads there`)
+  if (path.split('/').some((s) => foldKey(s) === 'restored')) refuseInputPath(`${what} lies under a restored/ directory, which holds decrypted contents: vt decrypt never reads there`)
+}
+// fix round 2 (N-1): the package's own plaintext and key files are never an INPUT, wherever they lie and even when their bytes would pass as
+// age armor (case-insensitively): the sealer's local plaintext view, the one-time identity, the local manifest and structure, and archives.
+// (--identity identity.key stays allowed: that is what the file is for.)
+const PLAIN_NAMES = new Set(['sealed-plaintext.txt', 'identity.key', 'manifest.local.csv', 'structure.txt'])
+export function checkInputName(path: string): void {
+  const n = foldKey(path.slice(path.lastIndexOf('/') + 1))
+  const bad = PLAIN_NAMES.has(n) || n.startsWith('.sealed-plaintext.txt.') || n.endsWith('.tar') || n.endsWith('.tar.gz') || n.endsWith('.tgz')
+  if (bad) refuseInputPath('the input is one of a package\'s plaintext or key files (SEALED-plaintext.txt, identity.key, MANIFEST.local.csv, STRUCTURE.txt, a .tar / .tar.gz / .tgz archive): vt decrypt takes only the encrypted files')
 }
 
 // ---- the texts a paste may be (core's own markers: age.ts / sealed-from.ts)
@@ -124,12 +142,15 @@ export const SEALED_END = '== end =='
 export const AGE_MAGIC = 'age-encryption.org/v1\n'
 // core's PASTE_LIMIT (packages/core/src/decrypt/api.ts), restated so the broker needs no core import; test/decrypt.test.ts pins equality.
 export const PASTE_MAX = 1024 * 1024
+// fix round 2: ONE cap for every FILE input (handed to the sandbox, or read by the launcher in a protected place): core's DECRYPT_LIMITS.input,
+// restated here and pinned equal in test/decrypt.test.ts. A paste or a pipe keeps PASTE_MAX.
+export const FILE_MAX = 128 * 1024 * 1024
 
 // ---- the data channel (child → broker, fd 5): a JSON header line {"path","size"}, then exactly `size` bytes; last {"end":true}
 
 export const DATA_FD = 5
 export const FRAME_HEADER_MAX = 8192
-export const OUT_FILE_MAX = 128 * 1024 * 1024        // one file (core's DECRYPT_LIMITS.input: no plaintext is larger)
+export const OUT_FILE_MAX = FILE_MAX                 // one file (no plaintext is larger than its input)
 export const OUT_TOTAL_MAX = 256 * 1024 * 1024       // every file together
 export const OUT_FILES_MAX = 10_002                  // core's ARCHIVE_LIMITS.entries + identity.key + the archive itself
 
