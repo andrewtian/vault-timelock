@@ -888,10 +888,12 @@ cap and checks (binary age too). Bigger inputs: give the file.
 
 **Files in the package directory.** A file under `$VAULT_TIMELOCK_DIR` (default `~/.local/share/vault-timelock`, where the
 sealer writes packages) is something no sandboxed command may read. vt decrypt does not widen that: vt's unsandboxed launcher
-opens such a file itself (a regular file, never through a link, never one of vt's credential files, at most 1 MiB like a
-paste) and hands its bytes to the sandbox the way a paste is handed. Over 1 MiB there: copy it out first (`decrypt.size`).
-Anything under a `restored/` directory is refused, and so is an `--identity` file in the package directory: copy it out
-first (`vt.decrypt-input`). Any file the sandbox still cannot read is refused with the reason (`vt.decrypt-input`), never
+opens such a file itself (a regular file, never through a link, never one of vt's credential files, at most 128 MiB like
+any file input), checks it is age armor, a binary age file or a SEALED.txt, and only then hands its bytes to the sandbox
+the way a paste is handed. A package's plaintext and key files (`SEALED-plaintext.txt`, `identity.key`, `MANIFEST.local.csv`,
+`STRUCTURE.txt`, `.tar` / `.tar.gz` / `.tgz`) are never an input, and anything under a `restored/` directory (any letter
+case) is refused, as is an `--identity` file in the package directory: copy it out first (`vt.decrypt-input`). A partial
+output left by an interrupted run (`.<name>.vt-partial-…` beside `--out`) is reported, never deleted. Any file the sandbox still cannot read is refused with the reason (`vt.decrypt-input`), never
 a bare `EPERM`.
 
 **Passphrase.** Asked once, by vt's broker on the terminal (echo off), and only when the input really is an age
