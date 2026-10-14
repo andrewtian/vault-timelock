@@ -25,6 +25,7 @@
     "test": "sh ../../scripts/test-root.sh packages/core"
   },
   "dependencies": {
+    "@noble/curves": "1.9.7",
     "@noble/hashes": "2.4.0",
     "@scure/base": "2.4.0",
     "@scure/btc-signer": "2.4.1",
@@ -35,7 +36,6 @@
     "viem": "2.57.4"
   },
   "devDependencies": {
-    "@noble/curves": "1.9.7",
     "jsdom": "29.1.1"
   }
 }
