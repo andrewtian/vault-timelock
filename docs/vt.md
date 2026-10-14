@@ -886,20 +886,36 @@ anything is asked**: anything else is refused at once (`decrypt.format`, `decryp
 is thrown away, never left for your shell. A pipe (`pbpaste | vt decrypt - --out x`) is read to its end under the same
 cap and checks (binary age too). Bigger inputs: give the file.
 
+**Files in the package directory.** A file under `$VAULT_TIMELOCK_DIR` (default `~/.local/share/vault-timelock`, where the
+sealer writes packages) is something no sandboxed command may read. vt decrypt does not widen that: vt's unsandboxed launcher
+opens such a file itself (a regular file, never through a link, never one of vt's credential files, at most 1 MiB like a
+paste) and hands its bytes to the sandbox the way a paste is handed. Over 1 MiB there: copy it out first (`decrypt.size`).
+Anything under a `restored/` directory is refused, and so is an `--identity` file in the package directory: copy it out
+first (`vt.decrypt-input`). Any file the sandbox still cannot read is refused with the reason (`vt.decrypt-input`), never
+a bare `EPERM`.
+
 **Passphrase.** Asked once, by vt's broker on the terminal (echo off), and only when the input really is an age
-passphrase file — also when the input comes through a pipe. Never from stdin, argv or the environment; no terminal is
+passphrase file — also when the input comes through a pipe. Echo is off from the moment vt starts (unless you paste), so
+a passphrase typed ahead is never shown; it is discarded before the prompt. Never from stdin, argv or the environment; no terminal is
 refused (`vt.tty-required`).
 
 **Output: only where you say.**
-- `--out <path>` writes the plaintext to a NEW file, mode 0600; it never overwrites (`vt.out-exists`).
+- `--out <path>` writes the plaintext to a NEW file, mode 0600; it never overwrites (`vt.out-exists`). The file is
+  written beside it under a `.<name>.vt-partial-…` name and linked into place only when complete, so the final name
+  never holds a partial plaintext. `--out -` and `--out --stdout` are refused as ambiguous.
 - For a SEALED.txt, `--out <dir>` is a NEW directory (0700) holding every file of its archive (0600). Before anything is
   written, the files are checked against the archive's `MANIFEST.csv` / `ATTACHMENTS.csv` digests when it has them. A
   mismatch writes nothing (`vt.manifest`). Two archive paths that the disk would store as one file (`A` / `a`, or
-  NFC / NFD `é` on APFS) are refused, never merged. On any failure, whatever was written is removed.
-- `--stdout` prints the plaintext (for a SEALED.txt: the archive, e.g. `vault.tar.gz`), and only when asked.
+  NFC / NFD `é` on APFS) are refused, never merged. The directory is built beside it and renamed into place when complete.
+  On any failure, whatever was written is removed.
+- `--stdout` prints the plaintext (for a SEALED.txt: the archive, e.g. `vault.tar.gz`), and only when asked. To a pipe
+  or a file it is the exact bytes. To a **terminal** it goes through vt's output filter (no escape sequences, so no
+  clipboard or title writes; no invisible characters; newlines and tabs kept), and one line says so: use `--out` or a
+  pipe for the exact bytes. No digest of the plaintext is printed.
 - With neither, nothing is decrypted (`vt.decrypt-output`): a decrypted key never lands on screen by accident.
 - `--list` prints `<size>  <path>` for each file of the archive and never its contents. It is allowed on a terminal.
-  Invisible characters (bidi, zero-width, controls) are shown as `[U+XXXX]`.
+  Every character outside printable ASCII (bidi, zero-width, controls, accented letters), and `\`, `[` and `]`, is
+  shown as `\u{hex}`, so the listing is exact whatever the terminal or locale.
 - `--only <path> --out <file>` (or `--stdout`) extracts one file. Give the path exactly as `--list` printed it.
 
 **Time locks.** Before the round vt refuses with the unlock time (`decrypt.too-early`) and fetches nothing. After it,
@@ -907,7 +923,8 @@ vt asks the relay of the network (`--network`, default local) for the round. If 
 tells you to run `vt up` for that network (`vt.relay-down`). The relay reaches drand through Tor, as for the page's Open.
 
 **Confinement.** The decrypting process runs in its own sandbox. It can reach only the network's relay port. It can
-read only the files it was handed (the input and `--identity`). It cannot write any file and has no terminal. vt's
+read only the files it was handed (the input and `--identity`; see above for the package directory). It cannot write any
+file and has no terminal. vt's
 unsandboxed broker reads the paste, asks the passphrase and writes `--out`. Nothing is logged: no passphrase, identity
 or plaintext.
 
