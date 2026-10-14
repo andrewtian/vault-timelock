@@ -106,11 +106,14 @@ export interface Detected {
   readonly arId: string | null
   /** sealed: every block, each checked against its [file] line; [] otherwise. */
   readonly blocks: readonly BlockInfo[]
-  /** sealed: whether an identity (the one-time key, e.g. recovered with the recovery key) can open it without the time lock. */
+  /** Whether an identity opens it (no time lock): an identity-kind age file; a two-layer full SEALED.txt (its one-time key, e.g.
+   *  recovered from unlock-KEY.age with the recovery key, opens vault.tar.gz.age at any time). */
   readonly identityPath: boolean
 }
 
-/** One decrypted file. Bytes only: the caller decides where they go (CLI: --out by the launcher; page: a Download). */
+/** One decrypted file. Bytes only: the caller decides where they go (CLI: --out by the launcher; page: a Download).
+ *  The bytes are the caller's: core keeps no copy (wipe them with bytes.fill(0) when done; DecryptResult.archive reads these
+ *  same bytes, so wipe after the last archive call). */
 export interface DecryptedFile {
   /** single age file: `plaintext`; SEALED.txt: identity.key, vault.tar.gz, secret.tar.gz, content.tar.gz or content. */
   readonly name: string
@@ -146,8 +149,9 @@ export interface DecryptResult {
   readonly files: readonly DecryptedFile[]
   /** sealed: every ciphertext block, checked against its [file] line; [] otherwise. */
   readonly blocks: readonly BlockInfo[]
-  /** The archive among files (vault.tar.gz / secret.tar.gz / content.tar.gz) as an ArchiveSource, or null (no archive, or a
-   *  key-only text whose archive is not in the text). */
+  /** The archive among files as an ArchiveSource: a SEALED.txt's vault.tar.gz / secret.tar.gz / content.tar.gz, or a single age
+   *  file's plaintext when it is gzip (e.g. vault.tar.gz.age opened with its identity; the source refuses it if it is no tar).
+   *  null: no archive, or a key-only text whose archive is not in the text. */
   readonly archive: ArchiveSource | null
   /** Plain-language notes (e.g. where a key-only text's archive is). Never secret. */
   readonly notes: readonly string[]

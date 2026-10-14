@@ -1,6 +1,7 @@
 import { test, expect } from 'vitest'
 import { gzipSync } from 'node:zlib'
-import { TAR_LIMITS, gunzip, isGzip, readTar, readTarGz } from '../src/lib/tar.js'
+// re-pointed: the reader lives in core (vt decrypt addendum); web/src/lib/tar.js re-exports it for the page
+import { TAR_LIMITS, gunzip, isGzip, readTar, readTarGz } from '@vault-timelock/core/decrypt/tar.ts'
 import { tar, targz } from './open-fixtures.js'
 
 const files = { 'a/b.txt': 'one', 'c.bin': new Uint8Array([0, 1, 2, 255]) }
@@ -72,7 +73,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { crc32 } from '../src/lib/tar.js'
+import { crc32 } from '@vault-timelock/core/decrypt/tar.ts'
 
 function sealerLike() {
   const d = mkdtempSync(join(tmpdir(), 'w7b-tar-'))

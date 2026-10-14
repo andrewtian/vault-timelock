@@ -439,21 +439,27 @@
     "test/gates/provenance.test.ts"
   ],
   "decrypt.kind": [
-    "test/decrypt/decrypt.test.ts"
+    "test/decrypt/decrypt.test.ts",
+    "test/decrypt/sealed.test.ts"
   ],
   "decrypt.passphrase": [
     "test/decrypt/decrypt.test.ts"
   ],
   "decrypt.identity": [
-    "test/decrypt/decrypt.test.ts"
+    "test/decrypt/decrypt.test.ts",
+    "test/decrypt/sealed.test.ts"
   ],
   "decrypt.too-early": [
-    "test/decrypt/decrypt.test.ts"
+    "test/decrypt/decrypt.test.ts",
+    "test/decrypt/sealed.test.ts"
   ],
   "decrypt.format": [
-    "test/decrypt/decrypt.test.ts"
+    "test/decrypt/decrypt.test.ts",
+    "test/decrypt/sealed.test.ts",
+    "test/decrypt/archive.test.ts"
   ],
   "decrypt.size": [
-    "test/decrypt/decrypt.test.ts"
+    "test/decrypt/decrypt.test.ts",
+    "test/decrypt/archive.test.ts"
   ]
 }
