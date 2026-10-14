@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": false,
+    "jsx": "react-jsx",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "es2024",
+    "lib": [
+      "es2024",
+      "dom",
+      "dom.iterable"
+    ],
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "strict": true
+  },
+  "include": [
+    "src",
+    "test",
+    "vite.config.js",
+    "vitest.config.js"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "format": "vt-job/1",
+  "network": "local",
+  "name": "eth drain to the null address",
+  "message": "A synthetic vt fixture message.\nIt has two lines.\n",
+  "chains": {
+    "btc": {
+      "mode": {
+        "copies": 2
+      },
+      "publishMode": "sol.memo",
+      "feeStrategy": "economy",
+      "distinctCopies": true,
+      "keyAddress": "bcrt1q4nd3dampr5gwycmrdxv0c0n7898l5uy5thufr2",
+      "budgetUsd": 5,
+      "maxFeeRateSatVb": 25,
+      "clawbackTo": null
+    }
+  }
+}

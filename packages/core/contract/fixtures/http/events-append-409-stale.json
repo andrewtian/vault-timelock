@@ -1,0 +1,36 @@
+{
+  "after": null,
+  "volatile": [
+    "error.message"
+  ],
+  "name": "events-append-409-stale",
+  "covers": "append from the old holder after a takeover (gen 1, live gen 2) → 409 lease.stale",
+  "request": {
+    "method": "POST",
+    "path": "/jobs/e3d45f73cf65abaa/chains/eth/events",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "gen": 1,
+      "type": "note",
+      "data": {
+        "text": "from the old holder"
+      }
+    }
+  },
+  "response": {
+    "status": 409,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "guard": "lease.stale",
+        "message": "(any text that never echoes input)"
+      }
+    }
+  }
+}

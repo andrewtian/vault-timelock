@@ -1,0 +1,56 @@
+{
+  "name": "@vault-timelock/web",
+  "version": "0.0.0",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p jsconfig.json",
+    "test": "sh ../scripts/test-root.sh web",
+    "mutation": "node ../broadcast/test/mutation/run.ts --root ."
+  },
+  "dependencies": {
+    "@lightprotocol/hasher.rs": "0.2.1",
+    "@noble/ciphers": "2.4.0",
+    "@noble/hashes": "2.4.0",
+    "@number-flow/react": "0.6.2",
+    "@scure/base": "2.4.0",
+    "@solana/web3.js": "1.99.0",
+    "@tailwindcss/vite": "4.3.3",
+    "@vault-timelock/core": "0.0.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "age-encryption": "0.3.1",
+    "buffer": "6.0.3",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "ffjavascript": "0.3.1",
+    "lucide-react": "1.53.0",
+    "motion": "14.0.0",
+    "privacycash": "1.2.3",
+    "qrcode.react": "4.2.0",
+    "radix-ui": "1.7.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "snarkjs": "0.7.5",
+    "sonner": "2.0.8",
+    "tailwind-merge": "3.7.0",
+    "tailwindcss": "4.3.3",
+    "tlock-js": "0.9.0",
+    "tw-animate-css": "1.4.0",
+    "tweetnacl": "1.0.3",
+    "vite": "8.3.3"
+  },
+  "devDependencies": {
+    "@noble/curves": "1.9.7",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.7",
+    "jsdom": "29.1.1",
+    "vitest": "5.0.3"
+  }
+}

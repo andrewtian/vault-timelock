@@ -1,0 +1,30 @@
+{
+  "name": "vault-timelock",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "packageManager": "npm@11.21.0",
+  "engines": {
+    "node": ">=24.13.0",
+    "npm": ">=11.21.0"
+  },
+  "workspaces": [
+    "packages/core",
+    "api",
+    "cli",
+    "web"
+  ],
+  "scripts": {
+    "contract": "sh scripts/test-root.sh contract",
+    "contract:vectors": "sh scripts/test-root.sh contract-vectors",
+    "test:integration": "sh scripts/test-root.sh integration",
+    "typecheck:integration": "tsc --noEmit -p test/integration/tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "underscore": "1.13.8"
+  }
+}

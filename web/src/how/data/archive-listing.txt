@@ -1,0 +1,12 @@
+drwx------  0 nobody nobody      0 Jan  1  2000 items/
+-rw-------  0 nobody nobody    370 Jan  1  2000 items/c9fm1tlb6qzw3dxn8hr2kgve5u.json
+-rw-------  0 nobody nobody    516 Jan  1  2000 items/a7kq2mxr4vfz6nbe3yh5tcdl1w.json
+-rw-------  0 nobody nobody    458 Jan  1  2000 items/b3wd8jgn5pxc2ksq7rm4yvht9e.json
+-rw-------  0 nobody nobody    165 Jan  1  2000 items/d4xr7nch2mwq9tbz5lk3jfps8y.json
+drwx------  0 nobody nobody      0 Jan  1  2000 files/
+drwx------  0 nobody nobody      0 Jan  1  2000 files/d4xr7nch2mwq9tbz5lk3jfps8y/
+drwx------  0 nobody nobody      0 Jan  1  2000 files/b3wd8jgn5pxc2ksq7rm4yvht9e/
+-rw-------  0 nobody nobody     42 Jan  1  2000 files/b3wd8jgn5pxc2ksq7rm4yvht9e/q6hz3rx7tmc4
+-rw-------  0 nobody nobody     31 Jan  1  2000 files/d4xr7nch2mwq9tbz5lk3jfps8y/w2tn8kd5vbq1
+-rw-------  0 nobody nobody    444 Jan  1  2000 MANIFEST.csv
+-rw-------  0 nobody nobody    245 Jan  1  2000 ATTACHMENTS.csv

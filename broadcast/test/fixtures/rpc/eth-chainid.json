@@ -1,0 +1,4 @@
+{
+  "request": { "method": "POST", "url": "https://rpc.eth.example/", "rpc": { "method": "eth_chainId", "params": [] } },
+  "response": { "status": 200, "headers": { "content-type": "application/json" }, "rpc": { "result": "0xaa36a7" } }
+}

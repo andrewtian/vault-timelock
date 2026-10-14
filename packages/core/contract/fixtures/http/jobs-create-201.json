@@ -1,0 +1,85 @@
+{
+  "after": null,
+  "volatile": [],
+  "name": "jobs-create-201",
+  "covers": "POST /jobs (new job, inline message) → 201 { id, def (canonical), state }",
+  "request": {
+    "method": "POST",
+    "path": "/jobs",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "format": "vt-job/1",
+      "network": "local",
+      "name": "eth drain to the null address",
+      "message": "A synthetic vt fixture message.\nIt has two lines.\n",
+      "chains": {
+        "eth": {
+          "mode": "drain",
+          "publishMode": "eth.calldata.null",
+          "feeStrategy": "passive",
+          "distinctCopies": true,
+          "keyAddress": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+          "budgetUsd": 10,
+          "maxTipGwei": 3,
+          "clawbackTo": null
+        }
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "id": "e3d45f73cf65abaa",
+      "def": {
+        "format": "vt-job/1",
+        "network": "local",
+        "name": "eth drain to the null address",
+        "messageSha256": "83be1d5879a59ca063ed2d02bcfde19e259cd991479d5ef45c899854f6900048",
+        "messageBytes": 50,
+        "chains": {
+          "eth": {
+            "mode": "drain",
+            "publishMode": "eth.calldata.null",
+            "feeStrategy": "passive",
+            "distinctCopies": true,
+            "keyAddress": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+            "budgetUsd": 10,
+            "maxTipGwei": 3,
+            "clawbackTo": null
+          }
+        }
+      },
+      "state": {
+        "phase": "DEFINED",
+        "armed": null,
+        "releaseAt": null,
+        "chains": {
+          "eth": {
+            "phase": "AWAITING_KEY",
+            "reason": null,
+            "address": null,
+            "copy": null,
+            "attempt": null,
+            "copiesIncluded": 0,
+            "reassembled": [],
+            "spent": "0",
+            "txs": [],
+            "openIntents": [],
+            "resume": null,
+            "stopRequested": false,
+            "clawback": null
+          }
+        },
+        "seq": 0,
+        "corrupt": null
+      }
+    }
+  }
+}

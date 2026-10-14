@@ -1,0 +1,51 @@
+{
+  "after": null,
+  "volatile": [
+    "error.message"
+  ],
+  "name": "events-append-409-reconcile-first",
+  "covers": "intent under gen 2 before reconciling gen 1's open intent → 409 lease.reconcile-first",
+  "request": {
+    "method": "POST",
+    "path": "/jobs/e3d45f73cf65abaa/chains/eth/events",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "gen": 2,
+      "type": "intent",
+      "data": {
+        "txId": "0x4cfb7e9d23b27752ecf41cfbe91e933db2d78738e68e3eba56cbef48660ea062",
+        "copy": 2,
+        "part": 1,
+        "parts": 1,
+        "attempt": 1,
+        "replaces": null,
+        "rawSha256": "1aee632e0f2232e6848ee20cf1c2180f751afd8efae304c52e7b1b73ac8d95a6",
+        "payloadSha256": "a9188fc556f9e6432232159b112ea64c8e63af7880ea403f0104abcf0658143b",
+        "reserved": "50000000000000",
+        "eth": {
+          "nonce": 1,
+          "tip": "12000",
+          "maxFee": "2000012000",
+          "gas": "23600",
+          "to": "0x0000000000000000000000000000000000000000"
+        }
+      }
+    }
+  },
+  "response": {
+    "status": 409,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "guard": "lease.reconcile-first",
+        "message": "(any text that never echoes input)"
+      }
+    }
+  }
+}

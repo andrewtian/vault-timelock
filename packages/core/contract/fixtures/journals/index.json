@@ -1,0 +1,196 @@
+{
+  "rules": [
+    "reduce(def, events) deep-equals <name>.state.json; def = <name>.def.json; events = the parsed lines of <name>.jsonl",
+    "the hash chain is valid: seq 0..n, prev = sha256 hex of the previous line's bytes (without its \\n), \"\" at seq 0; corruption vectors live in S1's tests",
+    "created.data.jobId = jobId(def); created.data.defSha256 = sha256Hex(canonicalJson(def))",
+    "reducer semantics: src/contracts/types.ts header"
+  ],
+  "vectors": [
+    {
+      "name": "01-created",
+      "description": "created only: every chain AWAITING_KEY, job DEFINED",
+      "jobPhase": "DEFINED",
+      "chains": {
+        "eth": "AWAITING_KEY"
+      }
+    },
+    {
+      "name": "02-ready",
+      "description": "lease, key-loaded, funds affordable: READY",
+      "jobPhase": "DEFINED",
+      "chains": {
+        "eth": "READY"
+      }
+    },
+    {
+      "name": "03-armed",
+      "description": "armed: chain ARMED, job ARMED, releaseAt set",
+      "jobPhase": "ARMED",
+      "chains": {
+        "eth": "ARMED"
+      }
+    },
+    {
+      "name": "04-intent",
+      "description": "one open intent: RUNNING, openIntents [t1], resume at copy 1 part 1",
+      "jobPhase": "RUNNING",
+      "chains": {
+        "eth": "RUNNING"
+      }
+    },
+    {
+      "name": "05a-copies-done",
+      "description": "copies 1: intent, sent, included, readback, reassembled, copies-done: COPIES_DONE; job stays ARMED (settled, not closed)",
+      "jobPhase": "ARMED",
+      "chains": {
+        "eth": "COPIES_DONE"
+      }
+    },
+    {
+      "name": "05b-closed",
+      "description": "copies 1 settled, then close: DONE; job DONE",
+      "jobPhase": "DONE",
+      "chains": {
+        "eth": "DONE"
+      }
+    },
+    {
+      "name": "06-eth-replacement",
+      "description": "same-nonce replacement: a2 included, a1 superseded; no readback yet so resume stays at part 1",
+      "jobPhase": "RUNNING",
+      "chains": {
+        "eth": "RUNNING"
+      }
+    },
+    {
+      "name": "07-sol-expired",
+      "description": "SOL s1 proven expired (reconcile), s2 re-signed and included with readback: copy complete",
+      "jobPhase": "RUNNING",
+      "chains": {
+        "sol": "RUNNING"
+      }
+    },
+    {
+      "name": "08-takeover",
+      "description": "gen 1 intent sent, lease expired, gen 2 acquired by cli: t1 stays open until reconciled",
+      "jobPhase": "RUNNING",
+      "chains": {
+        "eth": "RUNNING"
+      }
+    },
+    {
+      "name": "09a-stuck",
+      "description": "sent outcome unknown, then stuck: STUCK overrides RUNNING; the intent stays open",
+      "jobPhase": "RUNNING",
+      "chains": {
+        "eth": "STUCK"
+      }
+    },
+    {
+      "name": "09b-resolved",
+      "description": "stuck, then resolved mark-done: RUNNING; the attempt counts as landed (no block, fee or readback); spent counts its worst case, gas × maxFee (CC-2a: the journal has no fee, never 0)",
+      "jobPhase": "RUNNING",
+      "chains": {
+        "eth": "RUNNING"
+      }
+    },
+    {
+      "name": "10a-paused",
+      "description": "drain copy 1 complete, then paused at the tip cap: PAUSED",
+      "jobPhase": "RUNNING",
+      "chains": {
+        "eth": "PAUSED"
+      }
+    },
+    {
+      "name": "10b-resumed",
+      "description": "paused, resume-requested, resumed: RUNNING",
+      "jobPhase": "RUNNING",
+      "chains": {
+        "eth": "RUNNING"
+      }
+    },
+    {
+      "name": "11-drained",
+      "description": "drain: copy 1 complete, the next copy unaffordable (drained.copy = that next copy): DRAINED; job ARMED",
+      "jobPhase": "ARMED",
+      "chains": {
+        "eth": "DRAINED"
+      }
+    },
+    {
+      "name": "12-clawback",
+      "description": "drained, then claw-back intent/sent/included/readback: CLAWED_BACK; spent includes the claw-back fee; job DONE",
+      "jobPhase": "DONE",
+      "chains": {
+        "eth": "CLAWED_BACK"
+      }
+    },
+    {
+      "name": "13-resume-part",
+      "description": "R72: copy 1 (5 parts) complete; copy 2 parts 1-3 included + read back, part 4 intent open: resume {copy 2, nextPart 4}",
+      "jobPhase": "RUNNING",
+      "chains": {
+        "sol": "RUNNING"
+      }
+    },
+    {
+      "name": "14-stopped",
+      "description": "stop-requested before any intent, the API journals stopped (code operator-stop): STOPPED, resumable; a STOPPED chain is not terminal → job ARMED (final round F18-2; the key stays busy until close)",
+      "jobPhase": "ARMED",
+      "chains": {
+        "eth": "STOPPED"
+      }
+    },
+    {
+      "name": "15a-skipped",
+      "description": "job with eth + sol, armed with eth only: sol SKIPPED (terminal, no funds touched); job ARMED",
+      "jobPhase": "ARMED",
+      "chains": {
+        "eth": "ARMED",
+        "sol": "SKIPPED"
+      }
+    },
+    {
+      "name": "15b-skipped-done",
+      "description": "eth copies 1 done and closed, sol SKIPPED: job DONE",
+      "jobPhase": "DONE",
+      "chains": {
+        "eth": "DONE",
+        "sol": "SKIPPED"
+      }
+    },
+    {
+      "name": "16-sol-late-landing",
+      "description": "CC-2a chain evidence wins: s1 journaled expired, s2 re-signed, then s1 included: s1 lands, s2 superseded, s1's fee spent, the part is complete (never sent again)",
+      "jobPhase": "RUNNING",
+      "chains": {
+        "sol": "RUNNING"
+      }
+    },
+    {
+      "name": "17a-clawback-bump-earlier-lands",
+      "description": "CC-2a family: claw-back c1, then its same-nonce bump c2; c1 lands: the claw-back shows c1 (its value), landed, CLAWED_BACK; c2 closed; job DONE",
+      "jobPhase": "DONE",
+      "chains": {
+        "eth": "CLAWED_BACK"
+      }
+    },
+    {
+      "name": "17b-clawback-all-dead",
+      "description": "CC-2a family (E2 re-review D-2): c1 reconciled nonce-consumed, c2 stuck (STUCK) then resolved mark-failed by the operator: every member dead and none landed → the claw-back fails by itself (ok false, back to DRAINED, nothing open)",
+      "jobPhase": "ARMED",
+      "chains": {
+        "eth": "DRAINED"
+      }
+    },
+    {
+      "name": "17c-clawback-failed-on-chain",
+      "description": "CC-2a: a claw-back that failed ON CHAIN: clawback-failed carries the fee charged (spent); back to DRAINED, ok false, not landed",
+      "jobPhase": "ARMED",
+      "chains": {
+        "eth": "DRAINED"
+      }
+    }
+  ]
+}

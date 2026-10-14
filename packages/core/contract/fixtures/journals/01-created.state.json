@@ -1,0 +1,24 @@
+{
+  "phase": "DEFINED",
+  "armed": null,
+  "releaseAt": null,
+  "chains": {
+    "eth": {
+      "phase": "AWAITING_KEY",
+      "reason": null,
+      "address": null,
+      "copy": null,
+      "attempt": null,
+      "copiesIncluded": 0,
+      "reassembled": [],
+      "spent": "0",
+      "txs": [],
+      "openIntents": [],
+      "resume": null,
+      "stopRequested": false,
+      "clawback": null
+    }
+  },
+  "seq": 0,
+  "corrupt": null
+}

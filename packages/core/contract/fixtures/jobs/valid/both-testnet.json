@@ -1,0 +1,30 @@
+{
+  "format": "vt-job/1",
+  "network": "testnet",
+  "name": "eth and sol on testnet",
+  "message": "A synthetic vt fixture message.\nIt has two lines.\n",
+  "chains": {
+    "eth": {
+      "mode": {
+        "copies": 2
+      },
+      "publishMode": "eth.calldata.self",
+      "feeStrategy": "prompt",
+      "distinctCopies": false,
+      "keyAddress": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+      "budgetUsd": 2.5,
+      "maxTipGwei": 0.1,
+      "clawbackTo": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+    },
+    "sol": {
+      "mode": "drain",
+      "publishMode": "sol.memo",
+      "feeStrategy": "passive",
+      "distinctCopies": true,
+      "keyAddress": "9xx7qC7uwTAeaSo7T5Gk9canYBosFh1pMQaDmQEa83Tb",
+      "budgetUsd": 1000,
+      "maxCuPrice": 0,
+      "clawbackTo": null
+    }
+  }
+}

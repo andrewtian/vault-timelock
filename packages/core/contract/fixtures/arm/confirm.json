@@ -1,0 +1,608 @@
+{
+  "rules": [
+    "checkArmConfirm(network, req) → refusal guard or none; each case has one defect"
+  ],
+  "cases": [
+    {
+      "name": "local without typed",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        }
+      },
+      "guard": null
+    },
+    {
+      "name": "testnet without typed",
+      "network": "testnet",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        }
+      },
+      "guard": null
+    },
+    {
+      "name": "mainnet without typed",
+      "network": "mainnet",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        }
+      },
+      "guard": "arm.typed"
+    },
+    {
+      "name": "mainnet typed \"broadcast\"",
+      "network": "mainnet",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": "broadcast",
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        }
+      },
+      "guard": null
+    },
+    {
+      "name": "mainnet typed \"Broadcast\" (exact match only)",
+      "network": "mainnet",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": "Broadcast",
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        }
+      },
+      "guard": "arm.typed"
+    },
+    {
+      "name": "over the cap, exact planned amount",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {
+            "eth": "0.0057"
+          }
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 14.2,
+            "priceAt": 1791504009000,
+            "overCap": true,
+            "planned": "0.0057"
+          }
+        }
+      },
+      "guard": null
+    },
+    {
+      "name": "over the cap, wrong amount",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {
+            "eth": "0.006"
+          }
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 14.2,
+            "priceAt": 1791504009000,
+            "overCap": true,
+            "planned": "0.0057"
+          }
+        }
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "over the cap, amount missing",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 14.2,
+            "priceAt": 1791504009000,
+            "overCap": true,
+            "planned": "0.0057"
+          }
+        }
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "empty chains",
+      "network": "local",
+      "request": {
+        "chains": [],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        }
+      },
+      "guard": "arm.chains"
+    },
+    {
+      "name": "duplicate chains",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth",
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        }
+      },
+      "guard": "arm.chains"
+    },
+    {
+      "name": "unknown chain",
+      "network": "local",
+      "request": {
+        "chains": [
+          "doge"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        }
+      },
+      "guard": "arm.chains"
+    },
+    {
+      "name": "btc off the local network",
+      "network": "testnet",
+      "request": {
+        "chains": [
+          "btc"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "btc": {
+            "nativeCap": "1000000",
+            "usd": 0,
+            "priceAt": null,
+            "overCap": false,
+            "planned": "0.00003472"
+          }
+        }
+      },
+      "guard": "arm.chains"
+    },
+    {
+      "name": "btc on local needs its cap",
+      "network": "local",
+      "request": {
+        "chains": [
+          "btc"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        }
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "btc on local with its cap",
+      "network": "local",
+      "request": {
+        "chains": [
+          "btc"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "btc": {
+            "nativeCap": "1000000",
+            "usd": 0,
+            "priceAt": null,
+            "overCap": false,
+            "planned": "0.00003472"
+          }
+        }
+      },
+      "guard": null
+    },
+    {
+      "name": "mainnet countdown 60",
+      "network": "mainnet",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": "broadcast",
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "countdownSec": 60
+      },
+      "guard": null
+    },
+    {
+      "name": "mainnet countdown 30",
+      "network": "mainnet",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": "broadcast",
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "countdownSec": 30
+      },
+      "guard": "arm.countdown"
+    },
+    {
+      "name": "local countdown 5",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "countdownSec": 5
+      },
+      "guard": null
+    },
+    {
+      "name": "local countdown 300",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "countdownSec": 300
+      },
+      "guard": null
+    },
+    {
+      "name": "local countdown 4",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "countdownSec": 4
+      },
+      "guard": "arm.countdown"
+    },
+    {
+      "name": "local countdown 301",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "countdownSec": 301
+      },
+      "guard": "arm.countdown"
+    },
+    {
+      "name": "local countdown 7.5",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "countdownSec": 7.5
+      },
+      "guard": "arm.countdown"
+    },
+    {
+      "name": "local stagger [5, 10]",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "stagger": [
+          5,
+          10
+        ]
+      },
+      "guard": null
+    },
+    {
+      "name": "local stagger [10, 5]",
+      "network": "local",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "stagger": [
+          10,
+          5
+        ]
+      },
+      "guard": "arm.stagger"
+    },
+    {
+      "name": "testnet stagger (local only)",
+      "network": "testnet",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": null,
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "stagger": [
+          30,
+          300
+        ]
+      },
+      "guard": "arm.stagger"
+    },
+    {
+      "name": "mainnet stagger (local only)",
+      "network": "mainnet",
+      "request": {
+        "chains": [
+          "eth"
+        ],
+        "confirm": {
+          "typed": "broadcast",
+          "amounts": {}
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "stagger": [
+          30,
+          300
+        ]
+      },
+      "guard": "arm.stagger"
+    }
+  ]
+}

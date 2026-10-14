@@ -1,0 +1,2 @@
+# Test files that apply their own sandbox (run unsandboxed in phase B of scripts/test-root.sh), one path per line,
+# relative to this workspace. None yet.

@@ -1,0 +1,36 @@
+{
+  "after": null,
+  "volatile": [
+    "serverNowMs",
+    "build"
+  ],
+  "name": "status-200",
+  "covers": "GET /status",
+  "request": {
+    "method": "GET",
+    "path": "/status",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "network": "local",
+      "networks": {
+        "eth": "anvil · 31337",
+        "sol": "Solana local"
+      },
+      "mainnetSends": "LOCKED",
+      "jobSends": "LOCKED",
+      "build": "b1c2d3e4f5a6",
+      "confined": true,
+      "legacyLatch": "clear",
+      "serverNowMs": 1791504000000
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "format": "vt-job/1",
+  "network": "local",
+  "name": "journal vector sol copies 2 of a 5-part text",
+  "messageSha256": "49886435f279e2de85a32ae6f048e7821b6fd13a85b7fd2ba614337d2cd81967",
+  "messageBytes": 4380,
+  "chains": {
+    "sol": {
+      "mode": {
+        "copies": 2
+      },
+      "publishMode": "sol.memo",
+      "feeStrategy": "economy",
+      "distinctCopies": true,
+      "keyAddress": "9xx7qC7uwTAeaSo7T5Gk9canYBosFh1pMQaDmQEa83Tb",
+      "budgetUsd": 5,
+      "maxCuPrice": 2000000,
+      "clawbackTo": "G147qVmzynHL3EjQ8tvBGDms7u6FDCWbFfFmzNMZmg1x"
+    }
+  }
+}

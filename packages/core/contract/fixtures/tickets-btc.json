@@ -1,0 +1,2077 @@
+{
+  "format": "vt-ticket/2.",
+  "key": "60b3bee99edf7cc7064dea0073b65124861b76d028f77496d647cb3ee3ca2ee1",
+  "ttlMs": 120000,
+  "lane": {
+    "local": "bcrt1qx095dcjchzt39x547jtdndwkjahpk23vwfskg9",
+    "testnet": "tb1qx095dcjchzt39x547jtdndwkjahpk23vvqfmlv",
+    "mainnet": "bc1qx095dcjchzt39x547jtdndwkjahpk23vxxjgyl"
+  },
+  "fee": {
+    "rateSatPerVb": 2,
+    "commit1": "306",
+    "commit2": "442",
+    "reveal": "300",
+    "revealAmount": "846",
+    "postage": "546"
+  },
+  "rules": [
+    "CC-8: the v2 ticket format of tickets.json with c = \"btc\", k = \"commit\" | \"reveal\"; the field meanings are in src/contracts/http.ts",
+    "context = the relay's network, the route chain (btc), the raw tx (hex) and `prevouts`: what the relay's own chain read returns for each input outpoint (\"<txid>:<vout>\" → { value sats, script hex }); an outpoint absent from `prevouts` is one the read did not find",
+    "every valid raw is a genuine signed tx (txid t, sha256 r); the signatures are deterministic",
+    "each negative has one malformed ticket field (relay.send-ticket); each decode vector has exactly one defect in the signed tx or the chain read"
+  ],
+  "valid": [
+    {
+      "name": "local commit: one lane UTXO, the reveal output and the change; f = the fee exactly",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "local",
+        "c": "btc",
+        "g": 1,
+        "t": "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416",
+        "r": "c10d3f605e04b802e875f14f8f45c5d340bde67b1db23ede27ec660a21d628e0",
+        "a": "bcrt1qx095dcjchzt39x547jtdndwkjahpk23vwfskg9",
+        "k": "commit",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": "bcrt1pva5g7mdv8csm0yqc6x8x8he223n66hv9tyqvsqfm24h6yv0zkmmsnsxn56",
+        "value": "846",
+        "f": "306",
+        "q": "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0",
+        "x": null,
+        "e": 1791504160000,
+        "n": "44cf930d2cf6f146"
+      },
+      "issuedAt": 1791504040000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjAwMDAsIm4iOiI0NGNmOTMwZDJjZjZmMTQ2In0.wxpORFcMO-FdrFs-jH6i-0RUwxjQWqeZgLQDg5a19Yg",
+      "raw": {
+        "encoding": "hex",
+        "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+      },
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      }
+    },
+    {
+      "name": "local reveal: spends the commit output by the script path, one postage output; f = the fee exactly",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "local",
+        "c": "btc",
+        "g": 2,
+        "t": "1c3532fa6fb03619731ad6d43f51b6fd4145f239dca97c144b67da3d3c106d6c",
+        "r": "57f767f15ec21fee884eb54421f6b4ef48b2d3fdfc61109b9023e6376cefc7a5",
+        "a": "bcrt1qx095dcjchzt39x547jtdndwkjahpk23vwfskg9",
+        "k": "reveal",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": "bcrt1p99h73cm4vldyyqtnvwxnppvpzgsakrfxxs72030x8v7gmz37am7q2caxcz",
+        "value": "546",
+        "f": "300",
+        "q": "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0",
+        "x": null,
+        "e": 1791504161000,
+        "n": "697197eba5b983ef"
+      },
+      "issuedAt": 1791504041000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiI1N2Y3NjdmMTVlYzIxZmVlODg0ZWI1NDQyMWY2YjRlZjQ4YjJkM2ZkZmM2MTEwOWI5MDIzZTYzNzZjZWZjN2E1IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjEwMDAsIm4iOiI2OTcxOTdlYmE1Yjk4M2VmIn0.MkptIy2vtGsVe1zKAx0viLip2ng2-9MDQSfYcP5Lbcc",
+      "raw": {
+        "encoding": "hex",
+        "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03409ca4820044dd83c23cc53ac06f75b5ad947da143d0116d56681d68e595e7ffe984cc73a1fa9f1e7e680bfa2ef065baeb4b23b50db3efadc540818d5b1916bc71762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+      },
+      "now": 1791504042000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03409ca4820044dd83c23cc53ac06f75b5ad947da143d0116d56681d68e595e7ffe984cc73a1fa9f1e7e680bfa2ef065baeb4b23b50db3efadc540818d5b1916bc71762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      }
+    },
+    {
+      "name": "testnet commit: two lane UTXOs; f above the fee",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "testnet",
+        "c": "btc",
+        "g": 3,
+        "t": "f1c6691697a0fec3239ccfbcd5a009bfea3e399c598beba379782c9426f0870d",
+        "r": "37fd5e1d71372c85fba539a68200712af5204aa54d4e95d3b38cbd90be5673db",
+        "a": "tb1qx095dcjchzt39x547jtdndwkjahpk23vvqfmlv",
+        "k": "commit",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": "tb1pva5g7mdv8csm0yqc6x8x8he223n66hv9tyqvsqfm24h6yv0zkmms7fv4pq",
+        "value": "846",
+        "f": "692",
+        "q": "73dd3948c01b95710515c22de67cfd07c12d2e984424873ff5a20314e16984aa:1,a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0",
+        "x": null,
+        "e": 1791504162000,
+        "n": "6cb25e287ed535d2"
+      },
+      "issuedAt": 1791504042000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6ImJ0YyIsImciOjMsInQiOiJmMWM2NjkxNjk3YTBmZWMzMjM5Y2NmYmNkNWEwMDliZmVhM2UzOTljNTk4YmViYTM3OTc4MmM5NDI2ZjA4NzBkIiwiciI6IjM3ZmQ1ZTFkNzEzNzJjODVmYmE1MzlhNjgyMDA3MTJhZjUyMDRhYTU0ZDRlOTVkM2IzOGNiZDkwYmU1NjczZGIiLCJhIjoidGIxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2dnFmbWx2IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJ0YjFwdmE1ZzdtZHY4Y3NtMHlxYzZ4OHg4aGUyMjNuNjZodjl0eXF2c3FmbTI0aDZ5djB6a21tczdmdjRwcSIsInZhbHVlIjoiODQ2IiwiZiI6IjY5MiIsInEiOiI3M2RkMzk0OGMwMWI5NTcxMDUxNWMyMmRlNjdjZmQwN2MxMmQyZTk4NDQyNDg3M2ZmNWEyMDMxNGUxNjk4NGFhOjEsYTI1YjAxMmI4NjkxYWVjY2U2Yjc2NTg2Y2IxNTNiZDEyNTM5ZWJmZWNkNGMxN2JiYTJiNjRlMjc0YmNmNzIwODowIiwieCI6bnVsbCwiZSI6MTc5MTUwNDE2MjAwMCwibiI6IjZjYjI1ZTI4N2VkNTM1ZDIifQ.liJSFgW-D7rY1o7y8aHvpYzFVEtYKMe9OFSMD59RLIc",
+      "raw": {
+        "encoding": "hex",
+        "value": "020000000001020872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffffaa8469e11403a2f53f872444982e2dc107fd7ce62dc2150571951bc04839dd730100000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7d81d02000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02473044022059e2ac63a938a92218ee99f64911b54393b301a23b5774c219fcdfc47ebbffd802204b2531a8efaf3cadfbfdf7939af39050da33e51ab0e665ed470a8e4e8918346401210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c2320247304402205c39462ba155d512129027e6b5ff8e8d58871b9384d15b15f7bd4bbfb2197e39022064aa5228e4a962d80f6bb7cd1a50c894f9a40dfa3f9bb3d983d547b04f63020701210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+      },
+      "now": 1791504043000,
+      "context": {
+        "network": "testnet",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001020872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffffaa8469e11403a2f53f872444982e2dc107fd7ce62dc2150571951bc04839dd730100000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7d81d02000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02473044022059e2ac63a938a92218ee99f64911b54393b301a23b5774c219fcdfc47ebbffd802204b2531a8efaf3cadfbfdf7939af39050da33e51ab0e665ed470a8e4e8918346401210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c2320247304402205c39462ba155d512129027e6b5ff8e8d58871b9384d15b15f7bd4bbfb2197e39022064aa5228e4a962d80f6bb7cd1a50c894f9a40dfa3f9bb3d983d547b04f63020701210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          },
+          "73dd3948c01b95710515c22de67cfd07c12d2e984424873ff5a20314e16984aa:1": {
+            "value": "40000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      }
+    },
+    {
+      "name": "testnet reveal; f above the fee",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "testnet",
+        "c": "btc",
+        "g": 1,
+        "t": "6b0ea2024d436aef21cd4bfb0306bc3c808b16786d1e2a4a0a7673e9297d01bf",
+        "r": "9dc223d4f7f6dfa417691b1ad5af84870fdf873e511a774df5e0e5b153e6d509",
+        "a": "tb1qx095dcjchzt39x547jtdndwkjahpk23vvqfmlv",
+        "k": "reveal",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": "tb1p99h73cm4vldyyqtnvwxnppvpzgsakrfxxs72030x8v7gmz37am7q8phqdc",
+        "value": "546",
+        "f": "307",
+        "q": "f1c6691697a0fec3239ccfbcd5a009bfea3e399c598beba379782c9426f0870d:0",
+        "x": null,
+        "e": 1791504163000,
+        "n": "a4442bb6506f9b14"
+      },
+      "issuedAt": 1791504043000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6ImJ0YyIsImciOjEsInQiOiI2YjBlYTIwMjRkNDM2YWVmMjFjZDRiZmIwMzA2YmMzYzgwOGIxNjc4NmQxZTJhNGEwYTc2NzNlOTI5N2QwMWJmIiwiciI6IjlkYzIyM2Q0ZjdmNmRmYTQxNzY5MWIxYWQ1YWY4NDg3MGZkZjg3M2U1MTFhNzc0ZGY1ZTBlNWIxNTNlNmQ1MDkiLCJhIjoidGIxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2dnFmbWx2IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJ0YjFwOTloNzNjbTR2bGR5eXF0bnZ3eG5wcHZwemdzYWtyZnh4czcyMDMweDh2N2dtejM3YW03cThwaHFkYyIsInZhbHVlIjoiNTQ2IiwiZiI6IjMwNyIsInEiOiJmMWM2NjkxNjk3YTBmZWMzMjM5Y2NmYmNkNWEwMDliZmVhM2UzOTljNTk4YmViYTM3OTc4MmM5NDI2ZjA4NzBkOjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYzMDAwLCJuIjoiYTQ0NDJiYjY1MDZmOWIxNCJ9.HcCqSo62fpw3uzJ1wT6lL3Cy7p3ejBM6bUEJ3J-mNyE",
+      "raw": {
+        "encoding": "hex",
+        "value": "020000000001010d87f026942c7879a3eb8b599c393eeabf09a0d5bccf9c23c3fea0971669c6f10000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03404e6f3207c3c8d0e0fa20d14a38a328acaa6cae00c037bd49b811af062ece62027f14ecda8e9a182426b7820f10ce2f44a3506ec482abdb8a0390e7d9beb19faf762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+      },
+      "now": 1791504044000,
+      "context": {
+        "network": "testnet",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010d87f026942c7879a3eb8b599c393eeabf09a0d5bccf9c23c3fea0971669c6f10000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03404e6f3207c3c8d0e0fa20d14a38a328acaa6cae00c037bd49b811af062ece62027f14ecda8e9a182426b7820f10ce2f44a3506ec482abdb8a0390e7d9beb19faf762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "f1c6691697a0fec3239ccfbcd5a009bfea3e399c598beba379782c9426f0870d:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      }
+    },
+    {
+      "name": "mainnet commit (the relay refuses it while mainnet job sends are locked: release.mainnet-locked)",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "mainnet",
+        "c": "btc",
+        "g": 2,
+        "t": "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416",
+        "r": "c10d3f605e04b802e875f14f8f45c5d340bde67b1db23ede27ec660a21d628e0",
+        "a": "bc1qx095dcjchzt39x547jtdndwkjahpk23vxxjgyl",
+        "k": "commit",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": "bc1pva5g7mdv8csm0yqc6x8x8he223n66hv9tyqvsqfm24h6yv0zkmmsfp66m0",
+        "value": "846",
+        "f": "306",
+        "q": "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0",
+        "x": null,
+        "e": 1791504164000,
+        "n": "0a9fd4e0d6a0acba"
+      },
+      "issuedAt": 1791504044000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJtYWlubmV0IiwiYyI6ImJ0YyIsImciOjIsInQiOiJjNzM1ZTUxNzkxYzkzMmZjYjRiOWVhMGZlNjNjOGU2YWYwMGUzN2E1YzQ1YjZmYmFmYjBkMzRmY2NjYjk3NDE2IiwiciI6ImMxMGQzZjYwNWUwNGI4MDJlODc1ZjE0ZjhmNDVjNWQzNDBiZGU2N2IxZGIyM2VkZTI3ZWM2NjBhMjFkNjI4ZTAiLCJhIjoiYmMxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2eHhqZ3lsIiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiYzFwdmE1ZzdtZHY4Y3NtMHlxYzZ4OHg4aGUyMjNuNjZodjl0eXF2c3FmbTI0aDZ5djB6a21tc2ZwNjZtMCIsInZhbHVlIjoiODQ2IiwiZiI6IjMwNiIsInEiOiJhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTY0MDAwLCJuIjoiMGE5ZmQ0ZTBkNmEwYWNiYSJ9.MexfKMBIi9ALpJsCPEBC5Oxby8Nty_vEIjn3jv5gnWo",
+      "raw": {
+        "encoding": "hex",
+        "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+      },
+      "now": 1791504045000,
+      "context": {
+        "network": "mainnet",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      }
+    },
+    {
+      "name": "local commit without change: the lane UTXO exactly covers the reveal output and the fee",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "local",
+        "c": "btc",
+        "g": 3,
+        "t": "fd979385a812bdf110c03342e27883d71d369a503be01bad21ea4f75b553e677",
+        "r": "e4de98d6cbd73b9294e0684bd2b3ab7c7d939a788d3a62d20b526cda223a9859",
+        "a": "bcrt1qx095dcjchzt39x547jtdndwkjahpk23vwfskg9",
+        "k": "commit",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": "bcrt1pva5g7mdv8csm0yqc6x8x8he223n66hv9tyqvsqfm24h6yv0zkmmsnsxn56",
+        "value": "846",
+        "f": "306",
+        "q": "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0",
+        "x": null,
+        "e": 1791504165000,
+        "n": "3fbbba6c90707d7e"
+      },
+      "issuedAt": 1791504045000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiZmQ5NzkzODVhODEyYmRmMTEwYzAzMzQyZTI3ODgzZDcxZDM2OWE1MDNiZTAxYmFkMjFlYTRmNzViNTUzZTY3NyIsInIiOiJlNGRlOThkNmNiZDczYjkyOTRlMDY4NGJkMmIzYWI3YzdkOTM5YTc4OGQzYTYyZDIwYjUyNmNkYTIyM2E5ODU5IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjUwMDAsIm4iOiIzZmJiYmE2YzkwNzA3ZDdlIn0.65nhiLUDPj_eZdVPhz2_4NwjwMzbIXOirspBWa4L990",
+      "raw": {
+        "encoding": "hex",
+        "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff014e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f70247304402206ae928baaced27843b7fcd0b9bb403832c03dca3a400dbf455b7960d2019e8d6022062aaf3cfd7a170ac20e5e0d6583089c2eaca29a14c363c9ce14cb6f34900ca0701210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+      },
+      "now": 1791504046000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff014e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f70247304402206ae928baaced27843b7fcd0b9bb403832c03dca3a400dbf455b7960d2019e8d6022062aaf3cfd7a170ac20e5e0d6583089c2eaca29a14c363c9ce14cb6f34900ca0701210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "1152",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      }
+    }
+  ],
+  "negatives": [
+    {
+      "name": "btc-kind-job",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjAwMDAsIm4iOiI0NGNmOTMwZDJjZjZmMTQ2In0.C_0gGYvOWZe3CZpKE2xyx0Teu2TL2KxaA63gH8CZRvY",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-kind-clawback",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNsYXdiYWNrIiwicCI6bnVsbCwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjAwMDAsIm4iOiI0NGNmOTMwZDJjZjZmMTQ2In0.kMCNTiUG9jnwGtKcNLuAQ_hPIXQmnYXp5YEP79T17DI",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-commit-without-p",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOm51bGwsInRvIjoiYmNydDFwdmE1ZzdtZHY4Y3NtMHlxYzZ4OHg4aGUyMjNuNjZodjl0eXF2c3FmbTI0aDZ5djB6a21tc25zeG41NiIsInZhbHVlIjoiODQ2IiwiZiI6IjMwNiIsInEiOiJhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.RgIqyTrCx02WQYhq8rNVAqipptB_ws0btf8iUtJ6rA8",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-commit-without-to",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOm51bGwsInZhbHVlIjoiODQ2IiwiZiI6IjMwNiIsInEiOiJhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.tRdQsoXtRt4A8T0J9jIou3nWvr2PFPDy00bfkVHRlKY",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-commit-without-value",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOm51bGwsImYiOiIzMDYiLCJxIjoiYTI1YjAxMmI4NjkxYWVjY2U2Yjc2NTg2Y2IxNTNiZDEyNTM5ZWJmZWNkNGMxN2JiYTJiNjRlMjc0YmNmNzIwODowIiwieCI6bnVsbCwiZSI6MTc5MTUwNDE2MDAwMCwibiI6IjQ0Y2Y5MzBkMmNmNmYxNDYifQ.XmE4GEFMhOZbWdlwlcAkxsW5YaaUw59qhQ3k62RHATs",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-value-0",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiIwIiwiZiI6IjMwNiIsInEiOiJhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.Autiam6tjZOUQ1XvEKyXT_dc5S5v3Ne2ml0PaBnlC7k",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-fee-0",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMCIsInEiOiJhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.ihDeyZMXBwBdAwfgatrhTFVYw7dg2cfm5Xoiqp37Cj4",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-txid-0x",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMHhjNzM1ZTUxNzkxYzkzMmZjYjRiOWVhMGZlNjNjOGU2YWYwMGUzN2E1YzQ1YjZmYmFmYjBkMzRmY2NjYjk3NDE2IiwiciI6ImMxMGQzZjYwNWUwNGI4MDJlODc1ZjE0ZjhmNDVjNWQzNDBiZGU2N2IxZGIyM2VkZTI3ZWM2NjBhMjFkNjI4ZTAiLCJhIjoiYmNydDFxeDA5NWRjamNoenQzOXg1NDdqdGRuZHdramFocGsyM3Z3ZnNrZzkiLCJrIjoiY29tbWl0IiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6ImJjcnQxcHZhNWc3bWR2OGNzbTB5cWM2eDh4OGhlMjIzbjY2aHY5dHlxdnNxZm0yNGg2eXYwemttbXNuc3huNTYiLCJ2YWx1ZSI6Ijg0NiIsImYiOiIzMDYiLCJxIjoiYTI1YjAxMmI4NjkxYWVjY2U2Yjc2NTg2Y2IxNTNiZDEyNTM5ZWJmZWNkNGMxN2JiYTJiNjRlMjc0YmNmNzIwODowIiwieCI6bnVsbCwiZSI6MTc5MTUwNDE2MDAwMCwibiI6IjQ0Y2Y5MzBkMmNmNmYxNDYifQ.8qE291lVpMzE9s9wdj3m80fPsG79M1QxHQZhRpbBQ6I",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-txid-uppercase",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiQzczNUU1MTc5MUM5MzJGQ0I0QjlFQTBGRTYzQzhFNkFGMDBFMzdBNUM0NUI2RkJBRkIwRDM0RkNDQ0I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjAwMDAsIm4iOiI0NGNmOTMwZDJjZjZmMTQ2In0.LHNOHhu9rV3ipESTMiFemqqJN_KitR_39lwPnAiZ_Y4",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-sender-uppercase",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6IkJDUlQxUVgwOTVEQ0pDSFpUMzlYNTQ3SlRETkRXS0pBSFBLMjNWV0ZTS0c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjAwMDAsIm4iOiI0NGNmOTMwZDJjZjZmMTQ2In0.AHNbch8zANXq0hOG2S0M-7_GEiaJlzp-zk6SJtjSnqU",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-sender-other-hrp",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6InRiMXF4MDk1ZGNqY2h6dDM5eDU0N2p0ZG5kd2tqYWhwazIzdnZxZm1sdiIsImsiOiJjb21taXQiLCJwIjoiY2UzZTBiYzg0NDM1OTkzNjQ1NzgyNDU3YTUyODdmMGIwODZjOWMzYjUxZGYwZmQ4ZmRkMTQ1ZjVhNTBmMjI2MSIsInRvIjoiYmNydDFwdmE1ZzdtZHY4Y3NtMHlxYzZ4OHg4aGUyMjNuNjZodjl0eXF2c3FmbTI0aDZ5djB6a21tc25zeG41NiIsInZhbHVlIjoiODQ2IiwiZiI6IjMwNiIsInEiOiJhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.TV2USjcsRczCuo9mwIlDdk6Z7qc0GwIiIDZ5vaB3Mgo",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-sender-base58",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6IjFCb2F0U0xSSHRLTm5na2RYRWVvYlI3NmI1M0xFVHRweVQiLCJrIjoiY29tbWl0IiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6ImJjcnQxcHZhNWc3bWR2OGNzbTB5cWM2eDh4OGhlMjIzbjY2aHY5dHlxdnNxZm0yNGg2eXYwemttbXNuc3huNTYiLCJ2YWx1ZSI6Ijg0NiIsImYiOiIzMDYiLCJxIjoiYTI1YjAxMmI4NjkxYWVjY2U2Yjc2NTg2Y2IxNTNiZDEyNTM5ZWJmZWNkNGMxN2JiYTJiNjRlMjc0YmNmNzIwODowIiwieCI6bnVsbCwiZSI6MTc5MTUwNDE2MDAwMCwibiI6IjQ0Y2Y5MzBkMmNmNmYxNDYifQ.uzIBywTRUDD84fbs3Xb2EF8M4yD1UrVy3oon7NQkn48",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-to-other-hrp",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiYzFwdmE1ZzdtZHY4Y3NtMHlxYzZ4OHg4aGUyMjNuNjZodjl0eXF2c3FmbTI0aDZ5djB6a21tc2ZwNjZtMCIsInZhbHVlIjoiODQ2IiwiZiI6IjMwNiIsInEiOiJhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.ay1xIGU-E7qOl-nzZxafHo4kaeplZRClNfbP_Nc4zbI",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-q-nonce",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6IjciLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.xop3Vknt36Otsgh_BoV46iXoug9_sL6fn1XyL_ArjKg",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-q-blockhash",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.3TXk0q8p7UHAaHaBFmtA2QgKPEHV4L4cPwuoCSE76A0",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-q-uppercase",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6IkEyNUIwMTJCODY5MUFFQ0NFNkI3NjU4NkNCMTUzQkQxMjUzOUVCRkVDRDRDMTdCQkEyQjY0RTI3NEJDRjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjAwMDAsIm4iOiI0NGNmOTMwZDJjZjZmMTQ2In0.T2IplEZAhaVypps9n7Z2_KCZApL48KztnC9yVkC2w3s",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-q-vout-leading-zero",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MDAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.8kqRphchCKvr3ITcCqEzqgw4uKQBFrJuWCvB-owF9kc",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-q-empty",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6IiIsIngiOm51bGwsImUiOjE3OTE1MDQxNjAwMDAsIm4iOiI0NGNmOTMwZDJjZjZmMTQ2In0.YjnvOOP9-Fnpyu-kfO4soyqFk3lujWVLXZCFknQUQ-A",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-q-trailing-comma",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCwiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.RBAiqhJ9kdLuW17mhaUzkJW4fEpykWgGKbIH7mT3s64",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-q-descending",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCw3M2RkMzk0OGMwMWI5NTcxMDUxNWMyMmRlNjdjZmQwN2MxMmQyZTk4NDQyNDg3M2ZmNWEyMDMxNGUxNjk4NGFhOjEiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.fZyf4RCirU3T9bt7pPwH7bd3GsoL2MQfZI8ZUVm7KcE",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-q-duplicate",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6IjczZGQzOTQ4YzAxYjk1NzEwNTE1YzIyZGU2N2NmZDA3YzEyZDJlOTg0NDI0ODczZmY1YTIwMzE0ZTE2OTg0YWE6MSw3M2RkMzk0OGMwMWI5NTcxMDUxNWMyMmRlNjdjZmQwN2MxMmQyZTk4NDQyNDg3M2ZmNWEyMDMxNGUxNjk4NGFhOjEiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.oYuKJyXIefFDM3wDZy_2l2OiFNLsh2BPrsKoXGKf8Kk",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-q-nine-outpoints",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6IjAzNzQyOWU1MjBhMmZiMDQ1ODdhMzg1NDg4Njg4ZmM1MzMwZGMxMGMyYzI2MDk0ZjE0NTFhZjEyMGJmZGI2YWI6MCwzOWExMjM5YTA3NmMxMTBhNTliODFjYzU4OGQwYjYyZGZhMzE0MjQ3OTgxYzBkM2I5Y2Q5ZTM5ODIzNjBlYjk3OjAsNDA2ZjY1YTQzMDE0NmMwYzQ1MDU5OWFkZDE0NTVmNTZiZGE4NGE5MjgxYWJlOGEwZTc0OTk3NzQ4ODhiMzJkMTowLDYxMTVlYjM3NmJiNWNkZTljZTFjODM0NzNhYWM1YTcwMmY1MmQ3OTczZWQ2YTFlZDI4ZTQ1NDRmMTdhZDg3Y2Q6MCw2MmVkNWNhY2JjYTE2YjM4ZmZmNjE3NDllMzE5YTgzNDk4NzUxODE0NzBkM2FlOGQ5MmZmNzJjOGNlY2I5NDE1OjAsNjU3Y2MyMjhlYThmMmQ4ZmJiNGM2YTUxYjZiYWZhNTliMTg3NDM2ZDc1Y2EzMWFjNDc2MGQwZTYxNDBhZWE0ODowLDc5MzExNjRjODJmNzRlZGUxMWYzNzkxZTBjYTg2ZDFjMmI1YTBhODc2NjhhNTU4OWZkOTk4ODliYjg4NTk5YTQ6MCxkMWQ5MDUzZDk2Njg5ZWQyOWVhMDVmM2MxNmNmYmI4MjVkZDlkZDlmMjk4MzAxZWJmNjc5YzNmY2ExNjEwNzNlOjAsZTRhOWQ5NzJkY2EzZTU0YTMxYzYyODEyNWQwNTJmYjUwZTkwM2Y1ZTI3ODc3MjRiOWNhYWVmMDRkNWY3MTNjYTowIiwieCI6bnVsbCwiZSI6MTc5MTUwNDE2MDAwMCwibiI6IjQ0Y2Y5MzBkMmNmNmYxNDYifQ.VqaKZ2X9lauF7yH-YgoSuYUrbcaMTURYHUy7hCsNDpY",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-reveal-two-outpoints",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6IjczZGQzOTQ4YzAxYjk1NzEwNTE1YzIyZGU2N2NmZDA3YzEyZDJlOTg0NDI0ODczZmY1YTIwMzE0ZTE2OTg0YWE6MSxhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.4wY4C1N0cCFdEbeI0TGgRz2SBTGrXhx-jJ3YVlLixZY",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-eth-kind-commit-on-eth",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjNzM1ZTUxNzkxYzkzMmZjYjRiOWVhMGZlNjNjOGU2YWYwMGUzN2E1YzQ1YjZmYmFmYjBkMzRmY2NjYjk3NDE2IiwiciI6ImMxMGQzZjYwNWUwNGI4MDJlODc1ZjE0ZjhmNDVjNWQzNDBiZGU2N2IxZGIyM2VkZTI3ZWM2NjBhMjFkNjI4ZTAiLCJhIjoiMHg4NzM5ZWI4N2IzZDExZjIyMWRmNjM0NTRmOGQyMjlhMWE0ZjQwNDljIiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6IjciLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.Sahqs2vmcvB2TG8pUJHWQ0O4p_ZslmPuNf4jMKgBUZs",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "btc-sol-kind-reveal-on-sol",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJzb2wiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTYwMDAwLCJuIjoiNDRjZjkzMGQyY2Y2ZjE0NiJ9.U_sQhjULo1HoCQlfsbTgLlexqOvwDKFk5OdEMjEx_LA",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.send-ticket"
+    }
+  ],
+  "decode": [
+    {
+      "name": "btc-commit-extra-input",
+      "defect": "the tx spends FUND1 and FUND2; the ticket declares FUND1 only",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiZjFjNjY5MTY5N2EwZmVjMzIzOWNjZmJjZDVhMDA5YmZlYTNlMzk5YzU5OGJlYmEzNzk3ODJjOTQyNmYwODcwZCIsInIiOiIzN2ZkNWUxZDcxMzcyYzg1ZmJhNTM5YTY4MjAwNzEyYWY1MjA0YWE1NGQ0ZTk1ZDNiMzhjYmQ5MGJlNTY3M2RiIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjYwMDAsIm4iOiIwMjQ0ZThkZmU1OWRmNGRjIn0.FZxO-YqdeYxvRShN0JF4Cxz4Wf07Y640C2VUrnvsUv8",
+      "now": 1791504047000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001020872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffffaa8469e11403a2f53f872444982e2dc107fd7ce62dc2150571951bc04839dd730100000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7d81d02000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02473044022059e2ac63a938a92218ee99f64911b54393b301a23b5774c219fcdfc47ebbffd802204b2531a8efaf3cadfbfdf7939af39050da33e51ab0e665ed470a8e4e8918346401210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c2320247304402205c39462ba155d512129027e6b5ff8e8d58871b9384d15b15f7bd4bbfb2197e39022064aa5228e4a962d80f6bb7cd1a50c894f9a40dfa3f9bb3d983d547b04f63020701210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          },
+          "73dd3948c01b95710515c22de67cfd07c12d2e984424873ff5a20314e16984aa:1": {
+            "value": "40000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-missing-input",
+      "defect": "the tx spends FUND1; the ticket declares FUND1 and FUND2",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6IjczZGQzOTQ4YzAxYjk1NzEwNTE1YzIyZGU2N2NmZDA3YzEyZDJlOTg0NDI0ODczZmY1YTIwMzE0ZTE2OTg0YWE6MSxhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTY3MDAwLCJuIjoiZDQ3OTk1MGYyODVmOGVlMyJ9.WL-YtS002i7CxZU6sF7IgbB2Tg_Ry_-fw1IV4oKxN9g",
+      "now": 1791504048000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          },
+          "73dd3948c01b95710515c22de67cfd07c12d2e984424873ff5a20314e16984aa:1": {
+            "value": "40000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-other-input",
+      "defect": "the tx spends FUND2; the ticket declares FUND1",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiZDNhODllZjhjOWYxMjhjODhmYjU2ZTMwMjg3MzUyZWE3ZjViMmYzMThkYjI2MmMzYmUxMDMyNjhmZWRlZDVjNCIsInIiOiIyODUxZmU4OTFlODNjZGEwMTliNDA1ODlkNWI5NmViMWIxZTY4Nzk4M2RlNjBhZDU0YjlmYjE1Y2JlNjcyMDBkIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjgwMDAsIm4iOiJkYmUyZjEyZjBhYmU4NWJlIn0.97lNYKRj1Y0rJnks6t8erAZ7-yCgntRwMH7_NuMPqq0",
+      "now": 1791504049000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "02000000000101aa8469e11403a2f53f872444982e2dc107fd7ce62dc2150571951bc04839dd730100000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f70a9500000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02483045022100cb94183e3546437cf4403c99df3a9c33ecb2e33ac8e9888d472bf4ab4b13787b022067062b899094e3e3b04217e3d9489e84e270bc717eca4a98c4d24ac58066c71f01210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          },
+          "73dd3948c01b95710515c22de67cfd07c12d2e984424873ff5a20314e16984aa:1": {
+            "value": "40000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-extra-output",
+      "defect": "a third output pays an attacker",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMjljNmI3NzdhNThmNDdmNWYxNzY1Njg1MWVlYTQxYzIyYTM1Y2FkMjQ5OTI2ZjkzNDlhMzFmMjk2YmMwOGM1NSIsInIiOiI4NzE4ZWMxMTRkODEzZTIzMzU1NTVjZWI2NjcyNDdmZTU3NmU0YzE1MTAwZDM1NmIwOWNmZmYzMTJlYmRlZGE3IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNjkwMDAsIm4iOiJlMjcyNTJkMjFlNDhmMDg3In0.YTve6YWZYRGEgmhmuNu298riCw86EFwAf1tkJtaZOCw",
+      "now": 1791504050000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff034e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7c87f01000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c220200000000000016001485f292741cb75b7e66b934c5a72f3d581cf2745602473044022045212040d2ba455eef2c8702d71996909169ddb9d3d8cddd5552506ce0e7992f022079751710aee2dfd15f130571da8882a5d9ca06019eaefeb17aff463e48f5a97201210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-two-change-outputs",
+      "defect": "the change is split in two outputs, both to the lane",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiNDNlZjI3ZjY0MDY5MDgwMWQwYzBmMjY0ZmY1YmY5YWVkNzMzOGRhMGFjMmNiYTM3NWZhYmE3ODRjMjc5NTMzYyIsInIiOiIwNGE3OGZjNDI3ZjcwZjNkOWJlMTk1ZmY1OTBkNjZlOGJjZTBlM2MwYTM2YmVmMTM5ZjRmMTQ4MmY0MzI5N2I0IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNzAwMDAsIm4iOiIwODg5MDRjMmIwZGI5NzljIn0.8mbfoH0lWVGArLt0QtLlx6tl23QYi-8KrCuB-xq9kAo",
+      "now": 1791504051000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff034e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7102700000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c105b01000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02483045022100dda950b90018fa7d61acacc2cff897b423e61a905f1dcc6fb58b653516f9165102206d4034d55f44c609b572fe3ab25161c4be7835bfab004cc49d04d4bcb9af509401210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-change-foreign",
+      "defect": "the change pays another address",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiNThiNzQxNGU5YmQ5MmE5NzNlMjUyMGRkYTJhMDQ3N2Q1ZDE2MDkzYzNjOTY0MjY4YjJlODEwNDhjMGVkM2VjMSIsInIiOiJhZGQ5MWE1ZmYyMTdkYjAzNjRkZjQzYzkxM2Q5YzZhZDI2Yjg0YzdkYWNkNzdmMzVkNTFlZjcxN2NlNDdmOTY2IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNzEwMDAsIm4iOiJhMzFkOWI3ZTU1YWU2ODI4In0.fwH9VBUeljN_eLQI-lITk9H0NIXiVW7__NR9utZN2BE",
+      "now": 1791504052000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001485f292741cb75b7e66b934c5a72f3d581cf2745602483045022100a1c93fa446f67e0a88bbbed7201aac07e8d7ff6f80347a0ab2467265a701465502207af0e53846d1e69c61e47a56825972b5c53c06554abc90c8931f80fb2c079f8101210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-value",
+      "defect": "the reveal output pays one sat more than the ticket value",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiZjE4NGU1MTU1YzI1ODQwYjI3ZDE3NWU3OTBkNjdjM2IwMWVjODMyNzZkNmM2YzRjOGEyYjMzNTBmNTg2NTFjNyIsInIiOiI3MmYwNGUxMWZhOTI1ODJiZTNlMTc0MTg2YjdiNTUzMDY3MzhmZDY5MDFkZDQ3ZGEwMWFhMDM2MDJmNGFlYmI4IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNzIwMDAsIm4iOiJhMWE0MWM5OWFmY2EzODllIn0.YJIlmSd1z5oL4HSNiy3RJzWvk5-iWR_zMrOxcVY25Eo",
+      "now": 1791504053000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024f0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02473044022040eeb6e5ce0fe2d5ace848c21b40997b4753ac2a9ff682b7b93e0baaf0d89c69022008aafc82726458d0a999c50b073fd56cac2e8c5e381c1b9aa12177a392de6af001210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-value-less",
+      "defect": "the reveal output pays one sat less than the ticket value",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiMTAzZGRmMTRmZmVlYWY1YTQxZjM0OTdkMGM1YzdkYjhmOWU5ZTg0MTI1OTc5MTFhMWMwMDJlNDc4NjA4ZDZlYiIsInIiOiI3NGJmNTgwNDU4ZTQyMzExMzIzN2M5NDBhZjZjODA2NWNkZGM5MjVkNTk4OGIzOWM5ZTdmZTFhZjFlNGI3YjljIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNzMwMDAsIm4iOiIyYWNkZjZhMDk3N2I3ZjdjIn0.f7QO3Gnk6wilZurCsDX7EfxZBJry4S97eXhoCEkJ0ao",
+      "now": 1791504054000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024d0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02483045022100807ca05794a33cb29c9dac08c0bece8acb7962c668efd8c7cc2471d5171fba690220579554a17835483eb3346a3a4f31e9d67903dd1126973394f7354a5960ea38ec01210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-to",
+      "defect": "the reveal output pays another taproot address",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiNTdjZDMyYTY1NTQ1OGRkMTJmNDBlOWY4ODBiNTU4YWVhZmU0Njc0NmM3MDI1MzM4NDFjMjRhMGQzZDQxMzk4ZiIsInIiOiJjMjk5Y2JiZDg5NTYwN2NjZjRmNTgwNzA5Y2RmZjFmNjQ3ODFiYjAwYTFmYmQ3Yjc0NWVkMmNkZGZhZWQ2ZmZlIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNzQwMDAsIm4iOiIyZmQ1NTY2NTJiYjM1ZjZhIn0.bQEtPxYAA4Mqy1_Xvmc5vwQMS3rzYGdPsTYFlIo_5PA",
+      "now": 1791504055000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512014944d41050a3281a2b5be44a36005a4c275f709e438cc8863e8f46e98fb5e49208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c0247304402203740f7c3ee574b1f494c026d668afa35dc307ed098132c75cb4f04169268a7c20220083bb0a23644c9e3402743990f0a3405e06a5c79e6fcb98b7527964e198b4d4901210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-fee",
+      "defect": "the change is one sat lower: fee = f + 1",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiY2U2MjZjOWVkODFjODk0MmY2NTBkMmE0NTIyYzFmMzMzMzM5N2Y0MGE3ODY4NjhkMWIwNmU4Y2I0ZDZiNjdmYiIsInIiOiI4MTMwNmMyMTg5MjFhMmUwY2ZlZjU4ZGUzNTRiYTc5MmQ1ZTMyYmJjMjg1YTg2MDI1NmUxYjI1MWFlNmRjODQ5IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNzUwMDAsIm4iOiJlODBkZDA2M2MwN2VmNjk3In0.4PHJmeS46ZZLVp_qkUSiDTMe3aw8KPwFFMGX-RPbFNs",
+      "now": 1791504056000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f71f8201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c0247304402202db9b38e817d6c69f8ef9ea3c88a1f9e4f580fd29e9c6a8d423e7395a880fa5d02205e211caa3b5ba7fe90ca5c4c7cc7faebc8b0b07e9af7ae9cb8e37d30bc0ee32801210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-fee-no-change",
+      "defect": "no change output: everything above the reveal output is fee, more than f",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiZmQ5NzkzODVhODEyYmRmMTEwYzAzMzQyZTI3ODgzZDcxZDM2OWE1MDNiZTAxYmFkMjFlYTRmNzViNTUzZTY3NyIsInIiOiJkNDE1Y2FhNjA5ZjNhYjMzYzA4NTU2NTAxNzZhNWI0MjJmNDI2M2FhODQ3ODI2MDY5OThmZjY3Y2RiYzQwOWJiIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNzYwMDAsIm4iOiIyZWM4ODM2OTE5N2MxZGFiIn0.wNt7l3HufCu5t33zZ8Q7MANpavpnn8OIFU2rmWtSLYw",
+      "now": 1791504057000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff014e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f70247304402207cd65e8548213ab800044ddbaa3a7067a0dbf82222b150783a4c9a158546fae20220193db60a852b85205971aa80424f17d7912d1d0fb263b21dedf814bf1db6c2cc01210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-outputs-exceed-inputs",
+      "defect": "the chain says the input is worth less than the outputs: fee < 0",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNzcwMDAsIm4iOiI0MmU1Njc0MmVjZDI3NTU0In0.7E9HaD5fYO-8H4CgjzSrHiTTFH3OE6Q_XryVHkn-CLM",
+      "now": 1791504058000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "846",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-input-not-lane",
+      "defect": "the input pays another address than a",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxNzgwMDAsIm4iOiIzODU2MmFhOTVjNGUxNjRjIn0.XezWYZqAp5HAYukxiV2YMr-cGPtSXRBnFF6f3fjM7wA",
+      "now": 1791504059000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001485f292741cb75b7e66b934c5a72f3d581cf27456"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-to-not-taproot",
+      "defect": "the ticket `to` and the output are a P2WPKH address, not a taproot one",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiOTEwZDE2MjQ0ZGE1ZDI4ODUyMDlkZmYzZTI3ZTUzNWMwMGU5YWRjN2YxZDljY2I2MTRlNDEyM2U3NzBkYmFkOSIsInIiOiI0ZTg5NDhhNjkxNGNlMGM1ZmMyZDQyOGYyNTY4YjgxYWE1ZTkxZTQ0ZDdiMmNiMTY3NTQxMzZmMGZmYjdjMTlkIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXFzaGVmeWFxdWthZGh1ZTRleG56Nnd0ZWF0cXcweWF6a3Z0c2M4NCIsInZhbHVlIjoiODQ2IiwiZiI6IjMwNiIsInEiOiJhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTc5MDAwLCJuIjoiNzhlZTBmZWQwNmFhNDk5ZCJ9.DilsucOZhdzAUnG0sShw17BaFwv-YW43icNPwniP8eM",
+      "now": 1791504060000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000016001485f292741cb75b7e66b934c5a72f3d581cf27456208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02473044022071c5960463b797206fbf269ab0516408ea270d0a87ebcf062c2f732fc0d5f4bb0220534943948201d68bee2ef132000001caaf0f0815f0a0b15058bf8bc6882efc0901210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-to-is-lane",
+      "defect": "the ticket `to` is the lane address itself",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiYmU0ZjIxM2IwOGM0NDBiMWFiMTQzMTlmN2FhYTkzNWZkYjg3MjgxMDMzMTdmNzFjYmU3MzM3N2ViNjkyOWU1MCIsInIiOiI4MGYyOThhZjE5Y2I3ZjVmZDIyZjFkOTkzMDk5MTFkNzYzZWMwMzk2ZmJhYzI0ZWExODcxZjUzZmZjNTlmZjg4IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXF4MDk1ZGNqY2h6dDM5eDU0N2p0ZG5kd2tqYWhwazIzdndmc2tnOSIsInZhbHVlIjoiODQ2IiwiZiI6IjMwNiIsInEiOiJhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTgwMDAwLCJuIjoiMjA3NmUyYjllMmJhYmEwYyJ9.tpj_1-we7Qo8aM90kjyiRs457zHk9OJUiGydlmmE5D0",
+      "now": 1791504061000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c0247304402206d9fb6270794370231221ee04f224edfc327222831647d8e27361912247a2b9102203b244e7a10b99b9d06a2b3961fd761a2cbb27618441aade92a334c59f0749adf01210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-duplicate-to",
+      "defect": "two outputs to `to`",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiZWFhODdmYjA1MDViOGM0YTE5YWFjZTM1NzA1OTFmYmJmMmY1OGY4OWUxMjFmNzQxZjEzMDIxOGE4NzkxZjMzNCIsInIiOiI4ZjY4YzEzYjcxYTFhMzExM2VmYjAyM2U5YzM0NzY5ZmExN2M5ZTc4YzRkMTJjOWFjYTU4OGE3OWE5ZmEwMTM4IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxODEwMDAsIm4iOiJjMTA1NjU3OGRmOGUwMTMwIn0.VmY3Ktg7T7EWzFZF_GymgSbRFAE4uP9F0YJGxt4rIfI",
+      "now": 1791504062000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f70247304402202d09bc0c94ca7158bf16342aabe125117248b2498929af05a94262b1e66ae6380220144fd94e70377b2d1d62f7326df7bb837715e29272b42e809aa86a96f13097ff01210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-locktime",
+      "defect": "locktime 1",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiOWUxM2I1YTFhMTlkZTRiNTUwYjhmYmY5NWU3ZjI2ZjBhMjA4M2I4MjYxZWEzNTE3OGMyMTIwNTFmZDQ3NmY3ZSIsInIiOiJkZTkxNjI3ZjY4MjY2MzVhZDNiMjMxZDIzYTIyNDg5NWMwMTZjZmNlMGNmZmUyYWNlMjM1NGI0ZjViZGYzZWFmIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxODIwMDAsIm4iOiJhMzg4NmFiZDQxZDAxMGEyIn0.nJh0ZvAsBZ7alBysAVS-d4V3w5R-2CtGTOotq3vp5Xg",
+      "now": 1791504063000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220473adbe337b92905309aadcf53501d7d16631fa0682512c86ee20b9dcad969ab022071743de375c381f11892146f57d1ceaa2448775e6c82a8a54f79f157e0b646b401210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23201000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-unsigned",
+      "defect": "the inputs carry no signature",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJiYzAwZGIzZjJjMjJkYzEyMWMxMmFlZThkNjBiZWU5YWE4NWMwYmYzMjQ3NDA5OWM3MmQ4MDhjNmFlNDQ4OWIyIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxODMwMDAsIm4iOiJjNDJiYmVmODZmOGZkM2RkIn0.Bhbg5puWkslqys2llSKtblIU7bbf0OYUUjnGWjMgX2E",
+      "now": 1791504064000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "02000000010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c00000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-tx-id",
+      "defect": "the ticket t is another tx's id (r still binds these bytes)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiZjFjNjY5MTY5N2EwZmVjMzIzOWNjZmJjZDVhMDA5YmZlYTNlMzk5YzU5OGJlYmEzNzk3ODJjOTQyNmYwODcwZCIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxODQwMDAsIm4iOiJmY2M3NTVmOTZlZjNkNTc2In0.bIiive_NavQwmHq4Ma0BE8Av5GateQTWBt_XP5NYxJY",
+      "now": 1791504065000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-trailing-byte",
+      "defect": "a genuine commit followed by one more byte",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiIxY2EyMDNmYjI1OWVlOTQ2NTE0YTBjYzc5MDk5NTI1MjI4NjI0NWY3NTcxM2I3ZjJlZGIzMTFlYmZiZDBmYjk2IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxODUwMDAsIm4iOiIwMWVlMzE5M2U3YzVmNjE4In0.BVrqt5SJZBoyOIYTmjxTe4YRLK1vS2YrbnuiQsB2wu8",
+      "now": 1791504066000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c2320000000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-empty-witness-marker",
+      "defect": "the segwit marker with an empty witness for the input: not the canonical serialization",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiI4OGUyYjk2NzFjZDQ0ZGJhMjZhMzI5ZTI4YThhY2FlYWQzYjc0NWNlNzY4NGMxYzlhNDQxYTE3YTQ4NGIzMjAzIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxODYwMDAsIm4iOiJiNDc3MjRmM2ViYzZkNjQzIn0.H7U8rE_97q-NJeTAhNQbRmOqF56Q2wgp03q6X0RqEcI",
+      "now": 1791504067000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c0000000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-sighash-none",
+      "defect": "a commit input signed SIGHASH_NONE: anyone may re-spend the public signature with other outputs",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjOTg4YWFmMDI3ZTNmNGZmNzA4NjhjODEwYTJmNjkxZDc2Y2EyZWQ5M2ZhZDUzNmY1NmExNGU0YTY5NDg1ZDY5IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxODcwMDAsIm4iOiI5NDIxNzE3NTI5Zjc5ZTljIn0.OPOq-R6uyr9fEOQX7qOpgFME6vYnCwxKFlCIM5vq7d8",
+      "now": 1791504068000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02483045022100f70236b58ce5404358c497e5aff0b9ea04b94ea5819ea921a7682533e94631ca02204d6b6994737dfae2c438dbc384362f992e10f8cb59411e1f97ce6bfd0a0e14f502210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-sighash-none-anyonecanpay",
+      "defect": "a commit input signed SIGHASH_NONE|ANYONECANPAY",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiIyYWU1YTkyNmJlZjE5OTQ5MWVkNTk0NDkzOTMwZjU5YjJhZDc2ZDE1MDIwODUyZWU4NGVkMmJkMjIwZjlkZTNjIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxODgwMDAsIm4iOiIwNWRhZDJhODJhYmNhMTBhIn0.uu4mUzhZmjVVtIdlpeL07S6Vehu_NfyVnjHrRL_yCwk",
+      "now": 1791504069000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02483045022100f52c4018b752eac999cddae1f39f1d26f5f4b5c73be324122748316bb64696ed0220633ac71c520fd8a8edd2de63118a4652c87a97d95adfdc77d9e02e202c6a431e82210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-sighash-single",
+      "defect": "a commit input signed SIGHASH_SINGLE: only output 0 is signed, the change is free",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiI0NGMzZTQzMTk1NzFmNGQzMzVjYzg4MTM3NzNhOTU2MTRkOTFhODhmNjA2ZjlmYTIyMWFkZGNjMTYxODgyMTYxIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxODkwMDAsIm4iOiIwZTkwNmMyNjE1MTY0NTU2In0.LypFMCReKPiqGCNFUTjOap8H3pTItip37auRO2K42-Q",
+      "now": 1791504070000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220071e434cf51791779f759dc7511c0e27288afa41272055d50d045f546e91e8110220606d55c00c087f1dd4df12261fa15fa204bf01aefd859cc63accfe03b9848d4d03210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-sighash-single-anyonecanpay",
+      "defect": "a commit input signed SIGHASH_SINGLE|ANYONECANPAY",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiI2Mzc1ODJmN2U4YjI0MWE5ZDYzNWNiODQwYzY1NmM4ZmU3YzEyMWQ0ZTRkZTgxOTUyZTM1OTBlOWFlNDg2NGUxIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxOTAwMDAsIm4iOiI5MDcxY2I0YzI5MjBhNDZlIn0.K3ojr5Vck1Vo1f2s_eb80OOnRoTnS17GzTZ0b_PAcz8",
+      "now": 1791504071000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02483045022100c161f1063b2f6daef9a6b42fa24c128b0191eb38d7cd6a164821358cfa899ac602207703e349f10a4defe81c9206b417c85dbb56dbc5e252a70d3420c2455d72615983210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-sighash-all-anyonecanpay",
+      "defect": "a commit input signed SIGHASH_ALL|ANYONECANPAY: further inputs may be added by anyone",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiIyNTE2YmRiMTM3OGRiNjViZjZjOTA0M2YwNzVhMWU3MGJjM2UyYjZhNTViZGYzMjg4Y2YxNjg1OWFkM2U1ZDY3IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxOTEwMDAsIm4iOiIyN2VlNjE3OTM0ZDAxNzczIn0.4nuwtShBu165EtxmKBZoJxnmvEWI7YayCEAkSu4yPJ0",
+      "now": 1791504072000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220010c4417e0f2958a454a2a59ff758ce4232712256a81fd762ba19d9cf62d0e17022044de01e1fc8c952ff2296190833c73a76230f9768db15293fd15569d5c69794281210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-reveal-bytes",
+      "defect": "a genuine reveal tx under a commit ticket",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiI1N2Y3NjdmMTVlYzIxZmVlODg0ZWI1NDQyMWY2YjRlZjQ4YjJkM2ZkZmM2MTEwOWI5MDIzZTYzNzZjZWZjN2E1IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxOTIwMDAsIm4iOiI4N2Q2OGU4NzgyY2Q0OGIzIn0.EIgjJLK1sGt95dQQYRF15FlV5yUILlQcwEvYWEocNY0",
+      "now": 1791504073000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03409ca4820044dd83c23cc53ac06f75b5ad947da143d0116d56681d68e595e7ffe984cc73a1fa9f1e7e680bfa2ef065baeb4b23b50db3efadc540818d5b1916bc71762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-commit-prevout-missing",
+      "defect": "the relay's chain read finds no such unspent output",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxOTMwMDAsIm4iOiIxYTIyMGM2YjdkZjI5MzE5In0.Qfz19XyMKadEU_3fV6P4JZUfyn4bxu3-4I9uPBFuKiQ",
+      "now": 1791504074000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {}
+      },
+      "guard": "relay.btc-prevout"
+    },
+    {
+      "name": "btc-commit-prevout-one-of-two-missing",
+      "defect": "the chain read finds FUND1 but not FUND2",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiZjFjNjY5MTY5N2EwZmVjMzIzOWNjZmJjZDVhMDA5YmZlYTNlMzk5YzU5OGJlYmEzNzk3ODJjOTQyNmYwODcwZCIsInIiOiIzN2ZkNWUxZDcxMzcyYzg1ZmJhNTM5YTY4MjAwNzEyYWY1MjA0YWE1NGQ0ZTk1ZDNiMzhjYmQ5MGJlNTY3M2RiIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6ImNvbW1pdCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXB2YTVnN21kdjhjc20weXFjNng4eDhoZTIyM242Nmh2OXR5cXZzcWZtMjRoNnl2MHprbW1zbnN4bjU2IiwidmFsdWUiOiI4NDYiLCJmIjoiNDQyIiwicSI6IjczZGQzOTQ4YzAxYjk1NzEwNTE1YzIyZGU2N2NmZDA3YzEyZDJlOTg0NDI0ODczZmY1YTIwMzE0ZTE2OTg0YWE6MSxhMjViMDEyYjg2OTFhZWNjZTZiNzY1ODZjYjE1M2JkMTI1MzllYmZlY2Q0YzE3YmJhMmI2NGUyNzRiY2Y3MjA4OjAiLCJ4IjpudWxsLCJlIjoxNzkxNTA0MTk0MDAwLCJuIjoiN2RhZmUwZGIwNTYzNjExOCJ9.lLXRJJlbejqmUfOXOg8izpQmfHIn6UFfWb-VBswUbzs",
+      "now": 1791504075000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001020872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffffaa8469e11403a2f53f872444982e2dc107fd7ce62dc2150571951bc04839dd730100000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7d81d02000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c02473044022059e2ac63a938a92218ee99f64911b54393b301a23b5774c219fcdfc47ebbffd802204b2531a8efaf3cadfbfdf7939af39050da33e51ab0e665ed470a8e4e8918346401210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c2320247304402205c39462ba155d512129027e6b5ff8e8d58871b9384d15b15f7bd4bbfb2197e39022064aa5228e4a962d80f6bb7cd1a50c894f9a40dfa3f9bb3d983d547b04f63020701210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.btc-prevout"
+    },
+    {
+      "name": "btc-reveal-body",
+      "defect": "one body byte changed: sha256(body) ≠ p",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiIwY2ZjOGJjYzM1NGU1OGQ2NTQ2MWE3YTdiMDRmMTY5MGJkMTA4ZDA2Yjg1N2I4OGY1ODY4MjZjZDZhOGVkMzJlIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxOTUwMDAsIm4iOiI5MDAzY2Y5NzZiM2Y0NmZmIn0.eea4GBq0__tmKiX2ME6DVudAzs9_2ubyoOAlgoAPk1Q",
+      "now": 1791504076000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc034089b51e3833eb79326fbe2f3e96cdddc4ad4c7b64d59e392ec6a97a49dda4c144e304b4e6690a0a0a708cba0e184e79301f8be1f33b3f057671a7b4c263403d19762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f30207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-body-empty",
+      "defect": "an empty body",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiJmMDVmNjIwYmY0NjYyNDhiZWMzMmZlZjliNTAwZTI0MGUwNTc5ZmM5MWRhYmNiMzRkYzlmYzVjYjFmYjFhOThhIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxOTYwMDAsIm4iOiJiMGQ3OTBjYjI0MTlhOTBjIn0.PsaWJqG42A2rNIE-n00iLnDpo1-Vkymo6NMx5s3tnv0",
+      "now": 1791504077000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc034081d5e841f3d2d227ac1f52ebcd86a6188ba005c228d335f4ed9388016fab1cb09b755f59a9704f38345cf4dee1701a5d72e0fef20ba70e3610bce708dbfbbc3c452035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d38006821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-content-type-bare",
+      "defect": "content type text/plain (no charset)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiJjMWViOTBlMzU3ZTQzOTAwYTc1ZjYxZmJiZDJmYjIzNjNiYTM1YWJhYmIxOWUwNzY1YWY0OTVhYzA3ODNhNjBmIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxOTcwMDAsIm4iOiIwZWRiZWZhZjhmOWU1MDdmIn0.8A67L7oSrvQ6ASSFlGgqKAYPFfomO7ieYfuKogHyIvU",
+      "now": 1791504078000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc0340a0fc839deb9b9477f759d138ca606f5ce5b8cce30eaadbef762cd97595a29a3771fe2451ab2a82dcac6c380f4a5d1e43239b4ea45e4545f36ab02e4de48ac71d682035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f726401010a746578742f706c61696e00305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-content-type-html",
+      "defect": "content type text/html;charset=utf-8",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiJhY2MwZjQ3NzIyMzI5ZTQ0OGUzNWUwMjZkZTk5ZTFhODBjZDk0OTk5MmQyNzkxNTg0ZjA5MDhhZDcyNTg1MDA5IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxOTgwMDAsIm4iOiJhZmRmZmU2MGY1ZmJkMWU4In0.Knh5ZFu0HQPGL2ZkR5XXPFb4uWysjyVsu7yciKRKKgg",
+      "now": 1791504079000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc0340b29d7ec9e5f4b02afb52296f1279e211e909e6942c060ac17624157132598fa8b1906fe96eed92a1457a681571d3092a850b70d2c8608c3aa47f51c2fcc3878d752035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010117746578742f68746d6c3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-content-type-case",
+      "defect": "content type text/plain;charset=UTF-8",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiIwOGZjZWVhMTdmOGU0NWZlNjFhZDBmNTcyYWQ5NmQ4YzQyMzhjMzRkZGVmMzJmYTRiZTE3ODYzZmE0MDViNzRiIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQxOTkwMDAsIm4iOiJhYWY0NmM2MjM2MzVkYzgyIn0.6tqeSr6QlCen6DRn6TXafgNyy6qFXBCP7FTlS24EfwI",
+      "now": 1791504080000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc0340bb274149b2ab95d12c192c3c7013c5be57e5fe1ab6e5a838a6be859ad0fb4d63124f48959b9d714777353b8bbfe59091d66c04a128cf560de8748dfd2ef89960762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d5554462d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-no-content-type",
+      "defect": "no content-type tag",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiIxMDUzZWQ2NDY5MjEwZWZiM2NkZjY5NDU5NzllMDFmZDE4MTJiNWRmZWVjYzFmODBlNjNhN2E1ODNmNWIwMjRkIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMDAwMDAsIm4iOiJmZDUxOGM2Y2ExNzkxOTI2In0.vScu3EsvM3RuliJKtuoaHyoT-qVjyTJwQNgei-jvAss",
+      "now": 1791504081000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03409d0eeb7d7600f8ef4dbe5933cb4bd3c51810ecdb453696513b90f5ab767c762b495d9f95b11706f31866ec579b05adeb1bcd6419150fdeda4f18eda723c04b455b2035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f726400305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-extra-tag",
+      "defect": "a metaprotocol tag besides the content type",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiIwMzAzOGM2ZGY0N2U0YjkzNGFiMTA2MzFjMGJmZjkwZmJhZmZlZDQxMDJmNjRiMDhjODBiYzRjMmEyYzRkMjllIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMDEwMDAsIm4iOiJkYjVjZWZiM2VlM2UwNWQyIn0.CHpekBwweYHVyWbubur5hsE4MYNMPvdVhBJ5bfpXEUQ",
+      "now": 1791504082000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc0340a41df1e92a93fa4bab59486ab103c2e132d14a413a0e6b913164ec5a5f48f2f9f29317015fd53fcab752e1841ad41193a2ba8e52a61492acae72098dd0e5704a7f2035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d380107066272632d323000305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-cursed",
+      "defect": "a cursed envelope: the content-type tag is pushed as OP_1",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiIyOTcxMDUxMGE0NzM1NzRjOGQ4MTY2Y2IwOWI3OGM5ODE1MjViYzRlYWE3MDZkMGMzNWYzM2QyYjg4Y2FjZDE2IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMDIwMDAsIm4iOiJjNmQ1Yzc1ZmQ3ZTBhZGNlIn0.pBeNJGFh7378WRgMFVKNBpoFJHWpENnpQyebVWWwOTc",
+      "now": 1791504083000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc0340c343421d15a6339420512a6dd41f2d549919b8167b4bf7181b91461cb917069346df9bf3885a2c2109789d9bffae6250b546edac5daf0cda3c71c2bddea12e96752035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f72645118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-parser-op0-mid-body",
+      "defect": "S1: body, OP_0, then more pushes: ord appends the attacker suffix, micro-ordinals stops at the OP_0",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiI5MGM3NDkxYzliOTMyMjQ1MThkMTY1ZGY2YzBkZmQ4YWE0N2JiYjNiYzI4NGI5MWRhOGY0NWZjNTk4ODM4MTJlIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMDMwMDAsIm4iOiJlM2RlZWQ1ZGE3Y2Y4NmZmIn0.plo12KCQjxz0GcysfRLfjhoGMy9QjZAzc_NFBFKH7ZA",
+      "now": 1791504084000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03409461da8eb1e1e13946603ef51ed1719247866dde4178d80635c1cd9917114e8ae94d07e674be748c63b41e2f8a8787a4a0490c47f0e16cd5cedf6242fb272609ac2035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a00340a5b415050454e4445442042592041545441434b45525d2074686520746578742061626f7665206973207265747261637465642e6821c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-parser-hidden-first-envelope",
+      "defect": "S2: a first envelope opened by OP_PUSHDATA1 0x00 inside an unexecuted OP_0 OP_IF: ord numbers the attacker's text/html i0",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiI0YjE3YmJkNzNlZjc5Y2Q2NjY4YzYwZGI2OGRlZThhOWU5NWUyZThhMTgwMzRlYjk5MjI4NGE2OGRmZWQ5OGMyIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMDQwMDAsIm4iOiIxNThiY2JlOGI0MzJmMjM3In0.QJTdALhJ3CD0Ebc0H_deh40C60l-VyNaR3Y9rPef02g",
+      "now": 1791504085000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03409589d546646e54b4b1b0f4da38ea26b3c4109981a8b8fa664c48cfa1c79969cc0e193e45f96652b687672a3a8e6ae1a3ebd66c0f64e2eb96c93bfa52350aa06fba2035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac00634c0063036f7264010117746578742f68746d6c3b636861727365743d7574662d38001d3c68746d6c3e61747461636b657220636f6e74656e743c2f68746d6c3e68680063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-parser-split-content-type",
+      "defect": "S3: the content-type tag pushed twice (\"t\" + the rest): micro-ordinals concatenates, ord keeps the first",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiJmOWY2ZDBkOTQzY2MyOGFjMDliOWZkNDM0ZmE5MGI0MmJhYTNmZTI1ZTZjZTFmOTgyZTE0YzgzOGRmYjM2ZTgzIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMDUwMDAsIm4iOiI5NGM5ZjRiOTQ5MWZhOGRkIn0.epQWhwsSeAg8k3G6O0CPMEx89Ii7ug4qAA0VWtjLeNc",
+      "now": 1791504086000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc034044ef389a7e98af9a5c3bb4f03b1135c98388618df674c1821845ab940869c880aa1510bffa989d6449b3a35628291790d9b4be01950b63b9fa1cd690879cf040792035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010101740101176578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-body-two-pushes",
+      "defect": "the same body in two pushes (ord and micro-ordinals agree, the canonical script has one)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiJhOWEzMjJiYmEwYmMxOGRhYmM1ZGY0YjIwZDk3Y2U2ZTNhZmQyN2JhYjMzOWNlYjU0NWM2ZWMyMDkyYTc2NmU5IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMDYwMDAsIm4iOiJkYzI5ZDJkOTYxNTg2MzMwIn0.UlEbSTrM3G7TsT0NCnmYOYeeV5gpPjZDTXMFQVFi498",
+      "now": 1791504087000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03401ee6bd17d09aa67334857d76673663bbf141ee926033909d7abf3795be0d3ebdfa437ebd216491bbcfb5406034657337c62f300a7ba5572249c7f85d99b3e145772035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800055b312f31202b7469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-body-pushdata1",
+      "defect": "the body pushed with OP_PUSHDATA1 although it is under 76 bytes (non-minimal)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiJlMGJjYWQ2YjUxYmE2MjYxMjBiZTQ4M2QyMjA5ZjJlMmIxNWIyMWM1ZDJhYzQzZjhhMDQ5YmZiZTY1NzM4OWQ3IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMDcwMDAsIm4iOiIzMWQyYmY3MWQyMmYwZjIyIn0.O4FGIbWlLcHgmX1AIL_2v4RgncXQSyK4pPMhOzTItzg",
+      "now": 1791504088000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc034076510f1765fec7075054ccb0a5b5207442468eca3951775a90a5b575252bd9c32027055f1604c745fa297b5aa60ef8737c6bd56058a221cb4481e424462ed37d772035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d38004c305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-trailing-op",
+      "defect": "an OP_NOP after OP_ENDIF",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiJmNWY2MGNlM2FmYTM2NjZiNjU3NmY2MzhhMzczODdmYWI3MTZmNThjNjQxOGY5OTllZjAyNmNiOWYyYmVlZmNjIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMDgwMDAsIm4iOiIyYzM0OTY4M2E4YTZmNGFlIn0.pibHCXNvwk_ecGvM3L0PfTnrpS0YDZsc9f3jo2hODE0",
+      "now": 1791504089000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc034018b363784a437c70949279658a7e92495ca3ce843978e87d586fd63d088fa62b63e269fa178a2762371d4ba9060d560d256fc58f9b0a8fe783cffb11898bf838772035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a686121c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-leaf-without-checksig",
+      "defect": "the key push without OP_CHECKSIG",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiJmNDJkMmVmNTMyN2Q2ZGY2ZjNiMDdhMGY1YTAxNjIxY2IwYmUzMmQ1ZjE4YjRlMDBmN2NkNDc4YzEwMGJiNTE5IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMDkwMDAsIm4iOiJkYjE3ZWNmNDQwNTZiZjlkIn0.QlMMkQZVDfjnLAcw5NOaZf275HkYJkruOZhFumqD47s",
+      "now": 1791504090000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03401160603981afbc6a02615d4473b9cc551675c6f9194289bdd992572c530bc3775a40d59add671c8bc39898afe6b9517ea2f83bcd0d8b027faddf6d92fdbe6a63752035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c2320063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-foreign-key",
+      "defect": "the leaf names (and is signed by) another key: the destination is not that key's p2tr",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiI2Y2Q3MjFmODNmODVmM2Q0NmQxODE3Y2ZkMmU4NzZmNmNkYzJmNmFiZjFmZDc5N2U3ZDViZDUxMGJlNGFhZGM3IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMTAwMDAsIm4iOiIxYzllODE1MTYyNTE0MjZmIn0.mecAaTGPhS1RLgebYvWs5uV6yyVy7MV1t-8bFOY2LCs",
+      "now": 1791504091000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc034028f5fd1a563e20e3f6554fb8f886e9eb8c5463627ce7d4613fc665fc4c919160d54d7b357af947488c332ef6436ad8b4597983908e98be6a9db5ed907613324e76207b80b49abdaf03b8fc3eeefd4ce5db5b1bdd8ddcb5803da6ce8891d05456e542ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-internal-key",
+      "defect": "a single-leaf control block over the lane key instead of NUMS",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiI1NTFmYzdjNzFhMGQzODQ0YTc4YmQwZjdjMmQ0OGVmMThhOWU1Yzk1Mjk4ZjQ4NjQxZGU0MTE5ZGUzOWUwN2IxIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMTEwMDAsIm4iOiI5ODZjODg1YmI3OTVhMWFjIn0.yytFrL5arHMcLIsBxXVB2mfFoUMTx7vkJdGndzw4wqU",
+      "now": 1791504092000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc0340f388d82a1940f51a9ef04d84333f6561faa6307f1ee3e06ddf8db38eb71bd93aff3c0b2f367602ec4de293153582596103163031a198e61393deb24668a11a7e762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-annex",
+      "defect": "a fourth witness item starting with 0x50 (an annex)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiJlYTM0ZjZmZDM1MjhhZWU2ZGRiMzBmMDZhN2E2OTJhNjJiNGI3Nzk3ODJiMzE1OTg2OGE1YzEyMzM4NDMwNWE1IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMTIwMDAsIm4iOiJmYjZmZDE1MGUwODI5MmE2In0.Y8K63cg03owy7_rfJr3MbsFsuD41jHi5TmdWbzv32cw",
+      "now": 1791504093000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc04409ca4820044dd83c23cc53ac06f75b5ad947da143d0116d56681d68e595e7ffe984cc73a1fa9f1e7e680bfa2ef065baeb4b23b50db3efadc540818d5b1916bc71762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac002500100000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-two-inscriptions",
+      "defect": "two inscriptions in one envelope script",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiIxMTY1OWNhZDFmODY5ZTNkNGQwOGNkZDdjYmYxZDZiMjg5NjRjZWYyZWJlZTlmYzY3ODQyNzY4MzcyNTYwYmY1IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMTMwMDAsIm4iOiJkOTE5NWU1YThjNzg3ZGZmIn0.OdJLCkTVmY-i9HtSX03135-dQi0XdmBUBT7-f2GJi8U",
+      "now": 1791504094000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc0340e0d3580cf2c5a5a20a4a5380756e529060ff7f24057f3100fdff86cb4766d1c8343024ae805b8fc5b3d144a4da85ac3e6a13a1e805f1976c9db9804407faa63fca2035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a680063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-other-outpoint",
+      "defect": "the reveal spends another commit's output; the ticket declares commit1:0",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiNmIwZWEyMDI0ZDQzNmFlZjIxY2Q0YmZiMDMwNmJjM2M4MDhiMTY3ODZkMWUyYTRhMGE3NjczZTkyOTdkMDFiZiIsInIiOiI5ZGMyMjNkNGY3ZjZkZmE0MTc2OTFiMWFkNWFmODQ4NzBmZGY4NzNlNTExYTc3NGRmNWUwZTViMTUzZTZkNTA5IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMTQwMDAsIm4iOiJiNTg2NzhhMzUwYmY2NDc4In0.rGUrXp5meKc95X-z3C4d5BGSuhgja6x3IQLB6rIWClY",
+      "now": 1791504095000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010d87f026942c7879a3eb8b599c393eeabf09a0d5bccf9c23c3fea0971669c6f10000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03404e6f3207c3c8d0e0fa20d14a38a328acaa6cae00c037bd49b811af062ece62027f14ecda8e9a182426b7820f10ce2f44a3506ec482abdb8a0390e7d9beb19faf762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          },
+          "f1c6691697a0fec3239ccfbcd5a009bfea3e399c598beba379782c9426f0870d:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-extra-input",
+      "defect": "a second input (a lane UTXO) besides the commit output",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiYmRhMWYzNTVlZTkwOTYzMDExYWJjMGNlMjNhMWMyOTE2ZTFiMjBjOThhYTI0ZjgzYTY1YjczYTBlNDI2NDUwMyIsInIiOiJkODliMjU4YzdkMzNlMjE5ZDYwYTI3ZmRmN2YyZDA4OTQzOGQ4YmRmOGQzYWMxNjVhNzNlYjU0N2Y2YTlkMzE2IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMTUwMDAsIm4iOiJiM2Y4ZTlmNzU5OTFlZDkxIn0.o3GgPU6nUFeUYeU7vrQ0wFIMTaX4b4tbhJ8wHDyz5B8",
+      "now": 1791504096000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001021674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffffaa8469e11403a2f53f872444982e2dc107fd7ce62dc2150571951bc04839dd730100000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc034020b13eeb2e03db6031e3b381bd8da7922c2232351f74af288b0b6644aa433120984f8dbb55be3ab348b557432831622ec2af0cf81e02d210f0fcc09f73a246a7762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0024730440220249d21d068b29b0cb8fcd097a16ae7bc37b2356879075116ad78110f03c4f88802205f3524e9c983d12f0a5b6103d14215cf761ac98fba0b90a37d01e7afa07a0ebf01210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          },
+          "73dd3948c01b95710515c22de67cfd07c12d2e984424873ff5a20314e16984aa:1": {
+            "value": "40000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-extra-output",
+      "defect": "a second output",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiZmE0ZTFkZGI2ZTIwNWQwYmZmZGVjYTAzNGI5OTY4MGEyYTBhMzM2Mjg0MWE3NGY3ZmM4ZTYzZjlkMzllZmFlMCIsInIiOiJhN2EwNWU5OWQyNzg2MzkwZmMzNTQzM2VhODk2MDY4Njc5Njc5YmI4YTQ3ZDY0YWQ2NzdiMWU1NWJkZGIzYTAwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMTYwMDAsIm4iOiIzOWRiNzI1OGE5ZWQ5Yjk0In0.pgRV4ICc8GHc2zVwLPk74He9KCnj98sYdYrlkEffPiQ",
+      "now": 1791504097000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff022202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc640000000000000016001485f292741cb75b7e66b934c5a72f3d581cf274560340e87d7ae155ad1668524a4b990160dce6d8f3b2550012fbe63c33b2946ad6ec4372bb45607c1c40eb1592d69bde6da14de12fabb52e702379dd5d722a67de61b0762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-destination",
+      "defect": "the inscription output pays another address",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMjA3MDE0ZGQwMTViYTk1YWUxNDRiODRkNzJmMTE3NDcxYTEzYzViOGIxZmI0YWE2YzBkOGNmOGNjNTQ1NjA3MCIsInIiOiI1YmQwNDQwMDE0YjJmNTAyMzM0ODA0ZDExYTJkNWEzNmQzZDlkODhjYmI0YTQ1MTU1M2JlY2M1NjMyZTQyNDEyIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMTcwMDAsIm4iOiI1ZjVmN2RlYzMyY2I0NTg3In0.fHm_TjluiJhW8CMVWeF9_NePyc2_KbQ25EHN9WVUsiQ",
+      "now": 1791504098000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff01220200000000000022512014944d41050a3281a2b5be44a36005a4c275f709e438cc8863e8f46e98fb5e4903404a0aab59096fb27bf3ac8dd93459b8a8f97d73231114e35ce9d023b4a3eaca9696ad0f4dda8b7536efabd18af8bd27f6948e539839a046e33e3863d7a948de20762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-value",
+      "defect": "the inscription output pays one sat more",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiNDQ2NmYyMDA5YThmZGMxYTBhZTE4MGJjMjUwNjAxODhjNDVjOTI2NTY5MjQwMjE4MWRiYmU1YWQwMmYwNmVjNyIsInIiOiIyOGExNDk0MDljZjQ5NWQyNDgwODA0ODRiMTU0YWEzMDc0N2Q1NDgyYmVkNmYxMmRlNjRkYjUyNzkyOTFjYjFiIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMTgwMDAsIm4iOiIwYWIwNzZkYTYxMGUyOGFkIn0.a7C9BZcNUfr7exnWFXR0epQu5SmpUrKgNzkjgaF_q-U",
+      "now": 1791504099000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012302000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03405bc68bc015cf674b985d8cdfeae0f988151a3979ab31f7c9cc0000547f30f3d56bb392590edc3a6ea3855a56ddb7c354e4ce3abf4e42bb24f85efee30c9e8239762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-fee",
+      "defect": "f is one sat below the fee",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiI1N2Y3NjdmMTVlYzIxZmVlODg0ZWI1NDQyMWY2YjRlZjQ4YjJkM2ZkZmM2MTEwOWI5MDIzZTYzNzZjZWZjN2E1IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMjk5IiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMTkwMDAsIm4iOiJlODQ0ZDQyNjY1ZDFhYzk2In0.IBoh_iwaro-xLze4gUUvpHidE9iqOSGiGFSTEgFrbBE",
+      "now": 1791504100000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03409ca4820044dd83c23cc53ac06f75b5ad947da143d0116d56681d68e595e7ffe984cc73a1fa9f1e7e680bfa2ef065baeb4b23b50db3efadc540818d5b1916bc71762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-outputs-exceed-input",
+      "defect": "the chain says the commit output is worth less than the postage",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiI1N2Y3NjdmMTVlYzIxZmVlODg0ZWI1NDQyMWY2YjRlZjQ4YjJkM2ZkZmM2MTEwOWI5MDIzZTYzNzZjZWZjN2E1IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMjAwMDAsIm4iOiI5MmUyMDY1YTQxYWY4NDU4In0.jcTTB6TE5bxoUilwcgz888xnX6qfkmXUAA7kXkHL5XM",
+      "now": 1791504101000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03409ca4820044dd83c23cc53ac06f75b5ad947da143d0116d56681d68e595e7ffe984cc73a1fa9f1e7e680bfa2ef065baeb4b23b50db3efadc540818d5b1916bc71762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "545",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-p2wpkh-spend",
+      "defect": "a plain P2WPKH spend of the declared outpoint: no inscription envelope",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiNDIzMzJhNzJlNzg0ZjE0OTA4ODdiNGY0MjcwOTUzZjk4YzgxZjBkN2JhZTk3ZTBhODMzNDBhMmNkMTY5YjFmNCIsInIiOiI0MzYxMWVjY2E4NGFhOTRiOGIyNjA3MjY5ODQyOGExZjJhMWViMWMyZDY0NzQ4YzgzMWQ1NzE5MTc0ZTA4ZDdlIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMjEwMDAsIm4iOiIxN2Q2MTc5MzY0NzI0Mjc1In0.E4RfYtSEcbUy0_pW0NTjvytcoEQr-xQS8GSFRG6XvGg",
+      "now": 1791504102000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc0247304402205b006c76e7fa5d50faf76c8347874bab75aa838e2ca07cbf41e2a26e28555bea022047b5d6423f3feba00f0984c33b53f5b514a0a12c9fb59875f06522e77d9a2a5701210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-locktime",
+      "defect": "locktime 1",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMTBhNDE5Y2ZlNjU0NzcxZmIwNDI2YWYxMzFiNWJmNTBkNzgxOGZmNDhlOTdlNDJlMmM3ZjYxOWFhNjFhMmIyNSIsInIiOiJlOTY1YTA0N2QzMjc3MTZiZThmZWM1NTcxNWFiYzZhODU1NzA5YmY0NDY0NWRkOWFiMTUzMWY2ZjI1N2NkMGZhIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMjIwMDAsIm4iOiI1NGZkZjI2OGQ3NzM1YjAyIn0.JPi--qoyTgWkWHpH2JWkwx2SJg0o8_TjkR_o178ZG1k",
+      "now": 1791504103000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc0340397b3d32f1143427af6e490fcb354de7c6af109ef114147886196151cb63a31d204f2e63c0691882c813d4ea577f13e138b313a4758cdf73a840f44f681ad434762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac001000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-unsigned",
+      "defect": "the input carries no witness",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiJiYTczM2M5ZGRmNjE0ZTFjMWY2ODc1YzYxNDg3ZWFiMWNmZmY0MDY5Y2M0ODlmNWVjNmUyYTQxM2Y4NjRkOGI0IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMjMwMDAsIm4iOiI4ODI0MDU0ZTNjOTJlMWY5In0.Yi2NnrBhokTh-KSHnMXU9t4M1F-jg2MxhotR9Ta9ymM",
+      "now": 1791504104000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "02000000011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc00000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-commit-bytes",
+      "defect": "a genuine commit tx under a reveal ticket",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoyLCJ0IjoiYzczNWU1MTc5MWM5MzJmY2I0YjllYTBmZTYzYzhlNmFmMDBlMzdhNWM0NWI2ZmJhZmIwZDM0ZmNjY2I5NzQxNiIsInIiOiJjMTBkM2Y2MDVlMDRiODAyZTg3NWYxNGY4ZjQ1YzVkMzQwYmRlNjdiMWRiMjNlZGUyN2VjNjYwYTIxZDYyOGUwIiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzA2IiwicSI6ImEyNWIwMTJiODY5MWFlY2NlNmI3NjU4NmNiMTUzYmQxMjUzOWViZmVjZDRjMTdiYmEyYjY0ZTI3NGJjZjcyMDg6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMjQwMDAsIm4iOiJkY2U1MzYxZWJhMmUwYmY3In0.kyekK5gHnIndnvds-qi3JXGmTs6etOf8JzKXda40kWI",
+      "now": 1791504105000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001010872cf4b274eb6a2bb174ccdfeeb3925d13b15cb8665b7e6ccae91862b015ba20000000000ffffffff024e0300000000000022512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7208201000000000016001433cb46e258b897129a95f496d9b5d6976e1b2a2c024730440220656fdc094b9269ff6b913897e2a1981156d6e9cae8f35a604196702c866233d602200f98ef335e072b3def675e7fd8a91bf22794599da88c8e1088ad7d23cdab059301210335505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c23200000000"
+        },
+        "prevouts": {
+          "a25b012b8691aecce6b76586cb153bd12539ebfecd4c17bba2b64e274bcf7208:0": {
+            "value": "100000",
+            "script": "001433cb46e258b897129a95f496d9b5d6976e1b2a2c"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-kind-p",
+      "defect": "the ticket p is the hash of another body",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjozLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiI1N2Y3NjdmMTVlYzIxZmVlODg0ZWI1NDQyMWY2YjRlZjQ4YjJkM2ZkZmM2MTEwOWI5MDIzZTYzNzZjZWZjN2E1IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiI4NjdhZDhjMTBhMjZiMmU5MjczZjczZTE3ZTRkMDAwNWM3N2I1NGM4NWZkZWJlMTY4YjM1NGRlZTQ5NDc3ZDdlIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMjUwMDAsIm4iOiI2OWM3N2FhMDlmNzM3YWE5In0.0htqu5jL-n7cMhyk-1ROujqIGm--C37mE1TwVHXvAgw",
+      "now": 1791504106000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03409ca4820044dd83c23cc53ac06f75b5ad947da143d0116d56681d68e595e7ffe984cc73a1fa9f1e7e680bfa2ef065baeb4b23b50db3efadc540818d5b1916bc71762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {
+          "c735e51791c932fcb4b9ea0fe63c8e6af00e37a5c45b6fbafb0d34fcccb97416:0": {
+            "value": "846",
+            "script": "512067688f6dac3e21b79018d18e63df2a5467ad5d855900c8013b556fa231e2b6f7"
+          }
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "btc-reveal-prevout-missing",
+      "defect": "the relay's chain read finds no such output",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJidGMiLCJnIjoxLCJ0IjoiMWMzNTMyZmE2ZmIwMzYxOTczMWFkNmQ0M2Y1MWI2ZmQ0MTQ1ZjIzOWRjYTk3YzE0NGI2N2RhM2QzYzEwNmQ2YyIsInIiOiI1N2Y3NjdmMTVlYzIxZmVlODg0ZWI1NDQyMWY2YjRlZjQ4YjJkM2ZkZmM2MTEwOWI5MDIzZTYzNzZjZWZjN2E1IiwiYSI6ImJjcnQxcXgwOTVkY2pjaHp0Mzl4NTQ3anRkbmR3a2phaHBrMjN2d2Zza2c5IiwiayI6InJldmVhbCIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiJiY3J0MXA5OWg3M2NtNHZsZHl5cXRudnd4bnBwdnB6Z3Nha3JmeHhzNzIwMzB4OHY3Z216MzdhbTdxMmNheGN6IiwidmFsdWUiOiI1NDYiLCJmIjoiMzAwIiwicSI6ImM3MzVlNTE3OTFjOTMyZmNiNGI5ZWEwZmU2M2M4ZTZhZjAwZTM3YTVjNDViNmZiYWZiMGQzNGZjY2NiOTc0MTY6MCIsIngiOm51bGwsImUiOjE3OTE1MDQyMjYwMDAsIm4iOiI2Yzg2NDM5NGU4NDMxNTZlIn0.5BQ0WnTgaoDkwb4QVgQo8K6tOsLV0hZyF_Yq5_R6ZRQ",
+      "now": 1791504107000,
+      "context": {
+        "network": "local",
+        "chain": "btc",
+        "raw": {
+          "encoding": "hex",
+          "value": "020000000001011674b9ccfc340dfbba6f5bc4a5370ef06a8e3ce60feab9b4fc32c99117e535c70000000000ffffffff012202000000000000225120296fe8e37567da420173638d3085811221db0d26343ca7c5e63b3c8d8a3eeefc03409ca4820044dd83c23cc53ac06f75b5ad947da143d0116d56681d68e595e7ffe984cc73a1fa9f1e7e680bfa2ef065baeb4b23b50db3efadc540818d5b1916bc71762035505471799de8efdefb1a96edb871139c2de0a702fe9097e940ed13efa5c232ac0063036f7264010118746578742f706c61696e3b636861727365743d7574662d3800305b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a6821c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac000000000"
+        },
+        "prevouts": {}
+      },
+      "guard": "relay.btc-prevout"
+    }
+  ]
+}

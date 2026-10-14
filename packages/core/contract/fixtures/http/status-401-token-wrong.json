@@ -1,0 +1,28 @@
+{
+  "after": null,
+  "volatile": [
+    "error.message"
+  ],
+  "name": "status-401-token-wrong",
+  "covers": "wrong token → 401 api.token",
+  "request": {
+    "method": "GET",
+    "path": "/status",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer wrong-token"
+    }
+  },
+  "response": {
+    "status": 401,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "guard": "api.token",
+        "message": "(any text that never echoes input)"
+      }
+    }
+  }
+}

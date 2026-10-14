@@ -1,0 +1,11 @@
+# Test files that apply their own sandbox (run unsandboxed in phase B of scripts/test-root.sh), one path per line,
+# relative to this workspace. macOS refuses to apply a profile inside a sandbox, so these never run in the suite
+# sandbox, and test/mutation/guards.json never maps a guard to them (the mutation runner would sandbox them).
+test/wrapper.test.ts
+test/confine.test.ts
+test/up-real.test.ts
+test/release-real.test.ts
+test/run-real.test.ts
+test/run-btc-real.test.ts
+test/ticket-key-real.test.ts
+test/broker-real.test.ts

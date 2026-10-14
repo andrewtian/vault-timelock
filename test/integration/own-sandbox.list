@@ -1,0 +1,20 @@
+# Files that apply their own sandboxes (test-root.sh runs them unsandboxed in phase B: macOS refuses nesting).
+# Paths relative to the repository root.
+test/integration/local-job.test.ts
+# E4 scenarios (M1): each starts its own chains, relay, API (and page server) under their real sandboxes.
+test/integration/scenarios/a-browser-drain.test.ts
+test/integration/scenarios/b-cli-copies.test.ts
+test/integration/scenarios/c-key-busy.test.ts
+test/integration/scenarios/clawback.test.ts
+test/integration/scenarios/crash-matrix.test.ts
+test/integration/scenarios/long-message.test.ts
+test/integration/scenarios/network-binding.test.ts
+test/integration/scenarios/parity-real.test.ts
+test/integration/scenarios/pressure-eth.test.ts
+test/integration/scenarios/pressure-sol.test.ts
+test/integration/scenarios/takeover.test.ts
+test/integration/scenarios/passive-fee-limit.test.ts
+test/integration/scenarios/btc-regtest.test.ts
+test/integration/scenarios/btc-executor.test.ts
+test/integration/scenarios/btc-api.test.ts
+test/integration/localnet.test.ts

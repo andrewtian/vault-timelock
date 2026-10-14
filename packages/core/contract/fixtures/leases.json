@@ -1,0 +1,264 @@
+{
+  "jobId": "e3d45f73cf65abaa",
+  "chain": "eth",
+  "start": 1791504000000,
+  "ttlMs": 15000,
+  "rules": [
+    "at = ms after start on a fake clock; the job exists (created at seq 0) and is ARMED with eth READY",
+    "a lease is live while now < expiresAt (expiresAt = acquire/renew time + ttlMs); at exactly expiresAt it has expired",
+    "acquire: lease.held while a live lease exists (whoever holds it); else gen = 1 + the highest gen journaled; journals lease-expired for a lapsed lease, then lease-acquired",
+    "renew with a wrong or expired gen: lease.lost; renew journals nothing; a grant always lists the open intents at that time",
+    "every executor event needs the live gen (lease.stale); intent and clawback-intent also need every intent opened under an earlier gen reconciled by the current gen (lease.reconcile-first)",
+    "refused steps journal nothing"
+  ],
+  "steps": [
+    {
+      "at": 0,
+      "op": "acquire",
+      "holder": "browser",
+      "expect": {
+        "grant": {
+          "gen": 1,
+          "ttlMs": 15000,
+          "expiresAt": 1791504015000,
+          "holder": "browser",
+          "openIntents": []
+        }
+      }
+    },
+    {
+      "at": 1000,
+      "op": "append",
+      "gen": 1,
+      "type": "intent",
+      "data": {
+        "txId": "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4",
+        "copy": 1,
+        "part": 1,
+        "parts": 1,
+        "attempt": 1,
+        "replaces": null,
+        "rawSha256": "33bbf93f2cb26017b84d49f45131214fafd7ad2281cd99c7cc1650205b0740ba",
+        "payloadSha256": "9d2d8969ec94db157af1320cbb707603b477f1b57a8c6e4572a61898812f81aa",
+        "reserved": "50000000000000",
+        "eth": {
+          "nonce": 0,
+          "tip": "12000",
+          "maxFee": "2000012000",
+          "gas": "23400",
+          "to": "0x0000000000000000000000000000000000000000"
+        }
+      },
+      "expect": {
+        "ok": true,
+        "ticket": true
+      }
+    },
+    {
+      "at": 2000,
+      "op": "append",
+      "gen": 1,
+      "type": "sent",
+      "data": {
+        "txId": "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4",
+        "outcome": "accepted",
+        "reason": null
+      },
+      "expect": {
+        "ok": true,
+        "ticket": false
+      }
+    },
+    {
+      "at": 5000,
+      "op": "acquire",
+      "holder": "cli",
+      "expect": {
+        "guard": "lease.held"
+      }
+    },
+    {
+      "at": 15000,
+      "op": "renew",
+      "gen": 1,
+      "expect": {
+        "guard": "lease.lost"
+      }
+    },
+    {
+      "at": 16000,
+      "op": "acquire",
+      "holder": "cli",
+      "expect": {
+        "grant": {
+          "gen": 2,
+          "ttlMs": 15000,
+          "expiresAt": 1791504031000,
+          "holder": "cli",
+          "openIntents": [
+            {
+              "txId": "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4",
+              "gen": 1,
+              "copy": 1,
+              "part": 1,
+              "attempt": 1,
+              "eth": {
+                "nonce": 0,
+                "tip": "12000",
+                "maxFee": "2000012000",
+                "gas": "23400",
+                "to": "0x0000000000000000000000000000000000000000"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": 17000,
+      "op": "append",
+      "gen": 2,
+      "type": "intent",
+      "data": {
+        "txId": "0x4cfb7e9d23b27752ecf41cfbe91e933db2d78738e68e3eba56cbef48660ea062",
+        "copy": 2,
+        "part": 1,
+        "parts": 1,
+        "attempt": 1,
+        "replaces": null,
+        "rawSha256": "1aee632e0f2232e6848ee20cf1c2180f751afd8efae304c52e7b1b73ac8d95a6",
+        "payloadSha256": "a9188fc556f9e6432232159b112ea64c8e63af7880ea403f0104abcf0658143b",
+        "reserved": "50000000000000",
+        "eth": {
+          "nonce": 1,
+          "tip": "12000",
+          "maxFee": "2000012000",
+          "gas": "23600",
+          "to": "0x0000000000000000000000000000000000000000"
+        }
+      },
+      "expect": {
+        "guard": "lease.reconcile-first"
+      }
+    },
+    {
+      "at": 17500,
+      "op": "append",
+      "gen": 2,
+      "type": "reconcile",
+      "data": {
+        "txId": "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4",
+        "outcome": "included",
+        "block": "101",
+        "fee": "25000300000000"
+      },
+      "expect": {
+        "ok": true,
+        "ticket": false
+      }
+    },
+    {
+      "at": 18000,
+      "op": "append",
+      "gen": 2,
+      "type": "intent",
+      "data": {
+        "txId": "0x4cfb7e9d23b27752ecf41cfbe91e933db2d78738e68e3eba56cbef48660ea062",
+        "copy": 2,
+        "part": 1,
+        "parts": 1,
+        "attempt": 1,
+        "replaces": null,
+        "rawSha256": "1aee632e0f2232e6848ee20cf1c2180f751afd8efae304c52e7b1b73ac8d95a6",
+        "payloadSha256": "a9188fc556f9e6432232159b112ea64c8e63af7880ea403f0104abcf0658143b",
+        "reserved": "50000000000000",
+        "eth": {
+          "nonce": 1,
+          "tip": "12000",
+          "maxFee": "2000012000",
+          "gas": "23600",
+          "to": "0x0000000000000000000000000000000000000000"
+        }
+      },
+      "expect": {
+        "ok": true,
+        "ticket": true
+      }
+    },
+    {
+      "at": 19000,
+      "op": "append",
+      "gen": 1,
+      "type": "note",
+      "data": {
+        "text": "from the old holder"
+      },
+      "expect": {
+        "guard": "lease.stale"
+      }
+    },
+    {
+      "at": 20000,
+      "op": "renew",
+      "gen": 2,
+      "expect": {
+        "grant": {
+          "gen": 2,
+          "ttlMs": 15000,
+          "expiresAt": 1791504035000,
+          "holder": "cli",
+          "openIntents": [
+            {
+              "txId": "0x4cfb7e9d23b27752ecf41cfbe91e933db2d78738e68e3eba56cbef48660ea062",
+              "gen": 2,
+              "copy": 2,
+              "part": 1,
+              "attempt": 1,
+              "eth": {
+                "nonce": 1,
+                "tip": "12000",
+                "maxFee": "2000012000",
+                "gas": "23600",
+                "to": "0x0000000000000000000000000000000000000000"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "journalAfter": [
+    [
+      "created",
+      null
+    ],
+    [
+      "lease-acquired",
+      1
+    ],
+    [
+      "intent",
+      1
+    ],
+    [
+      "sent",
+      1
+    ],
+    [
+      "lease-expired",
+      1
+    ],
+    [
+      "lease-acquired",
+      2
+    ],
+    [
+      "reconcile",
+      2
+    ],
+    [
+      "intent",
+      2
+    ]
+  ]
+}

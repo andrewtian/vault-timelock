@@ -1,0 +1,441 @@
+{
+  "contract.network": [
+    "test/network.test.ts"
+  ],
+  "contract.fork-override": [
+    "test/network.test.ts"
+  ],
+  "job.format": [
+    "test/job/validate.test.ts"
+  ],
+  "job.unknown-key": [
+    "test/job/validate.test.ts"
+  ],
+  "job.network-field": [
+    "test/job/validate.test.ts"
+  ],
+  "job.network": [
+    "test/job/validate.test.ts"
+  ],
+  "job.name": [
+    "test/job/validate.test.ts"
+  ],
+  "job.field-chain": [
+    "test/job/validate.test.ts"
+  ],
+  "job.mode": [
+    "test/job/validate.test.ts"
+  ],
+  "job.publish-mode": [
+    "test/job/validate.test.ts"
+  ],
+  "job.publish-mode-unavailable": [
+    "test/job/validate.test.ts"
+  ],
+  "job.chain-unsupported": [
+    "test/job/validate.test.ts"
+  ],
+  "executor.chain-unsupported": [
+    "test/executor/btc-executor.test.ts"
+  ],
+  "job.text-kind": [
+    "test/job/validate.test.ts"
+  ],
+  "job.arweave-copy": [
+    "test/job/validate.test.ts"
+  ],
+  "job.fee-strategy": [
+    "test/job/validate.test.ts"
+  ],
+  "job.address": [
+    "test/job/validate.test.ts"
+  ],
+  "job.budget": [
+    "test/job/validate.test.ts"
+  ],
+  "job.tip-cap": [
+    "test/job/validate.test.ts"
+  ],
+  "job.cu-cap": [
+    "test/job/validate.test.ts"
+  ],
+  "job.clawback": [
+    "test/job/validate.test.ts"
+  ],
+  "job.clawback-precompile": [
+    "test/job/validate.test.ts"
+  ],
+  "job.message-file": [
+    "test/job/validate.test.ts"
+  ],
+  "job.message-source": [
+    "test/job/validate.test.ts"
+  ],
+  "job.ip-like": [
+    "test/job/keylike.test.ts",
+    "test/job/validate.test.ts"
+  ],
+  "job.key-like": [
+    "test/job/keylike.test.ts",
+    "test/job/validate.test.ts"
+  ],
+  "message.empty": [
+    "test/job/message.test.ts"
+  ],
+  "message.utf8": [
+    "test/job/message.test.ts"
+  ],
+  "message.too-long": [
+    "test/job/message.test.ts"
+  ],
+  "message.control": [
+    "test/job/message.test.ts"
+  ],
+  "message.nfc": [
+    "test/job/message.test.ts"
+  ],
+  "message.secret": [
+    "test/job/message.test.ts"
+  ],
+  "message.ip-like": [
+    "test/job/message.test.ts"
+  ],
+  "event.type": [
+    "test/job/events.test.ts"
+  ],
+  "event.by": [
+    "test/job/events.test.ts"
+  ],
+  "event.shape": [
+    "test/job/events.test.ts"
+  ],
+  "arm.chains": [
+    "test/job/confirm.test.ts"
+  ],
+  "arm.typed": [
+    "test/job/confirm.test.ts"
+  ],
+  "arm.amount": [
+    "test/job/confirm.test.ts"
+  ],
+  "arm.countdown": [
+    "test/job/confirm.test.ts"
+  ],
+  "arm.stagger": [
+    "test/job/confirm.test.ts"
+  ],
+  "resume.final-stop": [
+    "test/executor/final-stop.test.ts"
+  ],
+  "job.state": [
+    "test/job/intent.test.ts",
+    "test/job/reducer.test.ts"
+  ],
+  "engine.no-ticket": [
+    "test/engine/ticket.test.ts",
+    "test/engine/intent-awaited.test.ts"
+  ],
+  "engine.cap": [
+    "test/engine/gates.test.ts",
+    "test/engine/intent-awaited.test.ts",
+    "test/engine/cap-bypass.test.ts",
+    "test/engine/cap-ledger.test.ts"
+  ],
+  "backup.decrypt": [
+    "test/engine/gates.test.ts"
+  ],
+  "backup.chain": [
+    "test/engine/gates.test.ts"
+  ],
+  "backup.inconsistent": [
+    "test/engine/gates.test.ts"
+  ],
+  "backup.address-mismatch": [
+    "test/engine/gates.test.ts"
+  ],
+  "engine.cap-copy": [
+    "test/engine/cap-bypass.test.ts",
+    "test/engine/cap-ledger.test.ts"
+  ],
+  "engine.cap-clawback": [
+    "test/engine/cap-bypass.test.ts",
+    "test/engine/cap-ledger.test.ts"
+  ],
+  "engine.cap-armed": [
+    "test/engine/cap-bypass.test.ts",
+    "test/engine/cap-ledger.test.ts"
+  ],
+  "engine.cap-busy": [
+    "test/engine/cap-bypass.test.ts",
+    "test/engine/cap-ledger.test.ts"
+  ],
+  "engine.cap-ledger": [
+    "test/engine/cap-bypass.test.ts",
+    "test/engine/intent-awaited.test.ts"
+  ],
+  "executor.network-mismatch": [
+    "test/executor/executor.test.ts"
+  ],
+  "executor.key-mismatch": [
+    "test/executor/executor.test.ts"
+  ],
+  "executor.skip": [
+    "test/executor/executor.test.ts"
+  ],
+  "executor.endpoints-quorum": [
+    "test/executor/executor.test.ts"
+  ],
+  "message.digest": [
+    "test/executor/journal-client.test.ts"
+  ],
+  "engine.fee-window-first": [
+    "test/engine/fee-window.test.ts"
+  ],
+  "engine.fee-tip-input": [
+    "test/engine/fee-window.test.ts"
+  ],
+  "engine.nonce-disagree": [
+    "test/engine/agree.test.ts"
+  ],
+  "engine.eip7702": [
+    "test/engine/agree.test.ts"
+  ],
+  "engine.code-disagree": [
+    "test/engine/agree.test.ts"
+  ],
+  "guard-id-format": [
+    "test/text/guard.test.ts"
+  ],
+  "note.empty": [
+    "test/text/envelope.test.ts"
+  ],
+  "note.utf8": [
+    "test/text/envelope.test.ts"
+  ],
+  "note.replacement": [
+    "test/text/envelope.test.ts"
+  ],
+  "note.control": [
+    "test/text/envelope.test.ts"
+  ],
+  "note.bidi": [
+    "test/text/envelope.test.ts"
+  ],
+  "note.invisible": [
+    "test/text/envelope.test.ts"
+  ],
+  "note.whitespace": [
+    "test/text/envelope.test.ts"
+  ],
+  "note.nfc": [
+    "test/text/envelope.test.ts"
+  ],
+  "note.too-long": [
+    "test/text/envelope.test.ts"
+  ],
+  "envelope.ar-id": [
+    "test/text/envelope.test.ts"
+  ],
+  "envelope.unlock": [
+    "test/text/envelope.test.ts"
+  ],
+  "envelope.too-long": [
+    "test/text/envelope.test.ts"
+  ],
+  "armor.malformed": [
+    "test/text/armor.test.ts"
+  ],
+  "published.dest": [
+    "test/text/published.test.ts"
+  ],
+  "published.unlock-mismatch": [
+    "test/text/published.test.ts"
+  ],
+  "published.sealed-form": [
+    "test/text/published.test.ts"
+  ],
+  "published.too-long": [
+    "test/text/published.test.ts"
+  ],
+  "published.sol-too-long": [
+    "test/text/published.test.ts"
+  ],
+  "sealed.already-open": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "sealed.armor-noncanonical": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "sealed.chain-info": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "sealed.file": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "sealed.format": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "sealed.key-only-needs-ar": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "sealed.non-ascii": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "sealed.not-age": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "sealed.round": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "sealed.selfcheck": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "sealed.stanza": [
+    "test/text/sealed-from.test.ts"
+  ],
+  "drand.chain-info": [
+    "test/text/drand.test.ts"
+  ],
+  "payload.empty": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.control": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.bidi": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.nfc": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.header": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.sealed-missing": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.sealed-end": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.sealed-non-ascii": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.unlock-mismatch": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.contents": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.armor": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.not-age": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.block-mismatch": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.no-blocks": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.too-long": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.invisible": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.sealed-duplicate": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.note-structure": [
+    "test/text/payload.test.ts",
+    "test/text/payload-differential.test.ts"
+  ],
+  "payload.trailing-blank": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.unlock-line": [
+    "test/text/payload.test.ts",
+    "test/text/payload-differential.test.ts"
+  ],
+  "payload.round-mismatch": [
+    "test/text/payload.test.ts",
+    "test/text/payload-differential.test.ts"
+  ],
+  "payload.sealed-line": [
+    "test/text/payload.test.ts",
+    "test/text/payload-differential.test.ts"
+  ],
+  "payload.sealed-structure": [
+    "test/text/payload.test.ts"
+  ],
+  "payload.layout": [
+    "test/text/payload.test.ts",
+    "test/text/payload-differential.test.ts"
+  ],
+  "payload.stanza": [
+    "test/text/payload.test.ts",
+    "test/text/payload-differential.test.ts"
+  ],
+  "payload.sealed-text": [
+    "test/text/payload.test.ts",
+    "test/text/payload-differential.test.ts"
+  ],
+  "payload.invalid": [
+    "test/text/payload.test.ts"
+  ],
+  "engine.sol-expiry-unreadable": [
+    "test/engine/sol-expiry.test.ts"
+  ],
+  "engine.sol-expiry-stale": [
+    "test/engine/sol-expiry.test.ts"
+  ],
+  "engine.sol-expiry-status": [
+    "test/engine/sol-expiry.test.ts"
+  ],
+  "engine.sol-expiry-finalized": [
+    "test/engine/sol-expiry.test.ts"
+  ],
+  "engine.btc-order": [
+    "test/engine/btc.test.ts"
+  ],
+  "engine.btc-rebuild": [
+    "test/engine/btc.test.ts"
+  ],
+  "job.btc-fee-ceiling": [
+    "test/job/validate.test.ts"
+  ],
+  "job.clawback-required": [
+    "test/job/validate.test.ts"
+  ],
+  "job.fee-rate": [
+    "test/job/validate.test.ts"
+  ],
+  "engine.btc-open": [
+    "test/engine/btc.test.ts"
+  ],
+  "engine.btc-clawback": [
+    "test/executor/btc-executor.test.ts"
+  ],
+  "engine.btc-fee-rate": [
+    "test/engine/btc.test.ts"
+  ],
+  "provenance.incomplete": [
+    "test/gates/provenance.test.ts"
+  ],
+  "provenance.paged": [
+    "test/gates/provenance.test.ts"
+  ],
+  "provenance.no-inbound": [
+    "test/gates/provenance.test.ts"
+  ],
+  "provenance.not-railgun": [
+    "test/gates/provenance.test.ts"
+  ],
+  "provenance.nonce": [
+    "test/gates/provenance.test.ts"
+  ],
+  "provenance.unaccounted": [
+    "test/gates/provenance.test.ts"
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "phase": "RUNNING",
+  "armed": {
+    "armedAt": 1791504009000,
+    "releaseAt": 1791504024000,
+    "countdownSec": 15,
+    "schedule": {
+      "order": [
+        "sol"
+      ],
+      "offsetSec": {
+        "sol": 0
+      }
+    },
+    "caps": {
+      "sol": {
+        "nativeCap": "70000000",
+        "usd": 10,
+        "priceAt": 1791504009000,
+        "overCap": false,
+        "planned": "0.07"
+      }
+    },
+    "sources": {}
+  },
+  "releaseAt": 1791504024000,
+  "chains": {
+    "sol": {
+      "phase": "RUNNING",
+      "reason": null,
+      "address": "9xx7qC7uwTAeaSo7T5Gk9canYBosFh1pMQaDmQEa83Tb",
+      "copy": 1,
+      "attempt": 2,
+      "copiesIncluded": 1,
+      "reassembled": [],
+      "spent": "9560",
+      "txs": [
+        {
+          "copy": 1,
+          "part": 1,
+          "parts": 1,
+          "attempts": [
+            {
+              "txId": "57wYp3aVZ5KXSjrD8wzqs6iQukQKveQjkg7ECDyHSjAMB48vbD4DNdH1TNEAxMzxjuxeWc75UL3tgLZw3k7QKrZm",
+              "gen": 1,
+              "state": "expired",
+              "sol": {
+                "blockhash": "8sXXG9moUXDxbDBWp5YgHt7HP4ZKRhXQsS4WJPxyD8HF",
+                "lastValidBlockHeight": 1000,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            },
+            {
+              "txId": "3p7SFrj8jTvmmUuWz9wyvUmnuak2y2ccXQcL6unsNQZ8i3WY56ARxRVUGZhHqVQqDoPY4wNMyWWFtnH7tuyXtvjH",
+              "gen": 1,
+              "state": "included",
+              "sol": {
+                "blockhash": "ARSCF4FKUbFRAdTvNCaLHs1nFvBRRmnV7C58PNhaPeFd",
+                "lastValidBlockHeight": 1200,
+                "cuPrice": 151992,
+                "cuLimit": 30000,
+                "rung": 1,
+                "fee": "9560"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "3p7SFrj8jTvmmUuWz9wyvUmnuak2y2ccXQcL6unsNQZ8i3WY56ARxRVUGZhHqVQqDoPY4wNMyWWFtnH7tuyXtvjH",
+          "block": "3456",
+          "fee": "9560",
+          "readback": true
+        }
+      ],
+      "openIntents": [],
+      "resume": null,
+      "stopRequested": false,
+      "clawback": null
+    }
+  },
+  "seq": 11,
+  "corrupt": null
+}

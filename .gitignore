@@ -1,0 +1,25 @@
+# NEVER commit a sealed package or anything a run produced — they are the artefacts,
+# and one of them is a plaintext-adjacent tree until the seal completes.
+*-timelock-*/
+*.timelock/
+*.age
+restored/
+
+# Canonical vt workspaces (Task 0)
+node_modules/
+web/dist/
+.vt-dev/
+releases/
+*.log
+test/integration/.tmp/
+
+# Local working notes and design drafts (kept out of the public tree)
+docs/superpowers/
+.superpowers/
+
+# Local environment, build output and OS cruft
+.env
+.env.*
+dist/
+coverage/
+.DS_Store

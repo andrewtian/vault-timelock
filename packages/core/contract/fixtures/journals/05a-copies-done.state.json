@@ -1,0 +1,76 @@
+{
+  "phase": "ARMED",
+  "armed": {
+    "armedAt": 1791504009000,
+    "releaseAt": 1791504024000,
+    "countdownSec": 15,
+    "schedule": {
+      "order": [
+        "eth"
+      ],
+      "offsetSec": {
+        "eth": 0
+      }
+    },
+    "caps": {
+      "eth": {
+        "nativeCap": "4000000000000000",
+        "usd": 10,
+        "priceAt": 1791504009000,
+        "overCap": false,
+        "planned": "0.004"
+      }
+    },
+    "sources": {}
+  },
+  "releaseAt": 1791504024000,
+  "chains": {
+    "eth": {
+      "phase": "COPIES_DONE",
+      "reason": null,
+      "address": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+      "copy": 1,
+      "attempt": 1,
+      "copiesIncluded": 1,
+      "reassembled": [
+        {
+          "copy": 1,
+          "ok": true
+        }
+      ],
+      "spent": "25000300000000",
+      "txs": [
+        {
+          "copy": 1,
+          "part": 1,
+          "parts": 1,
+          "attempts": [
+            {
+              "txId": "0x30c0b7c7d8a33ead6dbeace31db96e671028cfbddc70946f7e6cc8184491cb22",
+              "gen": 1,
+              "state": "included",
+              "eth": {
+                "nonce": 0,
+                "tip": "12000",
+                "maxFee": "2000012000",
+                "gas": "23400",
+                "to": "0x0000000000000000000000000000000000000000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "0x30c0b7c7d8a33ead6dbeace31db96e671028cfbddc70946f7e6cc8184491cb22",
+          "block": "101",
+          "fee": "25000300000000",
+          "readback": true
+        }
+      ],
+      "openIntents": [],
+      "resume": null,
+      "stopRequested": false,
+      "clawback": null
+    }
+  },
+  "seq": 10,
+  "corrupt": null
+}

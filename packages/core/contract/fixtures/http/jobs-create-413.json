@@ -1,0 +1,33 @@
+{
+  "after": null,
+  "volatile": [
+    "error.message"
+  ],
+  "name": "jobs-create-413",
+  "covers": "POST with a 65,537-byte body → 413 api.body-cap",
+  "request": {
+    "method": "POST",
+    "path": "/jobs",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "content-type": "application/json"
+    },
+    "bodyFill": {
+      "char": "a",
+      "length": 65537
+    }
+  },
+  "response": {
+    "status": 413,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "guard": "api.body-cap",
+        "message": "(any text that never echoes input)"
+      }
+    }
+  }
+}

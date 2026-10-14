@@ -1,0 +1,19 @@
+{
+  "format": "vt-job/1",
+  "network": "local",
+  "name": "journal vector eth drain",
+  "messageSha256": "ce05bec7829acd1077a4c3fa6d2fa8415e85970bcde46d98dcdd0ae6f6794cb0",
+  "messageBytes": 21,
+  "chains": {
+    "eth": {
+      "mode": "drain",
+      "publishMode": "eth.calldata.null",
+      "feeStrategy": "passive",
+      "distinctCopies": true,
+      "keyAddress": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+      "budgetUsd": 10,
+      "maxTipGwei": 3,
+      "clawbackTo": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+    }
+  }
+}

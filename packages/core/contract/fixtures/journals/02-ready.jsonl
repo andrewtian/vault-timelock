@@ -1,0 +1,4 @@
+{"v":1,"seq":0,"at":1791504000000,"prev":"","chain":null,"by":"api","gen":null,"type":"created","data":{"jobId":"4d07e8ae251266b8","defSha256":"4d07e8ae251266b859e67dfb541a62c9150f3cd412d08433f05091c1c1dbebe9"}}
+{"v":1,"seq":1,"at":1791504001000,"prev":"2a314b7ea2353337ce066d153def88b6bdb54f1146e05fda2a946742537cdd9a","chain":"eth","by":"api","gen":1,"type":"lease-acquired","data":{"gen":1,"holder":"browser","ttlMs":15000}}
+{"v":1,"seq":2,"at":1791504002000,"prev":"2cceee21dc50f377a139b69edd0227c73e3f759a2a64094dd6fb70d0cb6359be","chain":"eth","by":"browser","gen":1,"type":"key-loaded","data":{"address":"0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C"}}
+{"v":1,"seq":3,"at":1791504003000,"prev":"58c8d6a29d28644fd2000fb482babae998ee383d6e983e410bc0d7648238eaa6","chain":"eth","by":"browser","gen":1,"type":"funds","data":{"balance":"50000000000000000","affordable":true,"nextCopyCost":"25000300000000"}}

@@ -1,0 +1,77 @@
+{
+  "phase": "RUNNING",
+  "armed": {
+    "armedAt": 1791504009000,
+    "releaseAt": 1791504024000,
+    "countdownSec": 15,
+    "schedule": {
+      "order": [
+        "eth"
+      ],
+      "offsetSec": {
+        "eth": 0
+      }
+    },
+    "caps": {
+      "eth": {
+        "nativeCap": "4000000000000000",
+        "usd": 10,
+        "priceAt": 1791504009000,
+        "overCap": false,
+        "planned": "0.004"
+      }
+    },
+    "sources": {}
+  },
+  "releaseAt": 1791504024000,
+  "chains": {
+    "eth": {
+      "phase": "STUCK",
+      "reason": "outcome unknowable: nonce 0 not consumed and the tx is not found",
+      "address": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+      "copy": 1,
+      "attempt": 1,
+      "copiesIncluded": 0,
+      "reassembled": [],
+      "spent": "0",
+      "txs": [
+        {
+          "copy": 1,
+          "part": 1,
+          "parts": 1,
+          "attempts": [
+            {
+              "txId": "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4",
+              "gen": 1,
+              "state": "unknown",
+              "eth": {
+                "nonce": 0,
+                "tip": "12000",
+                "maxFee": "2000012000",
+                "gas": "23400",
+                "to": "0x0000000000000000000000000000000000000000"
+              }
+            }
+          ],
+          "state": "stuck",
+          "landedId": null,
+          "block": null,
+          "fee": null,
+          "readback": null
+        }
+      ],
+      "openIntents": [
+        "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4"
+      ],
+      "resume": {
+        "copy": 1,
+        "nextPart": 1
+      },
+      "stopRequested": false,
+      "clawback": null,
+      "stuckBase": "RUNNING"
+    }
+  },
+  "seq": 7,
+  "corrupt": null
+}

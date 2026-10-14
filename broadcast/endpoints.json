@@ -1,0 +1,45 @@
+{
+  "mainnet": {
+    "eth.rpc": ["https://ethereum-rpc.publicnode.com", "https://1rpc.io/eth", "https://eth.drpc.org"],
+    "arb.rpc": ["https://arb1.arbitrum.io/rpc", "https://arbitrum-one-rpc.publicnode.com"],
+    "base.rpc": ["https://mainnet.base.org", "https://base-rpc.publicnode.com"],
+    "sol.rpc": ["https://api.mainnet-beta.solana.com", "https://solana-rpc.publicnode.com"],
+    "btc.esplora": [
+      "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/api",
+      "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api",
+      "https://mempool.space/api",
+      "https://blockstream.info/api"
+    ],
+    "eth.blockscout": ["https://eth.blockscout.com/api/v2"],
+    "arb.blockscout": ["https://arbitrum.blockscout.com/api/v2"],
+    "base.blockscout": ["https://base.blockscout.com/api/v2"],
+    "thorchain": ["https://gateway.liquify.com/chain/thorchain_api"],
+    "drand": ["https://api.drand.sh", "https://api2.drand.sh", "https://api3.drand.sh"],
+    "arweave.gateway": ["https://arweave.net", "https://turbo-gateway.com"],
+    "turbo.upload": ["https://upload.ardrive.io"],
+    "turbo.payment": ["https://payment.ardrive.io"]
+  },
+  "testnet": {
+    "eth.rpc": ["https://ethereum-sepolia-rpc.publicnode.com"],
+    "arb.rpc": ["https://sepolia-rollup.arbitrum.io/rpc", "https://arbitrum-sepolia-rpc.publicnode.com"],
+    "base.rpc": ["https://sepolia.base.org", "https://base-sepolia-rpc.publicnode.com"],
+    "sol.rpc": ["https://api.devnet.solana.com"],
+    "btc.esplora": [
+      "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/testnet4/api",
+      "https://mempool.space/testnet4/api"
+    ],
+    "eth.blockscout": ["https://eth-sepolia.blockscout.com/api/v2"],
+    "arb.blockscout": ["https://arbitrum-sepolia.blockscout.com/api/v2"],
+    "base.blockscout": ["https://base-sepolia.blockscout.com/api/v2"],
+    "drand": ["https://api.drand.sh", "https://api2.drand.sh", "https://api3.drand.sh"],
+    "arweave.gateway": ["https://ar-io.dev"],
+    "turbo.upload": ["https://upload.services.ar-io.dev"],
+    "turbo.payment": ["https://payment.services.ar-io.dev"]
+  },
+  "local": {
+    "eth.rpc": ["http://127.0.0.1:8545"],
+    "sol.rpc": ["http://127.0.0.1:8999"],
+    "btc.bitcoind": ["http://127.0.0.1:18443"],
+    "btc.ord": ["http://127.0.0.1:8090"]
+  }
+}

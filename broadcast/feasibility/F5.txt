@@ -1,0 +1,102 @@
+F5 (partial): does the sandbox-exec confinement profile deny a direct connection, and with which errno?
+Measured 2026-10-08 on a macOS test machine, before src/net/confine.ts was written (Task 7).
+
+macOS (sw_vers -productVersion): 26.2
+node --version:                   v24.13.0
+sandbox-exec:                     /usr/bin/sandbox-exec
+
+Production profile (spec B s6.1):
+  (version 1)(allow default)(deny network-outbound)(allow network-outbound (remote ip "localhost:9050"))
+
+Probe: a 10-line Node script calling node:net connect({ host: '192.0.2.1', port: 9 }) (TEST-NET-1,
+RFC 5737, never routed), recording the 'error' event's code and syscall, or 'connect', or nothing
+within 2 s.
+
+Result                                          | errno                    | time
+------------------------------------------------|--------------------------|---------
+sandbox-exec -p <production profile> node probe | EPERM (syscall connect)  | 1-2 ms   (4 of 4 runs)
+node probe (no sandbox)                         | none: no answer in 2 s   | 2000 ms  (4 of 4 runs; one 6 s run: still none)
+
+Conclusion: the two cases are distinguishable. Only EPERM counts as proof of confinement
+(src/net/confine.ts). A timeout, ETIMEDOUT, EHOSTUNREACH, ENETUNREACH, ECONNREFUSED or a connect
+means "not sandboxed" (confine.not-sandboxed). EPERM arrives in about 1 ms, so the 2 s budget
+only matters for the unsandboxed case.
+
+Supporting measurements (same machine, same session; loopback addresses written as words):
+- Tor's SOCKS port (loopback 9050) under the production profile: connects.
+- Another loopback port (9) under the production profile: EPERM. Without the sandbox: ECONNREFUSED.
+- A widened profile (+ (allow network-outbound (remote ip "localhost:<P>"))) does not deny port P
+  on either loopback family (IPv6 listener on P: connects; IPv4, nothing listening on P:
+  ECONNREFUSED, i.e. not denied), and still gives EPERM for any other loopback port. So the
+  wrapper's per-port rules cover http://[::1]:<port> overrides too.
+- The test profile (remote ip "localhost:*") lets both loopback families reach any local port and
+  still gives EPERM for 192.0.2.1:9. But it also lets a test reach Tor's SOCKS port, i.e. the
+  internet. Excluding that port: a later (deny network-outbound (remote ip "localhost:9050")) is
+  silently ignored (still connects), and so is (require-not (remote ip "localhost:9050")) inside
+  the allow; a later (deny network-outbound (remote ip "*:9050")) works (EPERM on 9050, other
+  loopback ports still reachable). scripts/test-offline.sh therefore appends
+  (deny network-outbound (remote ip "*:9050"))(deny network-outbound (remote ip "*:9150")) and
+  checks it in a preflight before every run.
+- NESTING: sandbox-exec inside sandbox-exec works only when the inner profile is byte-identical to
+  the outer one. Any different inner profile fails before exec with
+  "sandbox-exec: sandbox_apply: Operation not permitted" (exit 71), e.g. the production profile
+  inside the test profile, the test profile inside the production one, a widened production
+  profile inside the plain one, or even "(version 1)(allow default)" inside the test profile.
+  Consequences:
+    * bin/vt-broadcast never nests (VT_CONFINED=1 means "exec node directly"); if it ever tried to
+      apply a different profile from inside a sandbox it would fail closed (exit 71).
+    * scripts/test-offline.sh cannot run the tests that apply their own sandbox (confine.test.ts,
+      wrapper.test.ts) inside the suite sandbox: they would see sandbox_apply EPERM, and their
+      "unsandboxed" arm would be confined by the outer profile. Those two files run in a second,
+      unsandboxed phase. Their only non-loopback socket is the 192.0.2.1:9 probe under test, and
+      every wrapper invocation inside them is itself confined by the real profile.
+- env -i PATH=... HOME=... node: process.env also shows __CF_USER_TEXT_ENCODING, which macOS
+  CoreFoundation synthesises inside the child. The wrapper does not pass it; env-names lists it.
+
+Task 7b additions (measured 2026-10-08, same machine; a Node probe recording connect()'s errno;
+"loopback" = the IPv4/IPv6 loopback addresses, written as words):
+
+Profile                                          | TEST-NET-1:9 | loopback:9   | loopback:9050 | loopback:9150
+-------------------------------------------------|--------------|--------------|---------------|--------------
+production (Tor port only)                       | EPERM        | EPERM        | connects      | EPERM
+production + allow "localhost:9"                 | EPERM        | ECONNREFUSED | connects      | EPERM
+deny all + allow "localhost:*"                   | EPERM        | ECONNREFUSED | connects      | ECONNREFUSED
+allow default + deny "localhost:*"               | timeout      | EPERM        | EPERM         | EPERM
+allow default + deny "*:9050" "*:9150" (one rule)| timeout      | ECONNREFUSED | EPERM         | EPERM
+
+- So assertConfined needs BOTH attempts: TEST-NET-1 alone accepts the test suite's
+  "every loopback port" profile; loopback alone accepts a profile that only blocks loopback.
+  src/net/confine.ts now requires EPERM on TEST-NET-1:9 (confine.not-sandboxed) and on loopback
+  port 9 (confine.loopback-open).
+- PORT DENIES AFTER (allow ... "localhost:*") ARE FRAGILE. Appended to
+  "deny all + (allow ... localhost:*)":
+    (deny "*:9050")(deny "*:9150")  as two rules  -> 9050 EPERM, 9150 ECONNREFUSED (9150 rule ignored)
+    (deny "*:9150")                 alone         -> ignored (9150 ECONNREFUSED; "*:9051", "*:9151" likewise)
+    (deny "*:9050")                 alone         -> works (9050 EPERM)
+    (deny "*:9150")(deny "*:9050")  as two rules  -> both EPERM
+    (deny (remote ip "*:9050") (remote ip "*:9150"))  ONE rule, two filters -> both EPERM, IPv4 and IPv6
+  Task 7's suite profile used the first form, so Tor Browser's port 9150 was NOT denied in phase A
+  (nothing listened there on this machine, and the preflight only checked 9050). The suite profile
+  now uses the one-rule form, and both the preflight and the phase A sentinel
+  (test/offline/suite-sandbox.test.ts) check 9150. Rule of thumb: never trust a port deny without
+  measuring it; the profiles that matter are checked on every run.
+- The production profile and the wrapper's widened profiles use port-specific ALLOW rules only; an
+  ignored allow fails closed (EPERM), and the wrapper tests measure every widening.
+
+Addendum (Task H0, 2026-10-08): denying more loopback relays in the suite profile (audit SA-N1).
+Measured with test-owned listeners and closed ports, then on [::1] for the real ports (their listeners
+are on 127.0.0.1 only, so a failed deny there reaches nothing). Appended to
+"deny all + (allow ... localhost:*)", ONE deny rule, filters "*:<port>" in this order:
+    9050 9150 9222 8931 11434        -> all five EPERM (IPv4 and IPv6); other ports unaffected
+    9050 <three test ports>          -> all EPERM
+    443 9151                         -> 9151 EPERM
+    9222 9050 9150 8931 11434        -> only 9050 EPERM; 9150 9222 8931 11434 NOT denied
+    9150 | 9151 | 9052 | 12345 alone -> NOT denied
+    9049|9051|80|1|8080|10000|65535, then 9151 -> 9151 NOT denied
+    12345 9050 | 9150 12345          -> NOT denied
+    (deny 12345)(deny 9050) as two rules -> 12345 EPERM; (deny 9050)(deny 12345) -> 12345 NOT denied
+  (require-all (remote ip "localhost:*") (require-not ...)) allows and "remote tcp"/"remote ip4"
+  filters did not deny anything either. No rule explains it; what holds on this machine is "one deny
+  rule whose FIRST filter is *:9050". scripts/test-offline.sh keeps 9050 first, and its preflight and
+  the phase-A sentinel check every listed port on [::1] and 127.0.0.1 on every run (TEST-NET-1 first,
+  [::1] before 127.0.0.1, stopping at the first answer that is not EPERM).

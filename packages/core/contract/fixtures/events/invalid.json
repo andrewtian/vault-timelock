@@ -1,0 +1,162 @@
+{
+  "rules": [
+    "validateEvent(type, data, by): every line of every journals/*.jsonl passes (with its own type, data and by)",
+    "each case below has one defect; strings in data are bounded (note.text ≤ 200, any other string ≤ 512)"
+  ],
+  "cases": [
+    {
+      "name": "unknown type",
+      "type": "teleport",
+      "data": {},
+      "by": "browser",
+      "guard": "event.type"
+    },
+    {
+      "name": "extra key",
+      "type": "key-loaded",
+      "data": {
+        "address": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+        "secret": "x"
+      },
+      "by": "browser",
+      "guard": "event.shape"
+    },
+    {
+      "name": "intent without rawSha256",
+      "type": "intent",
+      "data": {
+        "txId": "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4",
+        "copy": 1,
+        "part": 1,
+        "parts": 1,
+        "attempt": 1,
+        "replaces": null,
+        "payloadSha256": "9abcc48e5c8eaf1994f72e94eb7faa69772c382eebc11324c4380275047e695a",
+        "reserved": "1",
+        "eth": {
+          "nonce": 0,
+          "tip": "12000",
+          "maxFee": "2000012000",
+          "gas": "23400",
+          "to": "0x0000000000000000000000000000000000000000"
+        }
+      },
+      "by": "browser",
+      "guard": "event.shape"
+    },
+    {
+      "name": "intent with both eth and sol",
+      "type": "intent",
+      "data": {
+        "txId": "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4",
+        "copy": 1,
+        "part": 1,
+        "parts": 1,
+        "attempt": 1,
+        "replaces": null,
+        "rawSha256": "33bbf93f2cb26017b84d49f45131214fafd7ad2281cd99c7cc1650205b0740ba",
+        "payloadSha256": "9abcc48e5c8eaf1994f72e94eb7faa69772c382eebc11324c4380275047e695a",
+        "reserved": "1",
+        "eth": {
+          "nonce": 0,
+          "tip": "12000",
+          "maxFee": "2000012000",
+          "gas": "23400",
+          "to": "0x0000000000000000000000000000000000000000"
+        },
+        "sol": {
+          "blockhash": "FSbrD8nPn9cL8NWygaEjYm8NpubFoJ9bbjivxqhXFKMx",
+          "lastValidBlockHeight": 1,
+          "cuPrice": 0,
+          "cuLimit": 30000,
+          "rung": null,
+          "fee": "5000"
+        }
+      },
+      "by": "browser",
+      "guard": "event.shape"
+    },
+    {
+      "name": "sent outcome not in the enum",
+      "type": "sent",
+      "data": {
+        "txId": "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4",
+        "outcome": "maybe",
+        "reason": null
+      },
+      "by": "browser",
+      "guard": "event.shape"
+    },
+    {
+      "name": "note text of 201 chars",
+      "type": "note",
+      "data": {
+        "text": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
+      },
+      "by": "cli",
+      "guard": "event.shape"
+    },
+    {
+      "name": "string of 513 chars",
+      "type": "paused",
+      "data": {
+        "reason": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+      },
+      "by": "cli",
+      "guard": "event.shape"
+    },
+    {
+      "name": "armed from a browser",
+      "type": "armed",
+      "data": {
+        "armedAt": 1791504000000,
+        "releaseAt": 1791504060000,
+        "countdownSec": 60,
+        "schedule": {
+          "order": [
+            "eth"
+          ],
+          "offsetSec": {
+            "eth": 0
+          }
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "sources": {}
+      },
+      "by": "browser",
+      "guard": "event.by"
+    },
+    {
+      "name": "intent from the api",
+      "type": "intent",
+      "data": {
+        "txId": "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4",
+        "copy": 1,
+        "part": 1,
+        "parts": 1,
+        "attempt": 1,
+        "replaces": null,
+        "rawSha256": "33bbf93f2cb26017b84d49f45131214fafd7ad2281cd99c7cc1650205b0740ba",
+        "payloadSha256": "9abcc48e5c8eaf1994f72e94eb7faa69772c382eebc11324c4380275047e695a",
+        "reserved": "1",
+        "eth": {
+          "nonce": 0,
+          "tip": "12000",
+          "maxFee": "2000012000",
+          "gas": "23400",
+          "to": "0x0000000000000000000000000000000000000000"
+        }
+      },
+      "by": "api",
+      "guard": "event.by"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "phase": "ARMED",
+  "armed": {
+    "armedAt": 1791504009000,
+    "releaseAt": 1791504024000,
+    "countdownSec": 15,
+    "schedule": {
+      "order": [
+        "eth"
+      ],
+      "offsetSec": {
+        "eth": 0
+      }
+    },
+    "caps": {
+      "eth": {
+        "nativeCap": "4000000000000000",
+        "usd": 10,
+        "priceAt": 1791504009000,
+        "overCap": false,
+        "planned": "0.004"
+      }
+    },
+    "sources": {}
+  },
+  "releaseAt": 1791504024000,
+  "chains": {
+    "eth": {
+      "phase": "ARMED",
+      "reason": null,
+      "address": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+      "copy": null,
+      "attempt": null,
+      "copiesIncluded": 0,
+      "reassembled": [],
+      "spent": "0",
+      "txs": [],
+      "openIntents": [],
+      "resume": null,
+      "stopRequested": false,
+      "clawback": null
+    },
+    "sol": {
+      "phase": "SKIPPED",
+      "reason": "not armed",
+      "address": null,
+      "copy": null,
+      "attempt": null,
+      "copiesIncluded": 0,
+      "reassembled": [],
+      "spent": "0",
+      "txs": [],
+      "openIntents": [],
+      "resume": null,
+      "stopRequested": false,
+      "clawback": null
+    }
+  },
+  "seq": 4,
+  "corrupt": null
+}

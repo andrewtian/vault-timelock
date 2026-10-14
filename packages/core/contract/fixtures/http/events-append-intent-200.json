@@ -1,0 +1,50 @@
+{
+  "after": null,
+  "volatile": [
+    "seq",
+    "ticket"
+  ],
+  "name": "events-append-intent-200",
+  "covers": "append intent under the live gen → { seq, ticket }",
+  "request": {
+    "method": "POST",
+    "path": "/jobs/e3d45f73cf65abaa/chains/eth/events",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "gen": 1,
+      "type": "intent",
+      "data": {
+        "txId": "0x36fdade817f9f181a52d8200201bb8da61413fde25cb34a147c4e9e4c35cadb4",
+        "copy": 1,
+        "part": 1,
+        "parts": 1,
+        "attempt": 1,
+        "replaces": null,
+        "rawSha256": "33bbf93f2cb26017b84d49f45131214fafd7ad2281cd99c7cc1650205b0740ba",
+        "payloadSha256": "9d2d8969ec94db157af1320cbb707603b477f1b57a8c6e4572a61898812f81aa",
+        "reserved": "50000000000000",
+        "eth": {
+          "nonce": 0,
+          "tip": "12000",
+          "maxFee": "2000012000",
+          "gas": "23400",
+          "to": "0x0000000000000000000000000000000000000000"
+        }
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "seq": 5,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHgzNmZkYWRlODE3ZjlmMTgxYTUyZDgyMDAyMDFiYjhkYTYxNDEzZmRlMjVjYjM0YTE0N2M0ZTllNGMzNWNhZGI0IiwiciI6IjMzYmJmOTNmMmNiMjYwMTdiODRkNDlmNDUxMzEyMTRmYWZkN2FkMjI4MWNkOTljN2NjMTY1MDIwNWIwNzQwYmEiLCJhIjoiMHg4NzM5ZWI4N2IzZDExZjIyMWRmNjM0NTRmOGQyMjlhMWE0ZjQwNDljIiwiayI6ImpvYiIsInAiOiI5ZDJkODk2OWVjOTRkYjE1N2FmMTMyMGNiYjcwNzYwM2I0NzdmMWI1N2E4YzZlNDU3MmE2MTg5ODgxMmY4MWFhIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjQ2ODAwMjgwODAwMDAwIiwicSI6IjAiLCJ4IjoiMjM0MDA6MTIwMDA6MjAwMDAxMjAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.E4xbq5OGSl2MisDCRSVxd-yOmUpssYex_GK0ZXHcBWk"
+    }
+  }
+}

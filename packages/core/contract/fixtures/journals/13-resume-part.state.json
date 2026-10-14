@@ -1,0 +1,282 @@
+{
+  "phase": "RUNNING",
+  "armed": {
+    "armedAt": 1791504009000,
+    "releaseAt": 1791504024000,
+    "countdownSec": 15,
+    "schedule": {
+      "order": [
+        "sol"
+      ],
+      "offsetSec": {
+        "sol": 0
+      }
+    },
+    "caps": {
+      "sol": {
+        "nativeCap": "70000000",
+        "usd": 10,
+        "priceAt": 1791504009000,
+        "overCap": false,
+        "planned": "0.07"
+      }
+    },
+    "sources": {}
+  },
+  "releaseAt": 1791504024000,
+  "chains": {
+    "sol": {
+      "phase": "RUNNING",
+      "reason": null,
+      "address": "9xx7qC7uwTAeaSo7T5Gk9canYBosFh1pMQaDmQEa83Tb",
+      "copy": 2,
+      "attempt": 1,
+      "copiesIncluded": 1,
+      "reassembled": [
+        {
+          "copy": 1,
+          "ok": true
+        }
+      ],
+      "spent": "40000",
+      "txs": [
+        {
+          "copy": 1,
+          "part": 1,
+          "parts": 5,
+          "attempts": [
+            {
+              "txId": "3tCpw8NPK51AnGGV2TUURDxQnYGzTHWNQxbR75GkzvXDjdSTfWfyq417zchFxeKw2Xg8UkTmNTEHZXe7Deq9asKJ",
+              "gen": 1,
+              "state": "included",
+              "sol": {
+                "blockhash": "A2ydYDhSGQdJeek6vZBprnPcR7WeXGjnwHhq3GkV8btW",
+                "lastValidBlockHeight": 2011,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "3tCpw8NPK51AnGGV2TUURDxQnYGzTHWNQxbR75GkzvXDjdSTfWfyq417zchFxeKw2Xg8UkTmNTEHZXe7Deq9asKJ",
+          "block": "5011",
+          "fee": "5000",
+          "readback": true
+        },
+        {
+          "copy": 1,
+          "part": 2,
+          "parts": 5,
+          "attempts": [
+            {
+              "txId": "3aHWthGTe88YbDHVmTDGyfapJYK6fZRxNCe2d5NGm4b9GZPNYiqy5ssv4tQqshhfPiAoejD2cVboip5UcEwuw1Ra",
+              "gen": 1,
+              "state": "included",
+              "sol": {
+                "blockhash": "E8EfovaVXo2DV16ZvuARRpdjmjAytsDULAyZ9uoKfAsp",
+                "lastValidBlockHeight": 2012,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "3aHWthGTe88YbDHVmTDGyfapJYK6fZRxNCe2d5NGm4b9GZPNYiqy5ssv4tQqshhfPiAoejD2cVboip5UcEwuw1Ra",
+          "block": "5012",
+          "fee": "5000",
+          "readback": true
+        },
+        {
+          "copy": 1,
+          "part": 3,
+          "parts": 5,
+          "attempts": [
+            {
+              "txId": "66PPWF2w3co6vK6Fq76TbYBxQUpxH5hxHb9KGK3GFjB9FhMRTBEegfk4aJa3JBhSqFE5HRK6cZMYh6vCzyKA1rVU",
+              "gen": 1,
+              "state": "included",
+              "sol": {
+                "blockhash": "PWT4eYA9ie6WsxBYRtnNcCzXULfktt9s6bNZGKvdFSA",
+                "lastValidBlockHeight": 2013,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "66PPWF2w3co6vK6Fq76TbYBxQUpxH5hxHb9KGK3GFjB9FhMRTBEegfk4aJa3JBhSqFE5HRK6cZMYh6vCzyKA1rVU",
+          "block": "5013",
+          "fee": "5000",
+          "readback": true
+        },
+        {
+          "copy": 1,
+          "part": 4,
+          "parts": 5,
+          "attempts": [
+            {
+              "txId": "YqRXe83kR7UAW2ZX7efZmrsa6LunGHHToYYjji14UZhRCY4MdhPxe3LMZRwAZG2jwiKzhjzAyivC3hVuK422zT8",
+              "gen": 1,
+              "state": "included",
+              "sol": {
+                "blockhash": "Hh53seEF6zTm6W7imjiY3swcjgYzoh4nZR1nmJb2iX9F",
+                "lastValidBlockHeight": 2014,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "YqRXe83kR7UAW2ZX7efZmrsa6LunGHHToYYjji14UZhRCY4MdhPxe3LMZRwAZG2jwiKzhjzAyivC3hVuK422zT8",
+          "block": "5014",
+          "fee": "5000",
+          "readback": true
+        },
+        {
+          "copy": 1,
+          "part": 5,
+          "parts": 5,
+          "attempts": [
+            {
+              "txId": "cim8vTmvELgEjeeoYscT9hwqYrCAcjbSydbMmjFZ6MJ7W5Q6Wgk6Kd4FoVLuagFNf3p9JtZJ3YhsoT6RxwRbKsa",
+              "gen": 1,
+              "state": "included",
+              "sol": {
+                "blockhash": "A31r8cczwi1aEmtaLFb4gfACKCMd2mRAmevi5FH2N28h",
+                "lastValidBlockHeight": 2015,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "cim8vTmvELgEjeeoYscT9hwqYrCAcjbSydbMmjFZ6MJ7W5Q6Wgk6Kd4FoVLuagFNf3p9JtZJ3YhsoT6RxwRbKsa",
+          "block": "5015",
+          "fee": "5000",
+          "readback": true
+        },
+        {
+          "copy": 2,
+          "part": 1,
+          "parts": 5,
+          "attempts": [
+            {
+              "txId": "5zgmKmzrE3z4uvYN9xvP7wy6JbrtUdtNBASickJpHGzspTe8hDt4F3BPhTWtnCvuYT7mXJCKyiEhYfZZyj4NoU2S",
+              "gen": 1,
+              "state": "included",
+              "sol": {
+                "blockhash": "6LWiK6uL611ecatNmLxUBN5WBQLf6bZ4wFgvK8wfLYik",
+                "lastValidBlockHeight": 2021,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "5zgmKmzrE3z4uvYN9xvP7wy6JbrtUdtNBASickJpHGzspTe8hDt4F3BPhTWtnCvuYT7mXJCKyiEhYfZZyj4NoU2S",
+          "block": "5021",
+          "fee": "5000",
+          "readback": true
+        },
+        {
+          "copy": 2,
+          "part": 2,
+          "parts": 5,
+          "attempts": [
+            {
+              "txId": "3Tde8ACsw4u5UHHuRCYPjFGePuyCdC6ZdDsekj2dFxoVBahdLHsTSvh5en837NZsqRhAT3zbnBAwc3DVBxoDiQVz",
+              "gen": 1,
+              "state": "included",
+              "sol": {
+                "blockhash": "7zKLWzEGkt6Eno8ExydBj7jrJj8gdEsXJ6FjtsDWRRfn",
+                "lastValidBlockHeight": 2022,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "3Tde8ACsw4u5UHHuRCYPjFGePuyCdC6ZdDsekj2dFxoVBahdLHsTSvh5en837NZsqRhAT3zbnBAwc3DVBxoDiQVz",
+          "block": "5022",
+          "fee": "5000",
+          "readback": true
+        },
+        {
+          "copy": 2,
+          "part": 3,
+          "parts": 5,
+          "attempts": [
+            {
+              "txId": "5PBihfcAaa8w6ARKLvKaf1NGJpMSagBwv2mvFUjUqUKbUZwczrnteFg9K3q7VushJ4mHWkCNdLVZfjfUi3rF3MN8",
+              "gen": 1,
+              "state": "included",
+              "sol": {
+                "blockhash": "HwTFA6BJQjrAJUJeeqvE8fqxKW3M22XEP34MPgiz7UPP",
+                "lastValidBlockHeight": 2023,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "5PBihfcAaa8w6ARKLvKaf1NGJpMSagBwv2mvFUjUqUKbUZwczrnteFg9K3q7VushJ4mHWkCNdLVZfjfUi3rF3MN8",
+          "block": "5023",
+          "fee": "5000",
+          "readback": true
+        },
+        {
+          "copy": 2,
+          "part": 4,
+          "parts": 5,
+          "attempts": [
+            {
+              "txId": "hPySFbgvMHb65SLHxaKg6cCW8bGdpNAatS5YSfSgkeikTYu4eT6btaVpYoBcT6akm6dMYuhV73N4yWeg4gYRPXo",
+              "gen": 1,
+              "state": "intent",
+              "sol": {
+                "blockhash": "2nW24HddFR9XvNrB47BJ6tDHUMPgAxDfrfUJca6WPPdz",
+                "lastValidBlockHeight": 2024,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            }
+          ],
+          "state": "open",
+          "landedId": null,
+          "block": null,
+          "fee": null,
+          "readback": null
+        }
+      ],
+      "openIntents": [
+        "hPySFbgvMHb65SLHxaKg6cCW8bGdpNAatS5YSfSgkeikTYu4eT6btaVpYoBcT6akm6dMYuhV73N4yWeg4gYRPXo"
+      ],
+      "resume": {
+        "copy": 2,
+        "nextPart": 4
+      },
+      "stopRequested": false,
+      "clawback": null
+    }
+  },
+  "seq": 40,
+  "corrupt": null
+}

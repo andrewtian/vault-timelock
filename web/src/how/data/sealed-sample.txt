@@ -1,0 +1,82 @@
+== vault-timelock sealed package: self-contained, age + drand timelock ==
+format: vault-timelock-sealed/1
+what-this-is: an age-encrypted archive whose key is time-locked to a drand round. Everything needed to
+  open it after the unlock time is in this text; nothing else is required except the two public tools.
+layers:
+  vault.tar.gz.age  = the archive (all entries), encrypted ONCE with a fresh age X25519 key ("the data key")
+  unlock-TIME.age   = the data key's secret line, encrypted with tlock to drand round 138130301
+                      (it can be decrypted only with round 138130301's signature, which drand publishes at unlock-after)
+unlock-after: 2036-10-09T19:44:27Z  (drand round 138130301; quicknet emits one round every 3 s from genesis 1692803367)
+drand: quicknet 52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971  scheme bls-unchained-g1-rfc9380
+drand-signature: https://api.drand.sh/52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971/public/138130301
+  (mirrors: https://api2.drand.sh  https://api3.drand.sh  https://drand.cloudflare.com)
+tools (any later version should work):
+  tle v1.2.0   go install github.com/drand/tlock/cmd/tle@v1.2.0     https://github.com/drand/tlock
+  age v1.1+    brew install age  |  apt install age                    https://age-encryption.org
+contents: full
+open after unlock-after (run in an empty directory holding only this text as SEALED.txt):
+  1. cut the two blocks out into files named as in their [file ...] lines:
+       awk '/^\[file /{n=$2} /^-----BEGIN AGE/{w=1} w{print > n} /^-----END AGE/{w=0; close(n)}' SEALED.txt
+  2. check each file against its [file ...] line (bytes and sha256 are of the decoded binary):
+       for f in unlock-TIME.age vault.tar.gz.age; do sed '1d;$d' $f | base64 -d | wc -c; sed '1d;$d' $f | base64 -d | shasum -a 256; done
+  3. tle --decrypt --output=identity.key unlock-TIME.age
+       (fetches round 138130301's signature from drand; before unlock-after it fails "too early" and leaves an
+        empty identity.key: delete it before retrying. For privacy: HTTPS_PROXY=socks5h://127.0.0.1:9050)
+  4. age -d -i identity.key -o vault.tar.gz vault.tar.gz.age
+  5. mkdir restored && tar xzf vault.tar.gz -C restored
+  6. verify every entry and attachment against the manifests sealed inside the archive:
+       awk -F, 'NR>1{print $2"  restored/items/"$1".json"}' restored/MANIFEST.csv | shasum -a 256 -c -
+       awk -F, 'NR>1{print $4"  restored/files/"$1"/"$2}' restored/ATTACHMENTS.csv | shasum -a 256 -c -
+notes: anyone holding this text can open it after unlock-after (the round signature is public forever);
+  before then, opening needs round 138130301's signature, which requires a threshold of drand's operators.
+  Not post-quantum: a future quantum computer could open it early. Nothing here proves who created it.
+[file unlock-TIME.age bytes=549 sha256=8b4d064d06eb34150db2abbc8f9a5809eacfc4a21251ef53a7fac624e48c9f49]
+-----BEGIN AGE ENCRYPTED FILE-----
+YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHRsb2NrIDEzODEzMDMwMSA1MmRiOWJh
+NzBlMGNjMGY2ZWFmNzgwM2RkMDc0NDdhMWY1NDc3NzM1ZmQzZjY2MTc5MmJhOTQ2
+MDBjODRlOTcxCm9PVG1LeTNoSjNOMFhmV0loWkg5Nkh2UHFKZWloSWhpY3BYbDlh
+bkFxM1pzSktwTHJ6WTJmU2FzV21LZzNYVVAKRWN3anBSV0J6aGRaZVhwMzhHbS9K
+REpsYmp0Y0dqa2JVNEx2RmlYbGRuSmUzeityMkx4L3cvYkdxbjl4SjhGZgoyMEs2
+d0dIRTNSWkFPbDVVSWVJRnBUdUUyM0tVS25uSVJLdHV2L24xN3NvCi0tLSBnMktF
+eGFpQ1RraVBvTUs1dXJ1MU01NnEyb2lQdWhNb2pHZVp4UElNa2pnCjwHdKrlzswx
+wS8CittSBSyO1iTh8PN3lCsoKcoyApGqAGIlW++7zgV6WUF3DhqjcHrdHozUxRpP
+Q+Jh+Wq9ma2zDiUUbVCd7fS+O8++NCHL37rBcZPPRjnLL4WD+mlTGAQJ9ofjGpTC
+Wl9PgC1dXOPVQgUxlg71ElcdX+6h7f/bTut4gaHPaVDJpICHtEJaz9IDNJ8fh02Y
+UOEAoNDuMLPBSA+YC7CeWDSuCYHZjc/YuOCITFDukFfv0evVRaAaGGdDImEspHVZ
+6MCjEt7dRntxy0fncj05nxMgp9EX
+-----END AGE ENCRYPTED FILE-----
+[file vault.tar.gz.age bytes=1472 sha256=6de54bdb5a8332ed091110b5c7f11f19fa32a3918803123e32f5a27abe7f5ecc]
+-----BEGIN AGE ENCRYPTED FILE-----
+YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB6Z0o5VmZ6dGtjdTVZY3JL
+Q2N1cDZMVWlXZC83SXpiMUJRbkgvSExCVkVnCmxqdkd0a21XZ2xtbWJwaGU0emRj
+TzhGWnY0Y25IOWlJQjBHRDhiTCtMVDgKLS0tIHY3UW1YMnRBeFlCZ2tjUDlkWWpE
+UnFsb1FxZUsxMDFoZXNFc1BJOTI2d1kKbVzU17Tq2NoxegCvjDbNK9QKz6U5ENf6
++56SevxWRUmPsQprOGxmbA0IU9kK67qhbVaCYE4Mv/XqISMFcC6ysyOL0s2ZvERr
+wqHU9BZ0RyZENF9WirbeO2CaDsvHytzHhhAquTI7h1S8lqk+lRauWcLvZh5+D3on
+Kmye+7gi4/5ajB0QOxDm5NrCCLM4I9JDbQBpq/IjQI1ysN63Bq514o8/oXe5RyUc
+MuM8656kFUY0FQroY9buIxyWccAIp48f+a6tR65Cx9M44Bif7RLKp8X+O025Htd4
+Y8hLfR1jEvMty/iahjtuDBgA4AZoti58DSjYSFGOTbi+NoO91YnvDp1RsPnP++aV
+4Qx7GBiewY/GxTKI+uiK0BGucrQPG7nrRmlGiTq6xuE4Evcwnv50p/d1ZhsV6sB2
+klNZGfSyrPf7ryFaIN9Tft6o9s9w2OGFLzvGaU5Nr+Q+B5+VuDOo9oBA0jLSqyWp
+OIRmjgLMTP093eZIR7RuCF83v2Ix9p24ifgctMwgdqBJlXAklAKN/pKBfx6H8gx8
+tMbESEBWObHMlzZmkGB5SGRnxqh+hkGLUHL89MQWczb9+hagTgqCt4ShpTcD1Okx
++85UBw7wqIJ1LuBYVfRgD39Xl4+malL4nIAwwLv8UDWUgZ8lMBpw0/dJdRQrhgkt
+SUcuqa0cvtG+jNI2w9Tvb3THedaOjUJrqH4DjsnbalCz8EvvrI8UPgTdGY57qsQI
+jP+pXEwx/m8gW3IWqFIwtCv4p1oWE2qbhyL9a7bMztaHtQmelW9rsxiN6kCp/5WP
+SiO+mcPjNyDmty9F2wuS7JZ3ITdkPfRJ+8bCvc88GpNgt3rABTZB1cTibhZT/2UU
+MLkfmvr0JjXr3XbiXOEP/veSKUMhPBSr6P9Y194tXwXXsoFgCbQdBj2yHEZnOhHy
+miT47v03+54tVg4nWWGJgIORQSTyEHPS7yANKgYIaFozaD1IpC5V6ABNKTNwjiXl
+g5k2Bt57io3Q9Q4ukYdGHPi4+GP+RRY04hJiGKhmKCJsI0mx0qJa2N1h4m9+XBdF
+jyw7Qq+KEjOx+PwkAtXGzfK6L8JjAD7hs4OYmVSdPB15Wc1YG/GQbtd+hlBFaBec
+rr2CrMK9dBo7FBaPw1jta0Oo7ZXe4RwSzrc00EYDC0xBwTNbQhjxYTZLYxeA8LPC
+JBv5392TLlkRPFXF+pi7Ps1acQxAyERl+RtyPxg/gI+V8cyQBRJiuVdXvuqVIs9L
+OY4nBI7vAl49thnV9srS1Qcf4WIAbiN7U2v68wTLATN2DnwZJtMoKCceDs/Rc9OK
+U+b/3RPxEyYu4jMSM1hmPGr9T5s2ovxR1KCT+y7DN9GxteMl81gSOb/6FHNNYThT
+ltVWv0q9VAbFQGI4ftnox2qzGv0jOAdRw+lzohBpNkSolideZoDbswsUwSfOBaCq
+jaNQhFMG3LvNKAV+HhvvaVQ2Ww4nSKrwU30RZhhZqHSuTcDCYIXdc/5q9Peds6QK
+dgQurpaNsn1Nar6rIvRmLZ9BD41fiABwedfZJI09abQvAIF4SdlFLFUqF1IVtLw0
+nvLwaL7tBqCXis2KziW55mlhm3Vm2BKvI8669CH5v/Qyj3OZ266pqbO8Im1tTQDp
+f+HTClG5+2a4qU9AiXFFk8KZ/ZFggmw6A4uPj1OpwSCMog4+yFnDIddXQnrIpbJu
+gaqhSrJavmWM4t4xmQaVWTH826gOu5H3YoShDY9kbfk=
+-----END AGE ENCRYPTED FILE-----
+== end ==

@@ -1,0 +1,25 @@
+{
+  "name": "vt-broadcast",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test:offline": "sh scripts/test-offline.sh",
+    "mutation": "node test/mutation/run.ts",
+    "green": "npm run typecheck && npm run test:offline && npm run mutation"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "@vault-timelock/core": "file:../packages/core",
+    "age-encryption": "0.3.1",
+    "socks-proxy-agent": "10.1.0",
+    "viem": "2.57.4"
+  }
+}

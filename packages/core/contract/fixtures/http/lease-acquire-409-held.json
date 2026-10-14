@@ -1,0 +1,33 @@
+{
+  "after": "lease-acquire-200",
+  "volatile": [
+    "error.message"
+  ],
+  "name": "lease-acquire-409-held",
+  "covers": "a second acquire while the lease is live → 409 lease.held",
+  "request": {
+    "method": "POST",
+    "path": "/jobs/e3d45f73cf65abaa/chains/eth/lease",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "op": "acquire",
+      "holder": "cli"
+    }
+  },
+  "response": {
+    "status": 409,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "guard": "lease.held",
+        "message": "(any text that never echoes input)"
+      }
+    }
+  }
+}

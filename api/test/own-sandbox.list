@@ -1,0 +1,6 @@
+# Test files that apply their own sandbox (run unsandboxed in phase B of scripts/test-root.sh), one path per line,
+# relative to this workspace. They are never mapped in test/mutation/guards.json (the mutation runner's OWN_SANDBOX
+# list is broadcast's, and macOS refuses to nest sandboxes).
+test/confine.test.ts
+test/relay-policy.test.ts
+test/relay-btc.test.ts

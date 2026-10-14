@@ -1,0 +1,29 @@
+{
+  "after": null,
+  "volatile": [
+    "error.message"
+  ],
+  "name": "status-403-fetch-site",
+  "covers": "Sec-Fetch-Site: cross-site → 403 api.fetch-site",
+  "request": {
+    "method": "GET",
+    "path": "/status",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "sec-fetch-site": "cross-site"
+    }
+  },
+  "response": {
+    "status": 403,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "guard": "api.fetch-site",
+        "message": "(any text that never echoes input)"
+      }
+    }
+  }
+}

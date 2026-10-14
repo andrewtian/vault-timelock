@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://check.torproject.org/api/ip"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html"
+    },
+    "body": "<html>"
+  }
+}

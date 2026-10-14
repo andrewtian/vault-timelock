@@ -1,0 +1,28 @@
+{
+  "after": null,
+  "volatile": [
+    "error.message"
+  ],
+  "name": "status-403-host",
+  "covers": "Host other than 127.0.0.1:<port> → 403 api.host",
+  "request": {
+    "method": "GET",
+    "path": "/status",
+    "headers": {
+      "host": "localhost:{{port}}",
+      "authorization": "Bearer {{token}}"
+    }
+  },
+  "response": {
+    "status": 403,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "guard": "api.host",
+        "message": "(any text that never echoes input)"
+      }
+    }
+  }
+}

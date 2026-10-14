@@ -1,0 +1,5 @@
+{
+  "job.clawback-precompile": ["test/claw-back.test.jsx"],
+  "web.backup-network": ["test/key-lane.test.jsx"],
+  "web.backup-redo": ["test/key-lane.test.jsx"]
+}

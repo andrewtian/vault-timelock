@@ -1,0 +1,18 @@
+{
+  "name": "@vault-timelock/cli",
+  "version": "0.0.0",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "sh ../scripts/test-root.sh cli"
+  },
+  "dependencies": {
+    "@vault-timelock/core": "0.0.0",
+    "vt-broadcast": "file:../broadcast"
+  }
+}

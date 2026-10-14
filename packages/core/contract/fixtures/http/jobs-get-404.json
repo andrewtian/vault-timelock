@@ -1,0 +1,28 @@
+{
+  "after": null,
+  "volatile": [
+    "error.message"
+  ],
+  "name": "jobs-get-404",
+  "covers": "GET /jobs/:id for an unknown id → 404 job.missing",
+  "request": {
+    "method": "GET",
+    "path": "/jobs/0000000000000000",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}"
+    }
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "guard": "job.missing",
+        "message": "(any text that never echoes input)"
+      }
+    }
+  }
+}

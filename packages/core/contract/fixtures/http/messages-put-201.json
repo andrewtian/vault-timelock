@@ -1,0 +1,26 @@
+{
+  "after": null,
+  "volatile": [],
+  "name": "messages-put-201",
+  "covers": "PUT /messages/:sha256 (raw UTF-8 body)",
+  "request": {
+    "method": "PUT",
+    "path": "/messages/83be1d5879a59ca063ed2d02bcfde19e259cd991479d5ef45c899854f6900048",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "content-type": "text/plain; charset=utf-8"
+    },
+    "bodyText": "A synthetic vt fixture message.\nIt has two lines.\n"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "sha256": "83be1d5879a59ca063ed2d02bcfde19e259cd991479d5ef45c899854f6900048",
+      "bytes": 50
+    }
+  }
+}

@@ -1,0 +1,301 @@
+#!/bin/sh
+# cli/bin/vt — the operator's one command (canonical vt spec §8; plan Task C1). bin/vt at the repository root is a
+# symlink to this file.
+#
+#   vt [--network local|testnet|mainnet] <command> [args]        (vt help: the workflow and every command)
+#
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# ★★★ ONE STRAY SOCKET IS AN IP LEAK, ONE INHERITED VARIABLE CAN CARRY A KEY. The structure is bin/vt-broadcast's
+#   (broadcast/bin/vt-broadcast), with two walls, both failing closed:
+#
+#   1. env -i. Node, and everything it starts, gets exactly PATH HOME LANG TERM, plus VT_HOME VAULT_TIMELOCK_DIR
+#      XDG_DATA_HOME VT_SEALER when set, VT_NETWORK when non-empty, and VT_CONFINED=1 inside the sandbox. Nothing
+#      else survives: an API key exported by the operator's shell, NODE_OPTIONS (preloads code), DEBUG, HTTPS_PROXY
+#      and NODE_EXTRA_CA_CERTS (reroute or re-trust TLS), NODE_TEST_CONTEXT. The allowlist is a fixed set of NAMES,
+#      each read by name and never by enumerating the environment, so a value holding "\nNAME=..." stays a value
+#      (test/wrapper.test.ts reads what the child got NUL-safe, with env -0). Every exec below goes through
+#      exec_clean, in both branches, and so does the profile computation. VT_SEALER is passed even when empty, so
+#      that src/passthrough.ts refuses it (vt.sealer-stub-only) instead of falling back to the real sealer.
+#      ★ vt seal|open ONLY (controller ruling (1), C1 fix round 1): the sealer's own settings pass too,
+#        · TMPDIR when set (the sealer's plaintext work dir follows the operator's choice),
+#        · TOR_SOCKS when set, and only as a literal loopback address 127.0.0.1:<port> or [::1]:<port>, port 1-65535
+#          without leading zeros; anything else refuses vt.tor-socks (the value is never echoed),
+#        · OP_ACCOUNT when set, and every OP_SESSION_<name> (name: A-Z a-z 0-9 _; else vt.op-session). That family
+#          is the one enumerated name set: env -0, NUL-safe (bin/vt-broadcast's collect_overrides pattern);
+#        · NEVER OP_SERVICE_ACCOUNT_TOKEN or OP_CONNECT_*: when any is set, one fixed note says they were not
+#          passed (no names from the environment, never a value).
+#        No other command gets any of these, and src/passthrough.ts rebuilds the sealer's environment from the same
+#        list (vt-broadcast children never get them).
+#
+#   2. sandbox-exec, per command (spec §3.1; the dispatch table is src/args.ts, the strings src/ops/sandbox.ts):
+#      · orchestration and pass-throughs (help up down logs release backup seal open note seal-text tor-check
+#        keystore triggers, and anything unknown): node runs unsandboxed. These start sandboxed processes
+#        themselves (vt up), exec a tool that applies its own sandbox (bin/vt-broadcast), or exec the sealer, and
+#        macOS refuses to apply a profile inside a sandbox;
+#      · client commands (status, preflight, job ... except job run|clawback): loopbackProfile([page, relay, api]) of
+#        the network: those three loopback ports only, no file writes but /dev/null;
+#      · job run | job clawback (the executor, which holds a key in memory): loopbackProfile([relay, api]);
+#      · NO sandboxed command has a terminal (/dev/tty and the pty devices are denied). The command runs as a child of the
+#        unsandboxed broker (src/ops/broker.ts), which owns the terminal, asks only the prompts that command's argv allows,
+#        and filters the child's output.
+#      The profile is printed by src/ops/profile.ts (node under env -i, before any sandbox exists) and must start
+#      with the deny-all prefix and deny file writes; anything else, or no /usr/bin/sandbox-exec, refuses
+#      vt.no-sandbox. Nothing runs unconfined that should be confined.
+#
+# ★★ node always starts as `node --disable-sigusr1 src/main.ts` (review m-4, both branches): Node's default opens an
+#   inspector on a loopback port when the process gets SIGUSR1, and the executor (job run | clawback) holds decrypted
+#   keys. src/job/run.ts refuses an executor that did not start exactly so (vt.inspector).
+#
+# ★★ VT_CONFINED=1 means "already inside: exec node, NEVER nest". It is only a hint, anyone can set it: src/main.ts
+#   PROVES confinement whenever it is set and for every command src/args.ts sandboxes (src/ops/confine.ts: direct
+#   connects to loopback port 9 and to a TEST-NET-1 address must both fail with EPERM, and the strict arm needs EPERM on reading
+#   a file and the home directory, on exec of /usr/bin/true and on /dev/tty), so a hand-set VT_CONFINED=1 or a weaker profile
+#   fails closed (vt.not-confined). sandbox-exec and env are called by absolute path (/usr/bin/sandbox-exec, /usr/bin/env).
+#
+# ★ --network <n> becomes VT_NETWORK BEFORE the sandbox is built, because the profile's ports depend on it. Its
+#   value and VT_NETWORK's are checked against the three names first and never echoed (vt.network-invalid). The flag
+#   may appear anywhere, once, as a separate argument, and must agree with VT_NETWORK if that is set (vt.flag); it is
+#   removed from the arguments node sees. Without a network, client commands use local, and `status` reaches every
+#   network's stack (src/args.ts networksFor).
+#
+# ★ The script finds its project through symlinks (a POSIX readlink loop), so bin/vt and a link on PATH run the real
+#   tree, and sandbox-exec re-runs the real script.
+#
+# Refusals print `refused <guard-id>: <reason>` and exit 2. Each refusal line ends in a `// @guard:` marker (inside a
+# shell comment): broadcast/test/mutation/run.ts blanks it and test/args.test.ts must notice (fake node and
+# sandbox-exec on PATH); test/wrapper.test.ts runs the real sandbox.
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+set -eu
+set -f            # no pathname expansion anywhere: names and values are data
+unset CDPATH      # `cd "$(dirname "$0")"` must not wander or print
+# space, tab, newline written literally (no command substitution: the sandboxed branch must not fork; the profile denies process-fork)
+IFS=' 	
+_'; IFS=${IFS%_}
+
+die() { id=$1; shift; printf 'refused %s: %s\n' "$id" "$*" >&2; exit 2; }
+
+# PATH and HOME come from the caller and must be sane: an unset PATH makes sh fall back to a default that includes
+# `.`, env -i copies PATH into the sandbox, and HOME is where the default VT_HOME lives.
+env_ok=1
+case ":${PATH:-}:" in *::*|*:[!/]*) env_ok=0 ;; esac
+case ${HOME:-} in /*) ;; *) env_ok=0 ;; esac
+[ "$env_ok" = 1 ] || die vt.env "PATH (absolute directories only) and HOME (an absolute path) must be set" # // @guard:vt.env
+
+# check_network <value>: '' (unset) or one of the three names, else refuse. The value is never echoed (a mistyped
+# network can hold a URL with a key, or an address). Called for VT_NETWORK here, in both branches, and for --network.
+check_network() {
+  case $1 in ''|local|testnet|mainnet) net_ok=1 ;; *) net_ok=0 ;; esac
+  [ "$net_ok" = 1 ] || die vt.network-invalid "the network must be local, testnet or mainnet (the value is not echoed)" # // @guard:vt.network-invalid
+}
+check_network "${VT_NETWORK:-}"
+
+# ── the real script: follow symlinks (relative targets are relative to the link's directory) ───────────────────
+real=$0
+hops=0
+# Inside the sandbox ($0 is the absolute real path sandbox-exec was given): no readlink, dirname or subshell, so the profile need not let
+# the process exec or fork anything but env and node.
+confined_fast=0
+if [ "${VT_CONFINED:-}" = 1 ]; then case $0 in /*) confined_fast=1 ;; esac; fi
+while [ "$confined_fast" = 0 ] && [ -L "$real" ] && [ "$hops" -lt 64 ]; do
+  link=$(readlink "$real")
+  case $link in
+    /*) real=$link ;;
+    *) real=$(dirname "$real")/$link ;;
+  esac
+  hops=$((hops + 1))
+done
+if [ "$confined_fast" = 1 ]; then HERE=${real%/*}; else HERE=$(cd -P "$(dirname "$real")" && pwd); fi
+ROOT=${HERE%/*}
+SELF=$HERE/${real##*/}
+MAIN=$ROOT/src/main.ts
+
+# SEALING=1 (vt seal|open, set below after the flags) adds the sealer's settings; SEAL_PASS holds the validated
+# OP_SESSION_* names (collect_sealer_env).
+SEALING=0
+SEAL_PASS=
+
+# exec_clean [NAME=value ...] <command> [args]: exec it under env -i with exactly the allowlist above, plus the
+# given assignments. (env -i starts empty; the -u's restate that nothing this shell adds to its children's
+# environment, PWD OLDPWD SHLVL _, gets through.)
+exec_clean() {
+  if [ "$SEALING" = 1 ]; then
+    for name in $SEAL_PASS; do
+      eval "value=\${$name-}"
+      set -- "$name=$value" "$@"
+    done
+    if [ "${TOR_SOCKS+x}" = x ]; then set -- "TOR_SOCKS=$TOR_SOCKS" "$@"; fi
+    if [ "${OP_ACCOUNT+x}" = x ]; then set -- "OP_ACCOUNT=$OP_ACCOUNT" "$@"; fi
+    if [ "${TMPDIR+x}" = x ]; then set -- "TMPDIR=$TMPDIR" "$@"; fi
+  fi
+  if [ "${VT_SEALER+x}" = x ]; then set -- "VT_SEALER=$VT_SEALER" "$@"; fi
+  if [ -n "${VT_NETWORK:-}" ]; then set -- "VT_NETWORK=$VT_NETWORK" "$@"; fi
+  if [ "${XDG_DATA_HOME+x}" = x ]; then set -- "XDG_DATA_HOME=$XDG_DATA_HOME" "$@"; fi
+  if [ "${VAULT_TIMELOCK_DIR+x}" = x ]; then set -- "VAULT_TIMELOCK_DIR=$VAULT_TIMELOCK_DIR" "$@"; fi
+  if [ "${VT_HOME+x}" = x ]; then set -- "VT_HOME=$VT_HOME" "$@"; fi
+  exec /usr/bin/env -i -u PWD -u OLDPWD -u SHLVL -u _ PATH="$PATH" HOME="$HOME" LANG="${LANG:-en_US.UTF-8}" TERM="${TERM:-dumb}" "$@"
+}
+
+# ── inside the sandbox: straight to node, never sandbox-exec again ─────────────────────────────────────────────
+# --no-addons for the sandboxed node, and the profile's (deny file-map-executable) stops ANY process it starts from mapping native code too (a .node file is arbitrary machine code). When the
+# broker started this process (VT_BROKER=1, TTY-less round) it has fds 3 and 4 (requests / answers) and VT_TTY says whether the broker has a terminal.
+if [ "${VT_CONFINED:-}" = 1 ]; then
+  if [ "${VT_BROKER:-}" = 1 ]; then
+    case ${VT_TTY:-} in 1) tt=1 ;; *) tt=0 ;; esac
+    exec_clean VT_CONFINED=1 VT_BROKER=1 VT_TTY=$tt node --disable-sigusr1 --no-addons "$MAIN" "$@"
+  fi
+  exec_clean VT_CONFINED=1 node --disable-sigusr1 --no-addons "$MAIN" "$@"
+fi
+
+# ── --network -> VT_NETWORK ──────────────────────────────────────────────────────────────────────────────────────
+net_seen=0
+# take_network <--network> [<value>]: no value = the --network=value form or a missing value.
+take_network() {
+  flag_ok=1
+  [ $# -eq 2 ] || flag_ok=0
+  [ "$net_seen" = 0 ] || flag_ok=0
+  value=${2-}
+  case $value in ''|-*) flag_ok=0 ;; esac
+  if [ "$flag_ok" = 1 ]; then check_network "$value"; fi
+  [ "$flag_ok" = 1 ] && { [ -z "${VT_NETWORK:-}" ] || [ "$VT_NETWORK" = "$value" ]; } || die vt.flag "malformed, repeated or conflicting --network: give it once, as a separate argument (--network local|testnet|mainnet), agreeing with VT_NETWORK when that is set (the values are not echoed)" # // @guard:vt.flag
+  net_seen=1
+  VT_NETWORK=$value
+  export VT_NETWORK
+}
+
+# Rebuild "$@" without the flag (`for a do` iterates over the ORIGINAL list).
+pending=0
+first=1
+for a do
+  if [ "$first" = 1 ]; then set --; first=0; fi
+  if [ "$pending" = 1 ]; then
+    take_network --network "$a"
+    pending=0
+    continue
+  fi
+  case $a in
+    --network) pending=1 ;;
+    --network=*) take_network --network ;;
+    *) set -- "$@" "$a" ;;
+  esac
+done
+if [ "$pending" = 1 ]; then take_network --network; fi
+
+# ── vt seal|open: the sealer's settings (see the header) ───────────────────────────────────────────────────────
+# collect_sealer_env: SEAL_PASS = the OP_SESSION_* names, validated before anything dereferences them (so the eval
+# in exec_clean only ever sees [A-Za-z0-9_]). The environment is read NUL-separated (env -0): newlines inside values
+# are first moved out of the way (tr to \001), then each NUL becomes the record separator, so only real variable
+# names start a record. PATH (set, checked above) must show up too: if it does not, the reading itself failed, and
+# OP_SESSION_* would be dropped silently: refuse. Any other odd token refuses as well.
+collect_sealer_env() {
+  names=$(env -0 | LC_ALL=C tr '\n\000' '\001\n' | LC_ALL=C sed -n -E -e 's/^(OP_SESSION_[^=]*|OP_CONNECT_[^=]*|OP_SERVICE_ACCOUNT_TOKEN)=.*/\1/p' -e 's/^PATH=.*/PATH/p' | LC_ALL=C sort -u) || names=
+  read_ok=0
+  names_ok=1
+  stripped=0
+  for name in $names; do
+    case $name in
+      PATH) read_ok=1 ;;
+      OP_SERVICE_ACCOUNT_TOKEN|OP_CONNECT_*) stripped=1 ;;
+      OP_SESSION_*)
+        case ${name#OP_SESSION_} in
+          ''|*[!A-Za-z0-9_]*) names_ok=0 ;;
+          *) SEAL_PASS="$SEAL_PASS $name" ;;
+        esac ;;
+      *) names_ok=0 ;;
+    esac
+  done
+  [ "$read_ok" = 1 ] && [ "$names_ok" = 1 ] || die vt.op-session "could not read the environment, or an OP_SESSION_* variable has a name outside A-Z a-z 0-9 _ (names and values are not echoed)" # // @guard:vt.op-session
+  if [ "$stripped" = 1 ]; then
+    printf '%s\n' 'vt: note: OP_SERVICE_ACCOUNT_TOKEN / OP_CONNECT_* are set in your environment and were NOT passed to the sealer (service-account and Connect credentials never reach it)' >&2
+  fi
+}
+
+# check_tor_socks: TOR_SOCKS, when set, is exactly 127.0.0.1:<port> or [::1]:<port> (1-65535, no leading zeros).
+check_tor_socks() {
+  [ "${TOR_SOCKS+x}" = x ] || return 0
+  case $TOR_SOCKS in
+    127.0.0.1:*) port=${TOR_SOCKS#127.0.0.1:} ;;
+    '[::1]:'*) port=${TOR_SOCKS#'[::1]:'} ;;
+    *) port= ;;
+  esac
+  case $port in 0*|*[!0-9]*) port= ;; esac
+  socks_ok=0
+  if [ -n "$port" ] && [ ${#port} -le 5 ] && [ "$port" -le 65535 ]; then socks_ok=1; fi
+  [ "$socks_ok" = 1 ] || die vt.tor-socks "TOR_SOCKS must be a loopback SOCKS address, 127.0.0.1:<port> or [::1]:<port> (the value is not echoed)" # // @guard:vt.tor-socks
+}
+
+case ${1-} in
+  seal|open)
+    check_tor_socks
+    collect_sealer_env
+    SEALING=1 ;;
+esac
+
+# ── the command's sandbox ────────────────────────────────────────────────────────────────────────────────────────
+# Sandboxed: status, preflight, job, source (src/args.ts sandboxFor; test/args.test.ts pins the agreement). The profile
+# (client, or executor for job run|clawback) comes from src/ops/profile.ts.
+case ${1-} in
+  status|preflight|job|source) sandboxed=1 ;;
+  *) sandboxed=0 ;;
+esac
+# Echo window: a passphrase command (job run | job clawback) switches echo OFF here, at once, before the slow profile build and the broker start (about a second), after saving
+# the terminal's settings; the broker takes over (VT_TERMIOS) and restores them on every path. Until the exec below, any exit restores them here.
+TERMIOS=
+case ${1-}:${2-} in
+  job:run|job:clawback)
+    if TERMIOS=$( { /bin/stty -g </dev/tty; } 2>/dev/null ) && [ -n "$TERMIOS" ]; then
+      trap '{ /bin/stty "$TERMIOS" </dev/tty; } 2>/dev/null' EXIT
+      { /bin/stty -echo </dev/tty; } 2>/dev/null || true
+    else
+      TERMIOS=
+    fi ;;
+esac
+PROFILE=
+profile_ok=1
+if [ "$sandboxed" = 1 ]; then
+  profile_ok=0
+  # The files the command is handed become absolute real paths (profile.ts --args prints the arguments as single-quoted words), so the
+  # sandboxed process can start in `/` and its profile never needs to let it list the directories above the current one.
+  if QARGS=$(exec_clean node "$ROOT/src/ops/profile.ts" --args "$@") && ( eval "set -- $QARGS" ) >/dev/null 2>&1; then eval "set -- $QARGS"; else profile_ok=-1; fi
+  if [ "$profile_ok" = 0 ] && PROFILE=$(exec_clean node "$ROOT/src/ops/profile.ts" "$@"); then
+    case $PROFILE in '(version 1)(allow default)(deny network-outbound)'*'(deny file-write*)'*) profile_ok=1 ;; esac
+  fi
+fi
+[ -x /usr/bin/sandbox-exec ] && [ "$profile_ok" = 1 ] || die vt.no-sandbox "/usr/bin/sandbox-exec is missing, or this command's sandbox profile could not be built; vt never runs a command unconfined that must be confined (spec §3.1)" # // @guard:vt.no-sandbox
+
+if [ "$sandboxed" = 0 ]; then
+  exec_clean node --disable-sigusr1 "$MAIN" "$@"
+fi
+# ── env -i, then sandbox-exec re-runs this script with VT_CONFINED=1 ─────────────────────────────────────────────
+cd / || exit 1
+# no inherited descriptor 3-9 survives into the sandbox (higher ones are not closable portably in sh; callers do not pass them) (the allow-list is path-based: an open fd to a protected file would stay readable)
+fd=3
+while [ "$fd" -le 9 ]; do eval "exec $fd>&-" 2>/dev/null || true; fd=$((fd + 1)); done
+# The sandboxed command runs as a child of the BROKER (unsandboxed): it owns the terminal, filters the output and answers the prompts (src/ops/broker.ts).
+# The broker (not the child) decides the output locale like the C library does: LC_ALL > LC_CTYPE > LANG. LC_ALL and LC_CTYPE (when set) reach ONLY the
+# broker (which drops them for the child); LANG is in the allowlist as before.
+set -- node --disable-sigusr1 "$ROOT/src/ops/broker.ts" /usr/bin/sandbox-exec "$PROFILE" "$SELF" "$@"
+trap - EXIT
+if [ -n "$TERMIOS" ]; then set -- "VT_TERMIOS=$TERMIOS" "$@"; fi
+if [ "${LC_CTYPE+x}" = x ]; then set -- "LC_CTYPE=$LC_CTYPE" "$@"; fi
+if [ "${LC_ALL+x}" = x ]; then set -- "LC_ALL=$LC_ALL" "$@"; fi
+# R4-2: the broker runs as a CHILD of this script (not exec'd): when it is gone, THIS script flushes the input queue and puts the saved settings back, synchronously,
+# before it returns - Node's exit-time terminal reset (it saw echo OFF at start) is over by then, and nothing restores anything after bin/vt has returned.
+# SIGINT is ignored here (the broker installs its own handler; the sandboxed command is in another session); TERM / HUP / QUIT are forwarded to the broker.
+exec 8<&0
+trap '' INT TSTP TTIN TTOU   # R5-1: Ctrl-Z must not stop this script (the shell would take the terminal while the broker still prompts)
+exec_clean "$@" <&8 8<&- &
+BP=$!
+exec 8<&-
+trap 'kill -INT "$BP" 2>/dev/null' INT   # R5-1: an INT sent to this pid reaches the broker (the keyboard's reaches both; the broker folds the pair)
+trap 'kill -TERM "$BP" 2>/dev/null' TERM
+trap 'kill -HUP "$BP" 2>/dev/null' HUP
+trap 'kill -QUIT "$BP" 2>/dev/null' QUIT
+while :; do
+  rc=0; wait "$BP" || rc=$?
+  kill -0 "$BP" 2>/dev/null || break
+done
+trap - INT TERM HUP QUIT
+if [ -n "$TERMIOS" ]; then
+  { /usr/bin/perl -MPOSIX -e 'POSIX::tcflush(0, POSIX::TCIFLUSH)' </dev/tty; /bin/stty "$TERMIOS" </dev/tty; } 2>/dev/null || true
+fi
+exit "$rc"

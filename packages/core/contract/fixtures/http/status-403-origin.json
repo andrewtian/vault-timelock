@@ -1,0 +1,29 @@
+{
+  "after": null,
+  "volatile": [
+    "error.message"
+  ],
+  "name": "status-403-origin",
+  "covers": "Origin of another network's page → 403 api.origin",
+  "request": {
+    "method": "GET",
+    "path": "/status",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "origin": "http://127.0.0.1:5190"
+    }
+  },
+  "response": {
+    "status": 403,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "guard": "api.origin",
+        "message": "(any text that never echoes input)"
+      }
+    }
+  }
+}

@@ -1,0 +1,505 @@
+{
+  "format": "vt-parts/1",
+  "text": "A text long enough to need parts.\n",
+  "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+  "rules": [
+    "partPrefix(input, { force }) = prefix exactly; parsePart(payload) = parsed exactly (a payload that does not match the grammar with every cross-field rule parses as \"no header\")",
+    "CC-1a: a one-part header [1/1 <h8> sha256=<64hex>] parses only when sha256(body) verifies; force is what the writer sets when the text's own first line parses as a header"
+  ],
+  "headers": [
+    {
+      "name": "single tx, no copy marker",
+      "input": {
+        "part": 1,
+        "parts": 1,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": null,
+        "copies": null
+      },
+      "prefix": ""
+    },
+    {
+      "name": "single tx, copy 1 of 5 (copy 1 never has a marker)",
+      "input": {
+        "part": 1,
+        "parts": 1,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 1,
+        "copies": 5
+      },
+      "prefix": ""
+    },
+    {
+      "name": "single tx, copy 2 of 5",
+      "input": {
+        "part": 1,
+        "parts": 1,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 2,
+        "copies": 5
+      },
+      "prefix": "[copy 2/5]\n"
+    },
+    {
+      "name": "single tx, drain copy 3 (M unknown)",
+      "input": {
+        "part": 1,
+        "parts": 1,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 3,
+        "copies": null
+      },
+      "prefix": "[copy 3]\n"
+    },
+    {
+      "name": "part 1 of 3",
+      "input": {
+        "part": 1,
+        "parts": 3,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": null,
+        "copies": null
+      },
+      "prefix": "[1/3 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\n"
+    },
+    {
+      "name": "part 2 of 3",
+      "input": {
+        "part": 2,
+        "parts": 3,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": null,
+        "copies": null
+      },
+      "prefix": "[2/3 86c4a365]\n"
+    },
+    {
+      "name": "part 3 of 3, copy 1 of 2",
+      "input": {
+        "part": 3,
+        "parts": 3,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 1,
+        "copies": 2
+      },
+      "prefix": "[3/3 86c4a365]\n"
+    },
+    {
+      "name": "part 1 of 3, copy 2 of 2",
+      "input": {
+        "part": 1,
+        "parts": 3,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 2,
+        "copies": 2
+      },
+      "prefix": "[1/3 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca] [copy 2/2]\n"
+    },
+    {
+      "name": "part 3 of 3, copy 2 of 2",
+      "input": {
+        "part": 3,
+        "parts": 3,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 2,
+        "copies": 2
+      },
+      "prefix": "[3/3 86c4a365] [copy 2/2]\n"
+    },
+    {
+      "name": "part 12 of 104, drain copy 7",
+      "input": {
+        "part": 12,
+        "parts": 104,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 7,
+        "copies": null
+      },
+      "prefix": "[12/104 86c4a365] [copy 7]\n"
+    },
+    {
+      "name": "single tx, forced header",
+      "input": {
+        "part": 1,
+        "parts": 1,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": null,
+        "copies": null
+      },
+      "force": true,
+      "prefix": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\n"
+    },
+    {
+      "name": "single tx, forced header, copy 1 of 5 (no marker)",
+      "input": {
+        "part": 1,
+        "parts": 1,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 1,
+        "copies": 5
+      },
+      "force": true,
+      "prefix": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\n"
+    },
+    {
+      "name": "single tx, forced header, copy 2 of 5",
+      "input": {
+        "part": 1,
+        "parts": 1,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 2,
+        "copies": 5
+      },
+      "force": true,
+      "prefix": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca] [copy 2/5]\n"
+    },
+    {
+      "name": "single tx, forced header, drain copy 3",
+      "input": {
+        "part": 1,
+        "parts": 1,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 3,
+        "copies": null
+      },
+      "force": true,
+      "prefix": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca] [copy 3]\n"
+    },
+    {
+      "name": "part 2 of 3, force changes nothing",
+      "input": {
+        "part": 2,
+        "parts": 3,
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": null,
+        "copies": null
+      },
+      "force": true,
+      "prefix": "[2/3 86c4a365]\n"
+    }
+  ],
+  "parse": [
+    {
+      "name": "no header",
+      "payload": "plain text\n",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "plain text\n"
+      }
+    },
+    {
+      "name": "part 1 of 3",
+      "payload": "[1/3 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\nchunk one",
+      "parsed": {
+        "part": 1,
+        "parts": 3,
+        "h8": "86c4a365",
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 1,
+        "copies": null,
+        "headerLength": 87,
+        "body": "chunk one"
+      }
+    },
+    {
+      "name": "part 2 of 3 with copy 2/2",
+      "payload": "[2/3 86c4a365] [copy 2/2]\nchunk two",
+      "parsed": {
+        "part": 2,
+        "parts": 3,
+        "h8": "86c4a365",
+        "sha256": null,
+        "copy": 2,
+        "copies": 2,
+        "headerLength": 26,
+        "body": "chunk two"
+      }
+    },
+    {
+      "name": "single tx copy 2 of 5",
+      "payload": "[copy 2/5]\nthe whole text",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 2,
+        "copies": 5,
+        "headerLength": 11,
+        "body": "the whole text"
+      }
+    },
+    {
+      "name": "single tx drain copy 3",
+      "payload": "[copy 3]\nthe whole text",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 3,
+        "copies": null,
+        "headerLength": 9,
+        "body": "the whole text"
+      }
+    },
+    {
+      "name": "provisional \"#\" form (not this format)",
+      "payload": "[2/3 #86c4a365] chunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[2/3 #86c4a365] chunk"
+      }
+    },
+    {
+      "name": "header without LF (not this format)",
+      "payload": "[2/3 86c4a365] chunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[2/3 86c4a365] chunk"
+      }
+    },
+    {
+      "name": "leading zero",
+      "payload": "[02/3 86c4a365]\nchunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[02/3 86c4a365]\nchunk"
+      }
+    },
+    {
+      "name": "k > N",
+      "payload": "[4/3 86c4a365]\nchunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[4/3 86c4a365]\nchunk"
+      }
+    },
+    {
+      "name": "N = 1 header whose sha256 does not verify (plain text)",
+      "payload": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\nchunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\nchunk"
+      }
+    },
+    {
+      "name": "single tx, forced header (sha256 verifies)",
+      "payload": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\nA text long enough to need parts.\n",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": "86c4a365",
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 1,
+        "copies": null,
+        "headerLength": 87,
+        "body": "A text long enough to need parts.\n"
+      }
+    },
+    {
+      "name": "single tx, forced header with copy 2/5",
+      "payload": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca] [copy 2/5]\nA text long enough to need parts.\n",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": "86c4a365",
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 2,
+        "copies": 5,
+        "headerLength": 98,
+        "body": "A text long enough to need parts.\n"
+      }
+    },
+    {
+      "name": "single tx, forced header with drain copy 3",
+      "payload": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca] [copy 3]\nA text long enough to need parts.\n",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": "86c4a365",
+        "sha256": "86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca",
+        "copy": 3,
+        "copies": null,
+        "headerLength": 96,
+        "body": "A text long enough to need parts.\n"
+      }
+    },
+    {
+      "name": "single tx, forced header over a header-looking text",
+      "payload": "[1/1 83bfff38 sha256=83bfff38724e195f463c0d2d87159d57d86b631529090ab8be72c934903d4f36]\n[2/3 86c4a365]\nuser text whose first line looks like a header",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": "83bfff38",
+        "sha256": "83bfff38724e195f463c0d2d87159d57d86b631529090ab8be72c934903d4f36",
+        "copy": 1,
+        "copies": null,
+        "headerLength": 87,
+        "body": "[2/3 86c4a365]\nuser text whose first line looks like a header"
+      }
+    },
+    {
+      "name": "single tx, forced header, h8 differs from the digest",
+      "payload": "[1/1 00000000 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\nA text long enough to need parts.\n",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[1/1 00000000 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\nA text long enough to need parts.\n"
+      }
+    },
+    {
+      "name": "single tx, forced header, copy marker 1",
+      "payload": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca] [copy 1/5]\nA text long enough to need parts.\n",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[1/1 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca] [copy 1/5]\nA text long enough to need parts.\n"
+      }
+    },
+    {
+      "name": "part 1 without sha256",
+      "payload": "[1/3 86c4a365]\nchunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[1/3 86c4a365]\nchunk"
+      }
+    },
+    {
+      "name": "part 2 with sha256",
+      "payload": "[2/3 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\nchunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[2/3 86c4a365 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\nchunk"
+      }
+    },
+    {
+      "name": "h8 differs from the digest",
+      "payload": "[1/3 00000000 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\nchunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[1/3 00000000 sha256=86c4a365eb68af0686e4605dec9ee73dab9144401902d275ad489ab77760bdca]\nchunk"
+      }
+    },
+    {
+      "name": "copy marker copy 1",
+      "payload": "[2/3 86c4a365] [copy 1/2]\nchunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[2/3 86c4a365] [copy 1/2]\nchunk"
+      }
+    },
+    {
+      "name": "copies < copy",
+      "payload": "[2/3 86c4a365] [copy 3/2]\nchunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[2/3 86c4a365] [copy 3/2]\nchunk"
+      }
+    },
+    {
+      "name": "single tx copy 1 marker",
+      "payload": "[copy 1/5]\ntext",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[copy 1/5]\ntext"
+      }
+    },
+    {
+      "name": "uppercase hex",
+      "payload": "[2/3 86C4A365]\nchunk",
+      "parsed": {
+        "part": 1,
+        "parts": 1,
+        "h8": null,
+        "sha256": null,
+        "copy": 1,
+        "copies": null,
+        "headerLength": 0,
+        "body": "[2/3 86C4A365]\nchunk"
+      }
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "rules": [
+    "drawSchedule(chains, range, randInt): order is a permutation of chains (CSPRNG via randInt); offsetSec[order[0]] = 0; offsetSec[order[1]] = range[0] + randInt(range[1] - range[0] + 1)",
+    "rand \"zero\": randInt always returns 0; rand \"max\": randInt(m) returns m - 1",
+    "startAt(armed, chain) = armed.releaseAt + armed.schedule.offsetSec[chain] * 1000"
+  ],
+  "draws": [
+    {
+      "chains": [
+        "eth",
+        "sol"
+      ],
+      "range": [
+        30,
+        300
+      ],
+      "rand": "zero",
+      "secondOffset": 30
+    },
+    {
+      "chains": [
+        "eth",
+        "sol"
+      ],
+      "range": [
+        30,
+        300
+      ],
+      "rand": "max",
+      "secondOffset": 300
+    },
+    {
+      "chains": [
+        "eth",
+        "sol"
+      ],
+      "range": [
+        5,
+        10
+      ],
+      "rand": "zero",
+      "secondOffset": 5
+    },
+    {
+      "chains": [
+        "eth",
+        "sol"
+      ],
+      "range": [
+        5,
+        10
+      ],
+      "rand": "max",
+      "secondOffset": 10
+    },
+    {
+      "chains": [
+        "eth"
+      ],
+      "range": [
+        30,
+        300
+      ],
+      "rand": "max",
+      "secondOffset": null
+    }
+  ],
+  "startAt": [
+    {
+      "armed": {
+        "armedAt": 1791504000000,
+        "releaseAt": 1791504060000,
+        "countdownSec": 60,
+        "schedule": {
+          "order": [
+            "sol",
+            "eth"
+          ],
+          "offsetSec": {
+            "sol": 0,
+            "eth": 123
+          }
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          },
+          "sol": {
+            "nativeCap": "70000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.07"
+          }
+        },
+        "sources": {}
+      },
+      "chain": "sol",
+      "at": 1791504060000
+    },
+    {
+      "armed": {
+        "armedAt": 1791504000000,
+        "releaseAt": 1791504060000,
+        "countdownSec": 60,
+        "schedule": {
+          "order": [
+            "sol",
+            "eth"
+          ],
+          "offsetSec": {
+            "sol": 0,
+            "eth": 123
+          }
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          },
+          "sol": {
+            "nativeCap": "70000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.07"
+          }
+        },
+        "sources": {}
+      },
+      "chain": "eth",
+      "at": 1791504183000
+    }
+  ]
+}

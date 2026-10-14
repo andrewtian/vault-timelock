@@ -1,0 +1,34 @@
+{
+  "after": null,
+  "volatile": [
+    "expiresAt"
+  ],
+  "name": "lease-acquire-200",
+  "covers": "lease acquire → LeaseGrant gen 1",
+  "request": {
+    "method": "POST",
+    "path": "/jobs/e3d45f73cf65abaa/chains/eth/lease",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "op": "acquire",
+      "holder": "browser"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "gen": 1,
+      "ttlMs": 15000,
+      "expiresAt": 1791504015000,
+      "holder": "browser",
+      "openIntents": []
+    }
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "eth-drain-null.json": {
+    "id": "e3d45f73cf65abaa",
+    "def": {
+      "format": "vt-job/1",
+      "network": "local",
+      "name": "eth drain to the null address",
+      "messageSha256": "83be1d5879a59ca063ed2d02bcfde19e259cd991479d5ef45c899854f6900048",
+      "messageBytes": 50,
+      "chains": {
+        "eth": {
+          "mode": "drain",
+          "publishMode": "eth.calldata.null",
+          "feeStrategy": "passive",
+          "distinctCopies": true,
+          "keyAddress": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+          "budgetUsd": 10,
+          "maxTipGwei": 3,
+          "clawbackTo": null
+        }
+      }
+    }
+  },
+  "sol-copies.json": {
+    "id": "b7e053dab735000d",
+    "def": {
+      "format": "vt-job/1",
+      "network": "local",
+      "name": "sol three copies",
+      "messageSha256": "83be1d5879a59ca063ed2d02bcfde19e259cd991479d5ef45c899854f6900048",
+      "messageBytes": 50,
+      "chains": {
+        "sol": {
+          "mode": {
+            "copies": 3
+          },
+          "publishMode": "sol.memo",
+          "feeStrategy": "economy",
+          "distinctCopies": true,
+          "keyAddress": "9xx7qC7uwTAeaSo7T5Gk9canYBosFh1pMQaDmQEa83Tb",
+          "budgetUsd": 5,
+          "maxCuPrice": 2000000,
+          "clawbackTo": "G147qVmzynHL3EjQ8tvBGDms7u6FDCWbFfFmzNMZmg1x"
+        }
+      }
+    }
+  },
+  "btc-copies.json": {
+    "id": "df1ade22224d2443",
+    "def": {
+      "format": "vt-job/1",
+      "network": "local",
+      "name": "btc two copies (E7b)",
+      "messageSha256": "83be1d5879a59ca063ed2d02bcfde19e259cd991479d5ef45c899854f6900048",
+      "messageBytes": 50,
+      "chains": {
+        "btc": {
+          "mode": {
+            "copies": 2
+          },
+          "publishMode": "btc.inscription",
+          "feeStrategy": "economy",
+          "distinctCopies": true,
+          "keyAddress": "bcrt1q4nd3dampr5gwycmrdxv0c0n7898l5uy5thufr2",
+          "budgetUsd": 5,
+          "maxFeeRateSatVb": 25,
+          "clawbackTo": null
+        }
+      }
+    }
+  },
+  "btc-defaults.json": {
+    "id": "333825d1fd287956",
+    "def": {
+      "format": "vt-job/1",
+      "network": "local",
+      "name": "btc defaults filled in",
+      "messageSha256": "83be1d5879a59ca063ed2d02bcfde19e259cd991479d5ef45c899854f6900048",
+      "messageBytes": 50,
+      "chains": {
+        "btc": {
+          "mode": {
+            "copies": 2
+          },
+          "distinctCopies": true,
+          "keyAddress": "bcrt1q4nd3dampr5gwycmrdxv0c0n7898l5uy5thufr2",
+          "budgetUsd": 5,
+          "clawbackTo": null,
+          "publishMode": "btc.inscription",
+          "feeStrategy": "economy"
+        }
+      }
+    }
+  },
+  "both-testnet.json": {
+    "id": "6bc5ba7b0b707ade",
+    "def": {
+      "format": "vt-job/1",
+      "network": "testnet",
+      "name": "eth and sol on testnet",
+      "messageSha256": "83be1d5879a59ca063ed2d02bcfde19e259cd991479d5ef45c899854f6900048",
+      "messageBytes": 50,
+      "chains": {
+        "eth": {
+          "mode": {
+            "copies": 2
+          },
+          "publishMode": "eth.calldata.self",
+          "feeStrategy": "prompt",
+          "distinctCopies": false,
+          "keyAddress": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+          "budgetUsd": 2.5,
+          "maxTipGwei": 0.1,
+          "clawbackTo": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        },
+        "sol": {
+          "mode": "drain",
+          "publishMode": "sol.memo",
+          "feeStrategy": "passive",
+          "distinctCopies": true,
+          "keyAddress": "9xx7qC7uwTAeaSo7T5Gk9canYBosFh1pMQaDmQEa83Tb",
+          "budgetUsd": 1000,
+          "maxCuPrice": 0,
+          "clawbackTo": null
+        }
+      }
+    }
+  },
+  "message-ref.json": {
+    "id": "7810232766f87eaa",
+    "def": {
+      "format": "vt-job/1",
+      "network": "local",
+      "name": "message by digest",
+      "messageSha256": "ee3d6ce1f65081ef7d4ba1d47f3fa0af53bf627f1d91048a6151fde91da9f5dc",
+      "messageBytes": 514,
+      "chains": {
+        "eth": {
+          "mode": "drain",
+          "publishMode": "eth.calldata.null",
+          "feeStrategy": "passive",
+          "distinctCopies": true,
+          "keyAddress": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+          "budgetUsd": 10,
+          "maxTipGwei": 3,
+          "clawbackTo": null
+        }
+      }
+    }
+  },
+  "defaults.json": {
+    "id": "2e9e901ca97df6d5",
+    "def": {
+      "format": "vt-job/1",
+      "network": "local",
+      "name": "defaults filled in",
+      "messageSha256": "83be1d5879a59ca063ed2d02bcfde19e259cd991479d5ef45c899854f6900048",
+      "messageBytes": 50,
+      "chains": {
+        "eth": {
+          "mode": "drain",
+          "distinctCopies": true,
+          "keyAddress": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+          "budgetUsd": 10,
+          "maxTipGwei": 3,
+          "clawbackTo": null,
+          "publishMode": "eth.calldata.null",
+          "feeStrategy": "passive"
+        },
+        "sol": {
+          "mode": {
+            "copies": 3
+          },
+          "distinctCopies": true,
+          "keyAddress": "9xx7qC7uwTAeaSo7T5Gk9canYBosFh1pMQaDmQEa83Tb",
+          "budgetUsd": 5,
+          "maxCuPrice": 2000000,
+          "clawbackTo": "G147qVmzynHL3EjQ8tvBGDms7u6FDCWbFfFmzNMZmg1x",
+          "publishMode": "sol.memo",
+          "feeStrategy": "economy"
+        }
+      }
+    }
+  },
+  "arweave-copy-false.json": {
+    "id": "e3d45f73cf65abaa",
+    "def": {
+      "format": "vt-job/1",
+      "network": "local",
+      "name": "eth drain to the null address",
+      "messageSha256": "83be1d5879a59ca063ed2d02bcfde19e259cd991479d5ef45c899854f6900048",
+      "messageBytes": 50,
+      "chains": {
+        "eth": {
+          "mode": "drain",
+          "publishMode": "eth.calldata.null",
+          "feeStrategy": "passive",
+          "distinctCopies": true,
+          "keyAddress": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+          "budgetUsd": 10,
+          "maxTipGwei": 3,
+          "clawbackTo": null
+        }
+      }
+    }
+  }
+}

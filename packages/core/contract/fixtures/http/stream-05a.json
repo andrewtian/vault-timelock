@@ -1,0 +1,23 @@
+{
+  "after": null,
+  "volatile": [],
+  "name": "stream-05a",
+  "covers": "GET /jobs/:id/events?from=<seq> (SSE; Last-Event-ID honoured; heartbeat every 15 s)",
+  "request": {
+    "method": "GET",
+    "path": "/jobs/b858b37944ac7f70/events",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/event-stream; charset=utf-8"
+    },
+    "sse": {
+      "journal": "journals/05a-copies-done.jsonl"
+    }
+  }
+}

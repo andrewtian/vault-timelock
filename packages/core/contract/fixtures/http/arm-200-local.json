@@ -1,0 +1,72 @@
+{
+  "after": null,
+  "volatile": [
+    "armed.armedAt",
+    "armed.releaseAt"
+  ],
+  "name": "arm-200-local",
+  "covers": "arm on local, no typed confirmation → { armed: ArmRecord }",
+  "request": {
+    "method": "POST",
+    "path": "/jobs/e3d45f73cf65abaa/arm",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "content-type": "application/json"
+    },
+    "body": {
+      "chains": [
+        "eth"
+      ],
+      "confirm": {
+        "typed": null,
+        "amounts": {}
+      },
+      "caps": {
+        "eth": {
+          "nativeCap": "4000000000000000",
+          "usd": 10,
+          "priceAt": 1791504009000,
+          "overCap": false,
+          "planned": "0.004"
+        }
+      },
+      "countdownSec": 15,
+      "stagger": [
+        5,
+        10
+      ]
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "armed": {
+        "armedAt": 1791504060000,
+        "releaseAt": 1791504075000,
+        "countdownSec": 15,
+        "schedule": {
+          "order": [
+            "eth"
+          ],
+          "offsetSec": {
+            "eth": 0
+          }
+        },
+        "caps": {
+          "eth": {
+            "nativeCap": "4000000000000000",
+            "usd": 10,
+            "priceAt": 1791504009000,
+            "overCap": false,
+            "planned": "0.004"
+          }
+        },
+        "sources": {}
+      }
+    }
+  }
+}

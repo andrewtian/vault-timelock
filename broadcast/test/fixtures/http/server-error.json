@@ -1,0 +1,4 @@
+{
+  "request": { "method": "POST", "url": "https://rpc.eth.example/", "rpc": { "method": "eth_chainId", "params": [] } },
+  "response": { "status": 500, "headers": { "content-type": "text/plain" }, "body": "upstream failed for client 203.0.113.77" }
+}

@@ -1,0 +1,243 @@
+#!/bin/sh
+# bin/vt-broadcast — the ONLY way to run the broadcaster (spec B §6.1, §6.3; Part C §6.1).
+#
+#   bin/vt-broadcast [--profile mainnet|testnet|local] [--rpc <chain>=<url>]... \
+#                    [--endpoint <service>=<url>]... <command> [args]
+#   commands: see src/cli.ts (tor-check, env-names, validate-note, seal-text, ...)
+#
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# ★★★ ONE STRAY SOCKET IS AN IP LEAK. Two walls, both fail closed:
+#
+#   1. env -i. Node starts with exactly PATH HOME LANG TERM VT_CONFINED=1, plus VAULT_TIMELOCK_DIR,
+#      XDG_DATA_HOME, VT_PROFILE, VT_RPC_* and VT_ENDPOINT_* when set. Nothing else survives: the
+#      shell may export provider keys such as ALCHEMY_API_KEY; NODE_OPTIONS can --require code; DEBUG makes
+#      socks-proxy-agent print hosts; HTTPS_PROXY / NODE_EXTRA_CA_CERTS reroute or re-trust TLS;
+#      NODE_TEST_CONTEXT would unlock the test transport seam. BOTH branches rebuild the env this
+#      way (exec_clean below): the outer one before sandbox-exec, the inner one (VT_CONFINED=1)
+#      before node, so a hand-set VT_CONFINED=1 carries no preload hook or key into node either.
+#      The environment is enumerated NUL-safe (env -0): a value holding "\nVT_RPC_X=..." is a
+#      value, never a variable.
+#
+#   2. sandbox-exec. The kernel denies every outbound connection except Tor's SOCKS port
+#      (localhost:9050) and the loopback ports this run was explicitly given (R17: a local anvil,
+#      the operator's own node). An SDK default, a stray fetch, Waku's libp2p sockets, local DNS:
+#      all EPERM at connect() (measured on this machine: feasibility/F5.txt).
+#
+# ★★ VT_CONFINED=1 means "already inside: exec node, NEVER nest". It is only a HINT, anyone can set
+#   it, so every networked command proves confinement itself (src/net/confine.ts: direct connects
+#   to 192.0.2.1:9 and to loopback port 9 must both fail with EPERM) and a hand-set VT_CONFINED=1
+#   outside the sandbox fails closed. (macOS also refuses to apply a different profile inside a
+#   sandbox: sandbox_apply EPERM, exit 71, F5.txt.)
+#
+# ★ The script finds its project through symlinks (a POSIX readlink loop), so a symlink to it on
+#   PATH runs the real tree, and sandbox-exec re-runs the real script.
+#
+# ★ Flags become env BEFORE the sandbox is built, because the sandbox must know the loopback ports:
+#     --profile X           -> VT_PROFILE=X   (refused if VT_PROFILE is already set to another value;
+#                              both are checked against the three names first and never echoed)
+#     --rpc <chain>=<url>   -> VT_RPC_<CHAIN>
+#     --endpoint <svc>=<url> -> VT_ENDPOINT_<SVC>  (dots become underscores)
+#   A flag wins over the same variable in the env; the same flag twice is refused; an empty
+#   VT_RPC_*/VT_ENDPOINT_* is refused (src/config.ts applies the same rules to what arrives).
+#   Ports come only from literal http://127.0.0.1:<port> / http://[::1]:<port> values (localhost is
+#   never loopback: it needs DNS), plus endpoints.json's `local` section when VT_PROFILE=local (read
+#   with /usr/bin/jq). A port is 1-65535 without leading zeros or the wrapper refuses: the digits go
+#   into the sandbox profile, so nothing else may.
+#
+# Refusals print `refused <guard-id>: <reason>` and exit 2, like the CLI. Each refusal line ends in
+# a `// @guard:` marker (inside a shell comment), so test/mutation/run.ts blanks it and
+# test/offline/wrapper.test.ts must notice. That test is this script's self-test: fakes on PATH
+# (node, sandbox-exec), negative controls that assert the refusal's guard id, and the real sandbox.
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+set -eu
+set -f            # no pathname expansion anywhere: names and values are data
+unset CDPATH      # `cd "$(dirname "$0")"` must not wander or print
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
+
+die() { id=$1; shift; printf 'refused %s: %s\n' "$id" "$*" >&2; exit 2; }
+
+# PATH and HOME come from the caller's environment and must be sane: an unset PATH would make sh
+# fall back to a default that includes `.`, and env -i copies PATH into the sandbox.
+case ":${PATH:-}:" in *::*|*:[!/]*) pok=0 ;; *) pok=1 ;; esac
+[ "$pok" = 1 ] && [ -n "${HOME:-}" ] || die wrapper.env "PATH (absolute directories only) and HOME must be set" # // @guard:wrapper.env
+
+# check_profile <value>: '' (unset) or one of the three names, else refuse. Task H0 (K27): a profile value
+# is validated BEFORE anything else is printed and is never echoed (a mistyped --profile can hold a URL
+# with a key, or an IP). Called for VT_PROFILE right here, in both branches, and for every --profile.
+check_profile() {
+  case $1 in ''|mainnet|testnet|local) pok=1 ;; *) pok=0 ;; esac
+  [ "$pok" = 1 ] || die wrapper.profile-invalid "the profile must be mainnet, testnet or local (the value is not echoed)" # // @guard:wrapper.profile-invalid
+}
+check_profile "${VT_PROFILE:-}"
+
+# ── the real script: follow symlinks (relative targets are relative to the link's directory) ───
+# A loop is impossible for a script the kernel just ran (ELOOP); the bound only guards a race, and
+# anything odd then fails closed (no src/cli.ts next to a wrong ROOT).
+real=$0
+hops=0
+while [ -L "$real" ] && [ "$hops" -lt 64 ]; do
+  link=$(readlink "$real")
+  case $link in
+    /*) real=$link ;;
+    *) real=$(dirname "$real")/$link ;;
+  esac
+  hops=$((hops + 1))
+done
+HERE=$(cd -P "$(dirname "$real")" && pwd)
+ROOT=${HERE%/*}
+SELF=$HERE/${real##*/}
+
+# ── the environment allowlist, shared by both branches ─────────────────────────────────────────
+# collect_overrides: PASS = the names of the VT_RPC_* / VT_ENDPOINT_* variables, validated before
+# anything dereferences them (so the evals below only ever see [A-Z0-9_]), each non-empty.
+# The environment is read NUL-separated (env -0): newlines inside values are first moved out of the
+# way (tr to \001), then each NUL becomes the record separator, so only real variable names start a
+# record. LC_ALL=C: values may hold any bytes. PATH (checked above, so set) must show up too: if it
+# does not, the reading itself failed, and overrides would be dropped silently: refuse.
+collect_overrides() {
+  names=$(env -0 | LC_ALL=C tr '\n\000' '\001\n' | LC_ALL=C sed -n -E -e 's/^(VT_(RPC|ENDPOINT)_[^=]*)=.*/\1/p' -e 's/^PATH=.*/PATH/p' | LC_ALL=C sort -u)
+  PASS=
+  read_ok=0
+  for name in $names; do
+    if [ "$name" = PATH ]; then read_ok=1; continue; fi
+    case $name in
+      VT_RPC_*|VT_ENDPOINT_*) case ${name#VT_*_} in *[!A-Z0-9_]*) name_ok=0 ;; *) name_ok=1 ;; esac ;;
+      *) name_ok=0 ;;
+    esac
+    [ "$name_ok" = 1 ] || die wrapper.override-name "an environment variable named like VT_RPC_*/VT_ENDPOINT_* has characters outside A-Z 0-9 _" # // @guard:wrapper.override-name
+    eval "value=\${$name-}"
+    [ -n "$value" ] || die wrapper.override-empty "$name is set but empty; unset it or give a URL" # // @guard:wrapper.override-empty
+    PASS="$PASS $name"
+  done
+  [ "$read_ok" = 1 ] || die wrapper.env-read "could not read the environment (env -0 | tr | sed | sort on PATH); refusing rather than dropping VT_RPC_*/VT_ENDPOINT_* silently" # // @guard:wrapper.env-read
+}
+
+# exec_clean <command> [args]: exec it under env -i with exactly the allowlist: PATH HOME LANG TERM
+# VT_CONFINED=1, plus VAULT_TIMELOCK_DIR / XDG_DATA_HOME when set, VT_PROFILE when non-empty, and
+# the PASS variables. (env -i starts empty; the -u's restate that nothing this shell adds to its
+# children's environment, PWD OLDPWD SHLVL _, gets through.)
+exec_clean() {
+  for name in $PASS; do
+    eval "value=\${$name}"
+    set -- "$name=$value" "$@"
+  done
+  if [ -n "${VT_PROFILE:-}" ]; then set -- "VT_PROFILE=$VT_PROFILE" "$@"; fi
+  if [ "${XDG_DATA_HOME+x}" = x ]; then set -- "XDG_DATA_HOME=$XDG_DATA_HOME" "$@"; fi
+  if [ "${VAULT_TIMELOCK_DIR+x}" = x ]; then set -- "VAULT_TIMELOCK_DIR=$VAULT_TIMELOCK_DIR" "$@"; fi
+  exec env -i -u PWD -u OLDPWD -u SHLVL -u _ PATH="$PATH" HOME="$HOME" LANG="${LANG:-en_US.UTF-8}" TERM="${TERM:-dumb}" VT_CONFINED=1 "$@"
+}
+
+# ★ node never starts an inspector on a signal. The CLI holds passphrases and decrypted keys, and a
+#   `kill -USR1` makes a default node open the inspector (127.0.0.1:9229), where any local process can
+#   attach and read them. --disable-sigusr1 removes the handler (the signal then just ends the process).
+#   Every node exec here carries NODE_FLAGS; src/cli.ts also refuses --inspect*/--debug* itself (cli.inspector).
+NODE_FLAGS=
+NODE_FLAGS=--disable-sigusr1 # // @guard:wrapper.sigusr1
+
+# ── inside the sandbox: straight to node, never sandbox-exec again ─────────────────────────────
+# The env is rebuilt here too: VT_CONFINED=1 may have been set by hand, with anything around it.
+if [ "${VT_CONFINED:-}" = 1 ]; then
+  collect_overrides
+  exec_clean node $NODE_FLAGS "$ROOT/src/cli.ts" "$@"
+fi
+
+command -v sandbox-exec >/dev/null 2>&1 || die wrapper.no-sandbox "sandbox-exec is not on PATH; the broadcaster never runs unconfined (spec B §6.1; the fallback is a pf anchor, Part C F5)" # // @guard:wrapper.no-sandbox
+
+# ── flags -> env ───────────────────────────────────────────────────────────────────────────────
+SEEN=' '
+# take_flag <--flag> [<value>]: validates one flag (no value = the --flag=value form or a missing
+# value), then exports its variable.
+take_flag() {
+  flag_ok=1
+  [ $# -eq 2 ] || flag_ok=0
+  value=${2-}
+  case $value in ''|--*) flag_ok=0 ;; esac
+  case $1 in
+    --profile) name=VT_PROFILE; val=$value ;;
+    *)
+      key=${value%%=*}
+      val=${value#*=}
+      [ "$key" != "$value" ] && [ -n "$key" ] && [ -n "$val" ] || flag_ok=0
+      if [ "$1" = --rpc ]; then
+        case $key in ''|*[!a-z0-9]*) flag_ok=0 ;; esac
+        name=VT_RPC_$(printf '%s' "$key" | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+      else
+        case $key in ''|.*|*.|*..*|*[!a-z0-9.]*) flag_ok=0 ;; esac
+        name=VT_ENDPOINT_$(printf '%s' "$key" | tr '.abcdefghijklmnopqrstuvwxyz' '_ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+      fi ;;
+  esac
+  [ "$flag_ok" = 1 ] || die wrapper.flag "malformed $1: use --profile mainnet|testnet|local, --rpc <chain>=<url>, --endpoint <service>=<url> (separate argument, lower-case name)" # // @guard:wrapper.flag
+  case $SEEN in *" $name "*) fresh=0 ;; *) fresh=1 ;; esac
+  [ "$fresh" = 1 ] || die wrapper.flag-duplicate "$1 for $name given more than once" # // @guard:wrapper.flag-duplicate
+  SEEN="$SEEN$name "
+  if [ "$name" = VT_PROFILE ]; then
+    check_profile "$val"
+    [ -z "${VT_PROFILE:-}" ] || [ "$VT_PROFILE" = "$val" ] || die wrapper.profile-conflict "--profile disagrees with VT_PROFILE (the values are not echoed)" # // @guard:wrapper.profile-conflict
+  fi
+  export "$name=$val"
+}
+
+# Rebuild "$@" without the flags (`for a do` iterates over the ORIGINAL list).
+pending=
+first=1
+for a do
+  if [ "$first" = 1 ]; then set --; first=0; fi
+  if [ -n "$pending" ]; then
+    take_flag "$pending" "$a"
+    pending=
+    continue
+  fi
+  case $a in
+    --profile|--rpc|--endpoint) pending=$a ;;
+    --profile=*|--rpc=*|--endpoint=*) take_flag "${a%%=*}" ;;
+    *) set -- "$@" "$a" ;;
+  esac
+done
+if [ -n "$pending" ]; then take_flag "$pending"; fi
+
+check_profile "${VT_PROFILE:-}"
+
+# ── loopback ports ─────────────────────────────────────────────────────────────────────────────
+PORTS=
+# loopback_port <url>: PORT=<port> for a literal loopback URL, '' for anything else; refuses a
+# loopback URL whose port is not 1-65535.
+loopback_port() {
+  PORT=
+  case $1 in
+    http://127.0.0.1*) rest=${1#http://127.0.0.1} ;;
+    'http://[::1]'*) rest=${1#'http://[::1]'} ;;
+    *) return 0 ;;
+  esac
+  port=${rest#:}
+  port=${port%%/*}
+  port_ok=1
+  case $rest in :*) ;; *) port_ok=0 ;; esac
+  case $port in ''|0*|*[!0-9]*) port_ok=0 ;; esac
+  [ "$port_ok" = 1 ] && [ ${#port} -le 5 ] && [ "$port" -le 65535 ] || die wrapper.port "a loopback URL must be exactly http://127.0.0.1:<port> or http://[::1]:<port>, with a port 1-65535" # // @guard:wrapper.port
+  PORT=$port
+}
+
+# VT_RPC_* / VT_ENDPOINT_* from the env (flags were exported above), validated by collect_overrides.
+collect_overrides
+for name in $PASS; do
+  eval "value=\${$name}"
+  loopback_port "$value"
+  if [ -n "$PORT" ]; then PORTS="$PORTS $PORT"; fi
+done
+
+if [ "${VT_PROFILE:-}" = local ]; then
+  urls=$([ -x /usr/bin/jq ] && /usr/bin/jq -r '.local[][]' "$ROOT/endpoints.json" 2>/dev/null) && jq_ok=1 || jq_ok=0
+  [ "$jq_ok" = 1 ] || die wrapper.local-endpoints "cannot read the local section of endpoints.json with /usr/bin/jq" # // @guard:wrapper.local-endpoints
+  for u in $urls; do
+    loopback_port "$u"
+    if [ -n "$PORT" ]; then PORTS="$PORTS $PORT"; fi
+  done
+fi
+
+PROFILE='(version 1)(allow default)(deny network-outbound)(allow network-outbound (remote ip "localhost:9050"))'
+for p in $(printf '%s\n' $PORTS | sort -n -u); do
+  PROFILE="$PROFILE(allow network-outbound (remote ip \"localhost:$p\"))"
+done
+
+# ── env -i, then sandbox-exec re-runs this script with VT_CONFINED=1 ───────────────────────────
+exec_clean sandbox-exec -p "$PROFILE" "$SELF" "$@"

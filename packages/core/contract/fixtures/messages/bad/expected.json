@@ -1,0 +1,13 @@
+{
+  "crlf.txt": "message.control",
+  "nfd.txt": "message.nfc",
+  "bidi.txt": "message.control",
+  "bom.txt": "message.control",
+  "age-secret.txt": "message.secret",
+  "bip39-12.txt": "message.secret",
+  "b58-88.txt": "message.secret",
+  "ip.txt": "message.ip-like",
+  "ipv6.txt": "message.ip-like",
+  "empty.txt": "message.empty",
+  "invalid-utf8.txt": "message.utf8"
+}

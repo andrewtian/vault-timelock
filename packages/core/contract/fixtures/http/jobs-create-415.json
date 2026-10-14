@@ -1,0 +1,30 @@
+{
+  "after": null,
+  "volatile": [
+    "error.message"
+  ],
+  "name": "jobs-create-415",
+  "covers": "POST with text/plain → 415 api.content-type",
+  "request": {
+    "method": "POST",
+    "path": "/jobs",
+    "headers": {
+      "host": "{{host}}",
+      "authorization": "Bearer {{token}}",
+      "content-type": "text/plain"
+    },
+    "bodyText": "{}"
+  },
+  "response": {
+    "status": 415,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "guard": "api.content-type",
+        "message": "(any text that never echoes input)"
+      }
+    }
+  }
+}

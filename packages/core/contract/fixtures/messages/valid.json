@@ -1,0 +1,14 @@
+{
+  "sealed-like.txt": {
+    "bytes": 514,
+    "sha256": "ee3d6ce1f65081ef7d4ba1d47f3fa0af53bf627f1d91048a6151fde91da9f5dc",
+    "warnings": [
+      "hex64"
+    ]
+  },
+  "multibyte-5k.txt": {
+    "bytes": 5048,
+    "sha256": "5d51f8d98fc40a56013f1ecd939905c3f52f727aee0c754398b69b004c515f52",
+    "warnings": []
+  }
+}

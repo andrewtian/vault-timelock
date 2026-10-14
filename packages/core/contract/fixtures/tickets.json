@@ -1,0 +1,1803 @@
+{
+  "format": "vt-ticket/2.",
+  "key": "60b3bee99edf7cc7064dea0073b65124861b76d028f77496d647cb3ee3ca2ee1",
+  "ttlMs": 120000,
+  "signers": {
+    "eth": "0x730df477b1925aac514cdf0faabe4ecff6d57d35",
+    "sol": "J1iD84DGodSrY6VWvufemX4Y1axuRKEZvxUuDXqxQ1Tq"
+  },
+  "rules": [
+    "ticket = \"vt-ticket/2.\" + b64url(payload JSON, keys j,w,c,g,t,r,a,k,p,to,value,f,q,e,n in that order, no whitespace) + \".\" + b64url(HMAC-SHA256(key, \"vt-ticket/2.\" + b64url(payload))); b64url = RFC 4648 §5, no padding; field formats: src/contracts/http.ts",
+    "valid while now < e; e = issuedAt + ttlMs; n = 16 lowercase hex; a v1 ticket (\"vt-ticket/1.\", or a v1 payload under the v2 prefix) is refused: relay.send-ticket",
+    "verifyTicket (S1) refuses format and MAC (relay.send-ticket) and expiry (relay.ticket-expired); the relay gate adds w = its network (relay.ticket-network), c = the route chain (relay.ticket-chain), r = sha256(raw bytes) (relay.ticket-raw), the job-send lock (release.mainnet-locked), then the decode verification (relay.decode-mismatch: src/contracts/http.ts)",
+    "raw bytes: ETH = params[0] hex decoded; SOL = params[0] base64 decoded; every valid raw is a genuine signed tx by `signers`",
+    "each negative and each decode vector has exactly one defect; context = the relay's network, the route chain and the raw param"
+  ],
+  "valid": [
+    {
+      "name": "local eth job to the null address; f = gas × maxFee exactly",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "local",
+        "c": "eth",
+        "g": 1,
+        "t": "0xc8e2826fb450c0afc7b5d1193129d757d7c40bcee74f9425fdc3d8525235edf8",
+        "r": "37c4b10581811bb0c215339e6f2d61a15c9162406c282662f7a65864600b54b0",
+        "a": "0x730df477b1925aac514cdf0faabe4ecff6d57d35",
+        "k": "job",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": "0x0000000000000000000000000000000000000000",
+        "value": null,
+        "f": "180000000000000",
+        "q": "7",
+        "x": "60000:1000000:3000000000",
+        "e": 1791504150000,
+        "n": "b0a72112431b05fe"
+      },
+      "issuedAt": 1791504030000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.5-Tz18BUGC84q0P4gE61z2pdMVADiEgeqrjxNmQ1CIo",
+      "raw": {
+        "encoding": "hex",
+        "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+      },
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      }
+    },
+    {
+      "name": "testnet sol job: legacy message, CU limit + price + one Memo v2; f = the exact fee",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "testnet",
+        "c": "sol",
+        "g": 2,
+        "t": "4C23cSWCExLj29DDKvxkwthCQJVGZnrzXxjkHfpmCcekjo1QdnDsSWmiisXebg6cMH3i385UMGVWwrvp6eLFQeff",
+        "r": "6573f9cc2943e56c821047eac583f1a8c20946eb84d68ef03f438acc697b4977",
+        "a": "J1iD84DGodSrY6VWvufemX4Y1axuRKEZvxUuDXqxQ1Tq",
+        "k": "job",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": null,
+        "value": null,
+        "f": "5375",
+        "q": "1y7cLDoKGiEcKSA8UDHwiDxqgrowngnuw7KFdab98Vb",
+        "x": "30000:12500",
+        "e": 1791504151000,
+        "n": "a65aa32fa07cc985"
+      },
+      "issuedAt": 1791504031000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiI0QzIzY1NXQ0V4TGoyOURES3Z4a3d0aENRSlZHWm5yelh4amtIZnBtQ2Nla2pvMVFkbkRzU1dtaWlzWGViZzZjTUgzaTM4NVVNR1ZXd3J2cDZlTEZRZWZmIiwiciI6IjY1NzNmOWNjMjk0M2U1NmM4MjEwNDdlYWM1ODNmMWE4YzIwOTQ2ZWI4NGQ2OGVmMDNmNDM4YWNjNjk3YjQ5NzciLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTUxMDAwLCJuIjoiYTY1YWEzMmZhMDdjYzk4NSJ9.sW6uIGcLJP5xowWgKmo-MXInbQimfPoXK7EOrTFCQVY",
+      "raw": {
+        "encoding": "base64",
+        "value": "AZ+NcaO6aKrtSk5ECHagzdKtPVTjty9Pv9ObVgcP9LOFBaEUkfO4xfC0fHLiwYl/X5pFi3sL5rj+rfhWtmSmaw4BAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+      },
+      "now": 1791504032000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AZ+NcaO6aKrtSk5ECHagzdKtPVTjty9Pv9ObVgcP9LOFBaEUkfO4xfC0fHLiwYl/X5pFi3sL5rj+rfhWtmSmaw4BAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      }
+    },
+    {
+      "name": "mainnet eth job (the relay refuses it while mainnet job sends are locked: release.mainnet-locked)",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "mainnet",
+        "c": "eth",
+        "g": 3,
+        "t": "0x06a23a564954d639c0aeb367b23ede4586e14fc8e82d3bb151ed3ecfd25c704d",
+        "r": "4e1301da4d3943d5cea177bf81c25d9bf53e8fb05657f00bc8e17e506af3a240",
+        "a": "0x730df477b1925aac514cdf0faabe4ecff6d57d35",
+        "k": "job",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": "0x0000000000000000000000000000000000000000",
+        "value": null,
+        "f": "180000000000000",
+        "q": "7",
+        "x": "60000:1000000:3000000000",
+        "e": 1791504152000,
+        "n": "ab0473c80b5e8595"
+      },
+      "issuedAt": 1791504032000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJtYWlubmV0IiwiYyI6ImV0aCIsImciOjMsInQiOiIweDA2YTIzYTU2NDk1NGQ2MzljMGFlYjM2N2IyM2VkZTQ1ODZlMTRmYzhlODJkM2JiMTUxZWQzZWNmZDI1YzcwNGQiLCJyIjoiNGUxMzAxZGE0ZDM5NDNkNWNlYTE3N2JmODFjMjVkOWJmNTNlOGZiMDU2NTdmMDBiYzhlMTdlNTA2YWYzYTI0MCIsImEiOiIweDczMGRmNDc3YjE5MjVhYWM1MTRjZGYwZmFhYmU0ZWNmZjZkNTdkMzUiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsInZhbHVlIjpudWxsLCJmIjoiMTgwMDAwMDAwMDAwMDAwIiwicSI6IjciLCJ4IjoiNjAwMDA6MTAwMDAwMDozMDAwMDAwMDAwIiwiZSI6MTc5MTUwNDE1MjAwMCwibiI6ImFiMDQ3M2M4MGI1ZTg1OTUifQ.HRD_GqEDmmeguNIlZXgogYaHl3jaLs155a0ZNiSjTbs",
+      "raw": {
+        "encoding": "hex",
+        "value": "0x02f8990107830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0438a6b72faf4763f2d8b466ab9b1eba8d83e9d9bdba235b0d791902f6e1ab19da01b112e47acda28fe5f83d955bc7ff859ef6aaf02307f2ca9b20c432fd8c2d49b"
+      },
+      "now": 1791504033000,
+      "context": {
+        "network": "mainnet",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f8990107830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0438a6b72faf4763f2d8b466ab9b1eba8d83e9d9bdba235b0d791902f6e1ab19da01b112e47acda28fe5f83d955bc7ff859ef6aaf02307f2ca9b20c432fd8c2d49b"
+        }
+      }
+    },
+    {
+      "name": "local eth claw-back: value to the destination, no data",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "local",
+        "c": "eth",
+        "g": 1,
+        "t": "0xbdb39569045255264c4a7bd4b4d082f0c0147abe2d989fd380e763aa4131ac3b",
+        "r": "80477d1dfd8a487efe46d5b877780891694555dbbbdf0dc46e54c2fea8f49584",
+        "a": "0x730df477b1925aac514cdf0faabe4ecff6d57d35",
+        "k": "clawback",
+        "p": null,
+        "to": "0x54fe0fe5d347410e7afdc3428ad92a2f2a7f7bf6",
+        "value": "2500000000000000",
+        "f": "42000000000000",
+        "q": "8",
+        "x": "21000:1000000:2000000000",
+        "e": 1791504153000,
+        "n": "adabbe68434bd082"
+      },
+      "issuedAt": 1791504033000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhiZGIzOTU2OTA0NTI1NTI2NGM0YTdiZDRiNGQwODJmMGMwMTQ3YWJlMmQ5ODlmZDM4MGU3NjNhYTQxMzFhYzNiIiwiciI6IjgwNDc3ZDFkZmQ4YTQ4N2VmZTQ2ZDViODc3NzgwODkxNjk0NTU1ZGJiYmRmMGRjNDZlNTRjMmZlYThmNDk1ODQiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImNsYXdiYWNrIiwicCI6bnVsbCwidG8iOiIweDU0ZmUwZmU1ZDM0NzQxMGU3YWZkYzM0MjhhZDkyYTJmMmE3ZjdiZjYiLCJ2YWx1ZSI6IjI1MDAwMDAwMDAwMDAwMDAiLCJmIjoiNDIwMDAwMDAwMDAwMDAiLCJxIjoiOCIsIngiOiIyMTAwMDoxMDAwMDAwOjIwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUzMDAwLCJuIjoiYWRhYmJlNjg0MzRiZDA4MiJ9.zk2ftrp9bHcH40f2FODJe1li0Wp_qCMhVa7w1z4wkDM",
+      "raw": {
+        "encoding": "hex",
+        "value": "0x02f872827a6908830f424084773594008252089454fe0fe5d347410e7afdc3428ad92a2f2a7f7bf68708e1bc9bf0400080c001a02fecdddaafb4edac2edb1eebcc8b08909fb5db9993662fe19beda31461a32943a056484de6a6ccae4b1ae6866f4a495a446baca667fe57dd87d83d51fa92f05164"
+      },
+      "now": 1791504034000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f872827a6908830f424084773594008252089454fe0fe5d347410e7afdc3428ad92a2f2a7f7bf68708e1bc9bf0400080c001a02fecdddaafb4edac2edb1eebcc8b08909fb5db9993662fe19beda31461a32943a056484de6a6ccae4b1ae6866f4a495a446baca667fe57dd87d83d51fa92f05164"
+        }
+      }
+    },
+    {
+      "name": "testnet sol claw-back: one System transfer, no compute budget (price 0: the declared limit is the default, not in the tx); f = 5000",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "testnet",
+        "c": "sol",
+        "g": 2,
+        "t": "63KviCjPcHoKYApgcuk2Guqmjmbf19X61qVXDp5y2FSwyrEVjnUd6joaaNjMKTLSNzWGyfFBiMzUSDuHV5cMCsYY",
+        "r": "3623e18f26d400d9cf855c410d6041d1ca2fca13e414843d5a4bde49fcca0b6f",
+        "a": "J1iD84DGodSrY6VWvufemX4Y1axuRKEZvxUuDXqxQ1Tq",
+        "k": "clawback",
+        "p": null,
+        "to": "G147qVmzynHL3EjQ8tvBGDms7u6FDCWbFfFmzNMZmg1x",
+        "value": "1234567",
+        "f": "5000",
+        "q": "1y7cLDoKGiEcKSA8UDHwiDxqgrowngnuw7KFdab98Vb",
+        "x": "200000:0",
+        "e": 1791504154000,
+        "n": "28898ebee2f2d767"
+      },
+      "issuedAt": 1791504034000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiI2M0t2aUNqUGNIb0tZQXBnY3VrMkd1cW1qbWJmMTlYNjFxVlhEcDV5MkZTd3lyRVZqblVkNmpvYWFOak1LVExTTnpXR3lmRkJpTXpVU0R1SFY1Y01Dc1lZIiwiciI6IjM2MjNlMThmMjZkNDAwZDljZjg1NWM0MTBkNjA0MWQxY2EyZmNhMTNlNDE0ODQzZDVhNGJkZTQ5ZmNjYTBiNmYiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiY2xhd2JhY2siLCJwIjpudWxsLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOiIxMjM0NTY3IiwiZiI6IjUwMDAiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIyMDAwMDA6MCIsImUiOjE3OTE1MDQxNTQwMDAsIm4iOiIyODg5OGViZWUyZjJkNzY3In0.m5EthoKB3A8_lk5gxoJGPXlq_QUlHF5jBnDEK1ZlSJo",
+      "raw": {
+        "encoding": "base64",
+        "value": "AfwXU0O7vpGXejcpg46Iq67YwXnRJCVrAGmxSSi9YlLcPefDhF1+eMiexVw4KVYnYSPSrkL8BmTCsZbPwByqsQUBAAED/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YBAgIAAQwCAAAAh9YSAAAAAAA="
+      },
+      "now": 1791504035000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AfwXU0O7vpGXejcpg46Iq67YwXnRJCVrAGmxSSi9YlLcPefDhF1+eMiexVw4KVYnYSPSrkL8BmTCsZbPwByqsQUBAAED/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YBAgIAAQwCAAAAh9YSAAAAAAA="
+        }
+      }
+    },
+    {
+      "name": "local eth job to the sender itself (eth.calldata.self); f above the worst case",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "local",
+        "c": "eth",
+        "g": 3,
+        "t": "0xc76d2c4c2f892fc9661034b9f20ceb7f7b47ed39a5db755c0dcd20f3204ac1e5",
+        "r": "3c33eb7cab9dd3951c429057d12c2102e5ec4fbabaa0cc96722e4714b40912da",
+        "a": "0x730df477b1925aac514cdf0faabe4ecff6d57d35",
+        "k": "job",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": "0x730df477b1925aac514cdf0faabe4ecff6d57d35",
+        "value": null,
+        "f": "180000000000001",
+        "q": "9",
+        "x": "60000:1000000:3000000000",
+        "e": 1791504155000,
+        "n": "9e258476da13b8c6"
+      },
+      "issuedAt": 1791504035000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHhjNzZkMmM0YzJmODkyZmM5NjYxMDM0YjlmMjBjZWI3ZjdiNDdlZDM5YTVkYjc1NWMwZGNkMjBmMzIwNGFjMWU1IiwiciI6IjNjMzNlYjdjYWI5ZGQzOTUxYzQyOTA1N2QxMmMyMTAyZTVlYzRmYmFiYWEwY2M5NjcyMmU0NzE0YjQwOTEyZGEiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDczMGRmNDc3YjE5MjVhYWM1MTRjZGYwZmFhYmU0ZWNmZjZkNTdkMzUiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMSIsInEiOiI5IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTUwMDAsIm4iOiI5ZTI1ODQ3NmRhMTNiOGM2In0.1QioY635XMxojpqRYTnMfMR0Bq38iVo9zr6Z5ynjhbU",
+      "raw": {
+        "encoding": "hex",
+        "value": "0x02f89b827a6909830f424084b2d05e0082ea6094730df477b1925aac514cdf0faabe4ecff6d57d3580b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac080a0ce4f80c4983aa364e6012aebba46ec554a385b282ed78862265d318da2223b4ea03cac839a605731f8e13c1ea32ac3fe0744204c02b7d10571a634151d7652fd5d"
+      },
+      "now": 1791504036000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6909830f424084b2d05e0082ea6094730df477b1925aac514cdf0faabe4ecff6d57d3580b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac080a0ce4f80c4983aa364e6012aebba46ec554a385b282ed78862265d318da2223b4ea03cac839a605731f8e13c1ea32ac3fe0744204c02b7d10571a634151d7652fd5d"
+        }
+      }
+    },
+    {
+      "name": "local sol job: CU limit only (passive: no price, fee 5000), as vt's builder makes it",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "local",
+        "c": "sol",
+        "g": 1,
+        "t": "3a52qLfaoyVK2FAR7hivmpxKvwsY2rAasCnuj9Tu9MYFFZonD7dSNTxxpKqx7rW6TzW7i6o3LhNNsv7yAYixZfsD",
+        "r": "5dae5a8d88061df5f24236bd7e6e55efefb99eb6ddc2c615d4c3c3e1251d03f7",
+        "a": "J1iD84DGodSrY6VWvufemX4Y1axuRKEZvxUuDXqxQ1Tq",
+        "k": "job",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": null,
+        "value": null,
+        "f": "5000",
+        "q": "1y7cLDoKGiEcKSA8UDHwiDxqgrowngnuw7KFdab98Vb",
+        "x": "30000:0",
+        "e": 1791504156000,
+        "n": "387aa64589cd3dd1"
+      },
+      "issuedAt": 1791504036000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJzb2wiLCJnIjoxLCJ0IjoiM2E1MnFMZmFveVZLMkZBUjdoaXZtcHhLdndzWTJyQWFzQ251ajlUdTlNWUZGWm9uRDdkU05UeHhwS3F4N3JXNlR6VzdpNm8zTGhOTnN2N3lBWWl4WmZzRCIsInIiOiI1ZGFlNWE4ZDg4MDYxZGY1ZjI0MjM2YmQ3ZTZlNTVlZmVmYjk5ZWI2ZGRjMmM2MTVkNGMzYzNlMTI1MWQwM2Y3IiwiYSI6IkoxaUQ4NERHb2RTclk2Vld2dWZlbVg0WTFheHVSS0VadnhVdURYcXhRMVRxIiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOm51bGwsInZhbHVlIjpudWxsLCJmIjoiNTAwMCIsInEiOiIxeTdjTERvS0dpRWNLU0E4VURId2lEeHFncm93bmdudXc3S0ZkYWI5OFZiIiwieCI6IjMwMDAwOjAiLCJlIjoxNzkxNTA0MTU2MDAwLCJuIjoiMzg3YWE2NDU4OWNkM2RkMSJ9.DLwGPaxKyS-UvddgD3202FM2WbiyCC2GzqsOmGi35K0",
+      "raw": {
+        "encoding": "base64",
+        "value": "AYCNSH2Wq59T31q0FIGNRXdeVY49OkZILb82wpRTwbdBv5FvVyBcznU2WGw55qqe4sBNztcf8CikT/aJ/56VcQgBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YCAQAFAjB1AAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+      },
+      "now": 1791504037000,
+      "context": {
+        "network": "local",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AYCNSH2Wq59T31q0FIGNRXdeVY49OkZILb82wpRTwbdBv5FvVyBcznU2WGw55qqe4sBNztcf8CikT/aJ/56VcQgBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YCAQAFAjB1AAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      }
+    },
+    {
+      "name": "testnet sol claw-back with a priority fee (limit 450, price 27778 → ⌈12.5001⌉ = 13)",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "testnet",
+        "c": "sol",
+        "g": 2,
+        "t": "4EYC2dmAizhjJuKcFAjZkCvoQMmv3TL89WatDDe7hxULg5cZctgBSF1W9ukdeCsGaadYAxH1jDtzeQTxrY8kpH1b",
+        "r": "b980f9e56fb8a00830981d2616179ef62dbb894b15e9c61aaed219d86c9ed642",
+        "a": "J1iD84DGodSrY6VWvufemX4Y1axuRKEZvxUuDXqxQ1Tq",
+        "k": "clawback",
+        "p": null,
+        "to": "G147qVmzynHL3EjQ8tvBGDms7u6FDCWbFfFmzNMZmg1x",
+        "value": "1234567",
+        "f": "5013",
+        "q": "1y7cLDoKGiEcKSA8UDHwiDxqgrowngnuw7KFdab98Vb",
+        "x": "450:27778",
+        "e": 1791504157000,
+        "n": "f2b84afce77c9d00"
+      },
+      "issuedAt": 1791504037000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiI0RVlDMmRtQWl6aGpKdUtjRkFqWmtDdm9RTW12M1RMODlXYXRERGU3aHhVTGc1Y1pjdGdCU0YxVzl1a2RlQ3NHYWFkWUF4SDFqRHR6ZVFUeHJZOGtwSDFiIiwiciI6ImI5ODBmOWU1NmZiOGEwMDgzMDk4MWQyNjE2MTc5ZWY2MmRiYjg5NGIxNWU5YzYxYWFlZDIxOWQ4NmM5ZWQ2NDIiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiY2xhd2JhY2siLCJwIjpudWxsLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOiIxMjM0NTY3IiwiZiI6IjUwMTMiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiI0NTA6Mjc3NzgiLCJlIjoxNzkxNTA0MTU3MDAwLCJuIjoiZjJiODRhZmNlNzdjOWQwMCJ9.dtGbWFC_1ExwIRLSwZrGPfj2WM0Vxi_Jrjmwk-2TeYo",
+      "raw": {
+        "encoding": "base64",
+        "value": "AaG5ttr4moHAb7yRG7PRxQajcrpKjOP9glzOynEsehF/u6JZKVXBOIKV7vbuETjB+DiMfjfmlKAnWgoIcZZ+fAoBAAIE/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wMGRm/lIRcy/+ytunLDm+e8jOW7xfcSayxDmzpAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP3LATIQ7nHnw7AFJkfOlBAVLDFyS5BeIi/EQ8nAjdgMCAAUCwgEAAAIACQOCbAAAAAAAAAMCAAEMAgAAAIfWEgAAAAAA"
+      },
+      "now": 1791504038000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AaG5ttr4moHAb7yRG7PRxQajcrpKjOP9glzOynEsehF/u6JZKVXBOIKV7vbuETjB+DiMfjfmlKAnWgoIcZZ+fAoBAAIE/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wMGRm/lIRcy/+ytunLDm+e8jOW7xfcSayxDmzpAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP3LATIQ7nHnw7AFJkfOlBAVLDFyS5BeIi/EQ8nAjdgMCAAUCwgEAAAIACQOCbAAAAAAAAAMCAAEMAgAAAIfWEgAAAAAA"
+        }
+      }
+    },
+    {
+      "name": "testnet eth job with tip = maxFee",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "testnet",
+        "c": "eth",
+        "g": 3,
+        "t": "0x103355df2038f721a120baec3305d35061e1342098d21a28920599fe0f0e1396",
+        "r": "cbf4c9a9ec64c4277bf536de5b54ff964ca02730b01ac157276110e01e750ff1",
+        "a": "0x730df477b1925aac514cdf0faabe4ecff6d57d35",
+        "k": "job",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": "0x0000000000000000000000000000000000000000",
+        "value": null,
+        "f": "180000000000000",
+        "q": "7",
+        "x": "60000:3000000000:3000000000",
+        "e": 1791504158000,
+        "n": "33cc570dae6d144c"
+      },
+      "issuedAt": 1791504038000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6ImV0aCIsImciOjMsInQiOiIweDEwMzM1NWRmMjAzOGY3MjFhMTIwYmFlYzMzMDVkMzUwNjFlMTM0MjA5OGQyMWEyODkyMDU5OWZlMGYwZTEzOTYiLCJyIjoiY2JmNGM5YTllYzY0YzQyNzdiZjUzNmRlNWI1NGZmOTY0Y2EwMjczMGIwMWFjMTU3Mjc2MTEwZTAxZTc1MGZmMSIsImEiOiIweDczMGRmNDc3YjE5MjVhYWM1MTRjZGYwZmFhYmU0ZWNmZjZkNTdkMzUiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsInZhbHVlIjpudWxsLCJmIjoiMTgwMDAwMDAwMDAwMDAwIiwicSI6IjciLCJ4IjoiNjAwMDA6MzAwMDAwMDAwMDozMDAwMDAwMDAwIiwiZSI6MTc5MTUwNDE1ODAwMCwibiI6IjMzY2M1NzBkYWU2ZDE0NGMifQ.2cNRLsNx2CCj3TnR8d-HOnJzLAFaxRj_jikgMfsihZ0",
+      "raw": {
+        "encoding": "hex",
+        "value": "0x02f89d83aa36a70784b2d05e0084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a00b8c53eacf89a9b203916a66e6e44b0007bf4fe04212526e0b0cea5fd56446f6a006dfc754045806c2a6b11c0a946c6bf6202a7c0f46c0930f0872bfd847c0e6c7"
+      },
+      "now": 1791504039000,
+      "context": {
+        "network": "testnet",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89d83aa36a70784b2d05e0084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a00b8c53eacf89a9b203916a66e6e44b0007bf4fe04212526e0b0cea5fd56446f6a006dfc754045806c2a6b11c0a946c6bf6202a7c0f46c0930f0872bfd847c0e6c7"
+        }
+      }
+    },
+    {
+      "name": "testnet sol job at the prompt rung (limit 33000, price ⌈12500 × 10⁶ / 33000⌉ = 378788); f = the exact fee",
+      "payload": {
+        "j": "e3d45f73cf65abaa",
+        "w": "testnet",
+        "c": "sol",
+        "g": 1,
+        "t": "5tnWJs75CgARvXvmXKHANB76crU1Kyqa11u8u3ZfySRyVyKMuZYH21XgCPBHhM1xS4u4cLtV5vknBZRkDpvqCBTa",
+        "r": "c0c6b1162bdcf4fe970a800c81d113506330757f45f64baeab4cee8d1d700167",
+        "a": "J1iD84DGodSrY6VWvufemX4Y1axuRKEZvxUuDXqxQ1Tq",
+        "k": "job",
+        "p": "ce3e0bc84435993645782457a5287f0b086c9c3b51df0fd8fdd145f5a50f2261",
+        "to": null,
+        "value": null,
+        "f": "17501",
+        "q": "1y7cLDoKGiEcKSA8UDHwiDxqgrowngnuw7KFdab98Vb",
+        "x": "33000:378788",
+        "e": 1791504159000,
+        "n": "a667e602118d0081"
+      },
+      "issuedAt": 1791504039000,
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiI1dG5XSnM3NUNnQVJ2WHZtWEtIQU5CNzZjclUxS3lxYTExdTh1M1pmeVNSeVZ5S011WllIMjFYZ0NQQkhoTTF4UzR1NGNMdFY1dmtuQlpSa0RwdnFDQlRhIiwiciI6ImMwYzZiMTE2MmJkY2Y0ZmU5NzBhODAwYzgxZDExMzUwNjMzMDc1N2Y0NWY2NGJhZWFiNGNlZThkMWQ3MDAxNjciLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiIxNzUwMSIsInEiOiIxeTdjTERvS0dpRWNLU0E4VURId2lEeHFncm93bmdudXc3S0ZkYWI5OFZiIiwieCI6IjMzMDAwOjM3ODc4OCIsImUiOjE3OTE1MDQxNTkwMDAsIm4iOiJhNjY3ZTYwMjExOGQwMDgxIn0.jRT3tAeg891J8WUfBBn4QjEqBhzSokASi0_60M2kh6o",
+      "raw": {
+        "encoding": "base64",
+        "value": "AfS5nIgyI/1joI6/GJbDgXqoZSuexqG6VvFwnyRdXor2tj+Z3TikKtOTznbyy1eYu+nVZXXrZOxIKZShIn5AVQUBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAuiAAAABAAkDpMcFAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+      },
+      "now": 1791504040000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AfS5nIgyI/1joI6/GJbDgXqoZSuexqG6VvFwnyRdXor2tj+Z3TikKtOTznbyy1eYu+nVZXXrZOxIKZShIn5AVQUBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAuiAAAABAAkDpMcFAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      }
+    }
+  ],
+  "negatives": [
+    {
+      "name": "bad-mac",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.A-Tz18BUGC84q0P4gE61z2pdMVADiEgeqrjxNmQ1CIo",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "mac-non-canonical",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.5-Tz18BUGC84q0P4gE61z2pdMVADiEgeqrjxNmQ1CIp",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "wrong-key",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.jmFmN3w5X9fLPRQCbov79d1vdbNhu5Z-cq0-JmBgK4s",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v1-ticket",
+      "ticket": "vt-ticket/1.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.2Z3oKus_Zlz2MXsa7IhUGzqzRrjijvdTnZvUa3EUOQo",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v1-payload-under-v2",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.cXLolgs6Fe2nwGwqwSrMSURSdGt2VbC4jhj3ucOw_-E",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "bad-format-version",
+      "ticket": "vt-ticket/3.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.5-Tz18BUGC84q0P4gE61z2pdMVADiEgeqrjxNmQ1CIo",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "bad-format-parts",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-key-order",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSIsImEiOiIweDczMGRmNDc3YjE5MjVhYWM1MTRjZGYwZmFhYmU0ZWNmZjZkNTdkMzUiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsInZhbHVlIjpudWxsLCJmIjoiMTgwMDAwMDAwMDAwMDAwIiwicSI6IjcifQ.GhcRtQl1WakVhUV8JnNiV7mgcX8JbJ8-yJRjIsWVwNs",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-extra-key",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6MSwiZSI6MTc5MTUwNDE1MDAwMCwibiI6ImIwYTcyMTEyNDMxYjA1ZmUifQ.0PllvaH57lQuDvRNKa6Ct8-yYp2B3IxcjxX1nLVAyv0",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-kind-unknown",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6InB1Ymxpc2giLCJwIjoiY2UzZTBiYzg0NDM1OTkzNjQ1NzgyNDU3YTUyODdmMGIwODZjOWMzYjUxZGYwZmQ4ZmRkMTQ1ZjVhNTBmMjI2MSIsInRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIiwidmFsdWUiOm51bGwsImYiOiIxODAwMDAwMDAwMDAwMDAiLCJxIjoiNyIsIngiOiI2MDAwMDoxMDAwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.2vl8h1P2XYLuDiUEuNUaqZCbRAtWI3zM_0axKn0buWY",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-job-without-p",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOm51bGwsInRvIjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIiwidmFsdWUiOm51bGwsImYiOiIxODAwMDAwMDAwMDAwMDAiLCJxIjoiNyIsIngiOiI2MDAwMDoxMDAwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.9Tgiw59YY8_6SWcXBgrMyaYm6ibtgSEvSnbIu6dQ5oM",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-job-without-to",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOm51bGwsInZhbHVlIjpudWxsLCJmIjoiMTgwMDAwMDAwMDAwMDAwIiwicSI6IjciLCJ4IjoiNjAwMDA6MTAwMDAwMDozMDAwMDAwMDAwIiwiZSI6MTc5MTUwNDE1MDAwMCwibiI6ImIwYTcyMTEyNDMxYjA1ZmUifQ.HhG9rfedmTXp5xirK-yElNyuqEtwEdHiC9vEt8GoC8Q",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-job-with-value",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6IjAiLCJmIjoiMTgwMDAwMDAwMDAwMDAwIiwicSI6IjciLCJ4IjoiNjAwMDA6MTAwMDAwMDozMDAwMDAwMDAwIiwiZSI6MTc5MTUwNDE1MDAwMCwibiI6ImIwYTcyMTEyNDMxYjA1ZmUifQ.IFSgdHmBAu_kljH3nSWiea8eOb-hpOeTmhVQa3r_lzc",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-clawback-with-p",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImNsYXdiYWNrIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6IjB4NTRmZTBmZTVkMzQ3NDEwZTdhZmRjMzQyOGFkOTJhMmYyYTdmN2JmNiIsInZhbHVlIjoiMSIsImYiOiIxODAwMDAwMDAwMDAwMDAiLCJxIjoiNyIsIngiOiI2MDAwMDoxMDAwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.iL_N8surrVGa7orMrCMfhBUUdwfColMYjcP0qOyTptM",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-clawback-value-0",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImNsYXdiYWNrIiwicCI6bnVsbCwidG8iOiIweDU0ZmUwZmU1ZDM0NzQxMGU3YWZkYzM0MjhhZDkyYTJmMmE3ZjdiZjYiLCJ2YWx1ZSI6IjAiLCJmIjoiMTgwMDAwMDAwMDAwMDAwIiwicSI6IjciLCJ4IjoiNjAwMDA6MTAwMDAwMDozMDAwMDAwMDAwIiwiZSI6MTc5MTUwNDE1MDAwMCwibiI6ImIwYTcyMTEyNDMxYjA1ZmUifQ.BDzFzmBFEnwh4Z1-AHLtDToEoI-6QaatMUhy_w5KQc4",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-clawback-without-to",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImNsYXdiYWNrIiwicCI6bnVsbCwidG8iOm51bGwsInZhbHVlIjoiMSIsImYiOiIxODAwMDAwMDAwMDAwMDAiLCJxIjoiNyIsIngiOiI2MDAwMDoxMDAwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.7NKTcX9XaK-tf6dwPwAVPoNCAQghgJ_MgDLpkg4n3jY",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-fee-0",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjAiLCJxIjoiNyIsIngiOiI2MDAwMDoxMDAwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.mgw7JoG5F7inRkiT9E45chwaR1pgecgQ37nu5TlPj0U",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-fee-leading-zero",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjAxODAwMDAwMDAwMDAwMDAiLCJxIjoiNyIsIngiOiI2MDAwMDoxMDAwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.ERmYfu68K81_CwSU8LH8T3u3GcaHqH9TQilXancYmnA",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-fee-number",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6MTgwMDAwMDAwMDAwMDAwLCJxIjoiNyIsIngiOiI2MDAwMDoxMDAwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.IWPX6iiPznwuLhV2PdIWYVPynYWPNlF_aKO32fxk5ew",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-sender-checksummed",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBEZjQ3N0IxOTI1QWFDNTE0Q0RmMEZhQWJFNGVDRkY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.pSfc7-LRcB6OJNllntIXfVkMHIVLtvaGqhL1rYDqFA0",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-sender-sol-on-eth",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsInZhbHVlIjpudWxsLCJmIjoiMTgwMDAwMDAwMDAwMDAwIiwicSI6IjciLCJ4IjoiNjAwMDA6MTAwMDAwMDozMDAwMDAwMDAwIiwiZSI6MTc5MTUwNDE1MDAwMCwibiI6ImIwYTcyMTEyNDMxYjA1ZmUifQ.3IqgKleO4-KLkWPR4dUgxN706nbVVqg8zmcF5A8KXEA",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-nonce-missing",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsIngiOiI2MDAwMDoxMDAwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.H3w02CRBqCnec1i_9RKL8e6bteCQzNpyA8tCCsIsQNk",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-nonce-leading-zero",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiIwNyIsIngiOiI2MDAwMDoxMDAwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.sPhW1N9CJ1UQj7K9EG709x8xajqpBnb0rojiR0aXUGA",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-nonce-number",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOjcsIngiOiI2MDAwMDoxMDAwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.Zmfn9bxYGenTH1Vbj38u21Gn3h5W2HwHnv-jroUNoVk",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-nonce-blockhash-on-eth",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiIxeTdjTERvS0dpRWNLU0E4VURId2lEeHFncm93bmdudXc3S0ZkYWI5OFZiIiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.a8cKIBXdPKedI8h8wd4WHW3Lns75hK1GfiUmEM5SPSA",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-fee-members-missing",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6bnVsbCwiZSI6MTc5MTUwNDE1MDAwMCwibiI6ImIwYTcyMTEyNDMxYjA1ZmUifQ.sVQfLucF1k1N9N9MoFbQeT-OCtmLxgs81f8_dTUh6O8",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-fee-members-two",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjMwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTUwMDAwLCJuIjoiYjBhNzIxMTI0MzFiMDVmZSJ9.NAM_x4NlSheTvGjko34xkyBGk8JX0wYj4t_6AHXHjZI",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-blockhash-nonce-on-sol",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiI0QzIzY1NXQ0V4TGoyOURES3Z4a3d0aENRSlZHWm5yelh4amtIZnBtQ2Nla2pvMVFkbkRzU1dtaWlzWGViZzZjTUgzaTM4NVVNR1ZXd3J2cDZlTEZRZWZmIiwiciI6IjY1NzNmOWNjMjk0M2U1NmM4MjEwNDdlYWM1ODNmMWE4YzIwOTQ2ZWI4NGQ2OGVmMDNmNDM4YWNjNjk3YjQ5NzciLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjciLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTUxMDAwLCJuIjoiYTY1YWEzMmZhMDdjYzk4NSJ9.YaWBtenl6Qh0g01UOi9ci-8as_a6rgCTtcKMaUMUncc",
+      "now": 1791504032000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AZ+NcaO6aKrtSk5ECHagzdKtPVTjty9Pv9ObVgcP9LOFBaEUkfO4xfC0fHLiwYl/X5pFi3sL5rj+rfhWtmSmaw4BAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "v2-sol-job-with-to",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiI0QzIzY1NXQ0V4TGoyOURES3Z4a3d0aENRSlZHWm5yelh4amtIZnBtQ2Nla2pvMVFkbkRzU1dtaWlzWGViZzZjTUgzaTM4NVVNR1ZXd3J2cDZlTEZRZWZmIiwiciI6IjY1NzNmOWNjMjk0M2U1NmM4MjEwNDdlYWM1ODNmMWE4YzIwOTQ2ZWI4NGQ2OGVmMDNmNDM4YWNjNjk3YjQ5NzciLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTUxMDAwLCJuIjoiYTY1YWEzMmZhMDdjYzk4NSJ9.GswuhsNhYebptneMieS_hXrKcv_KyX9seeSW6F9FGlA",
+      "now": 1791504032000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AZ+NcaO6aKrtSk5ECHagzdKtPVTjty9Pv9ObVgcP9LOFBaEUkfO4xfC0fHLiwYl/X5pFi3sL5rj+rfhWtmSmaw4BAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.send-ticket"
+    },
+    {
+      "name": "expired-at-e",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.5-Tz18BUGC84q0P4gE61z2pdMVADiEgeqrjxNmQ1CIo",
+      "now": 1791504150000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.ticket-expired"
+    },
+    {
+      "name": "expired-after-e",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.5-Tz18BUGC84q0P4gE61z2pdMVADiEgeqrjxNmQ1CIo",
+      "now": 1791504150001,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.ticket-expired"
+    },
+    {
+      "name": "chain-mismatch",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.5-Tz18BUGC84q0P4gE61z2pdMVADiEgeqrjxNmQ1CIo",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "sol",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.ticket-chain"
+    },
+    {
+      "name": "network-mismatch",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.5-Tz18BUGC84q0P4gE61z2pdMVADiEgeqrjxNmQ1CIo",
+      "now": 1791504031000,
+      "context": {
+        "network": "testnet",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.ticket-network"
+    },
+    {
+      "name": "raw-mismatch",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNTAwMDAsIm4iOiJiMGE3MjExMjQzMWIwNWZlIn0.5-Tz18BUGC84q0P4gE61z2pdMVADiEgeqrjxNmQ1CIo",
+      "now": 1791504031000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6963830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0189a63dd4c8e1ca6ed7f974374873ab4bdcf06d42d831dcb9ac62e2c543ec3ffa02e706bbf9b195d512f83b3f64937d873b68036e79b3710519be2a2191fe57327"
+        }
+      },
+      "guard": "relay.ticket-raw"
+    }
+  ],
+  "decode": [
+    {
+      "name": "eth-type-legacy",
+      "defect": "a legacy (EIP-155) tx with the same fields",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHg2YzEzYjQ4ZGMwMDU2NGU2MDQzNWE1MmI4NTkwOTIwY2JlOTBkZDAzMDRiY2Q3YWIyOWY5MTY3YzM3NzliYmM0IiwiciI6ImRlZThhOTQwNTkzYTFkNzQyMWEzYTEzNWQ3NTk0NjhlNjE5NTZlOGUzZThjNzMxMjI4NTM1OWNjMzI2MTg5OTMiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNjAwMDAsIm4iOiI1YTVlNWQzMTI1MTg3YjhkIn0.SjNc7zWgnabcqnwV1NGTksIq52T6z_PJWsOngzi1bb8",
+      "now": 1791504041000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0xf8950784b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0a82f4f6a0adad07d95e923f652e3f0fb06e0db797b5ee01ac0a3e9c616e041451da36e3cfa07a047c42675226449dd30b5fb11747435f066bf143493349f3bf31b270d8bd81"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-type-2930",
+      "defect": "an EIP-2930 (type 1) tx",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHg1NjJhMmE1MTg3NjFhZGY3NGY2YzlmZjk0YTY0MTM4YzZkZWUyMjAwYzBlODAyZGY5NTA5MDkxYzcxNDY4YTJkIiwiciI6ImQwZjQ5NzQ3ZmZmZmM4MTJmNjhiYjJiNjAzOTAwNmM1NDViYWRmYzhhMzVkNjI3MDMyYTNhMWE4Y2JjZjE4ODgiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNjEwMDAsIm4iOiIxZTU5NGRjNDUxNTllYWI0In0.-90-wNMoKuyiwaa2B9VleBEY9vvhsRSnx5RdnehZ-H4",
+      "now": 1791504042000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x01f897827a690784b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac080a014014ab08d5054af036d0d705d9486fd16023505002ed1a2d35a36452aa0662ca01a08d410262c196b4d1670d1de659bffe93e49f6605be86fdd3ce00243fbc15e"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-type-blob",
+      "defect": "an EIP-4844 (type 3) blob tx",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHg2ZDliY2I1NmM1ZTc4ZDJiYjVjNTgwYzg3Zjc1M2E3M2JiNTkyMDQxZjdlZDBjMTRjMWFjMTE0ODc0MTkwOTczIiwiciI6Ijg2MzEwNzU0NzU4NzY1OGQwMTgzZjE5MjJhMGZlOWRmYWE4YWM0YjlhOTE2N2MwZjE2ZTcyYzNhMzI1NGUyMWQiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNjIwMDAsIm4iOiIzZTk0NDY5Mzc1NTEwYmZlIn0.m7CWd0yKW2eMvs0GOsc9GTIWHTVT3De5m1_FZRfxo4g",
+      "now": 1791504043000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x03f8be827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001e1a001e58aba0b3e3bdf9ccd3c97f5686085cdcdd6f52cdc228278419279f926cc6d01a0b2f1046ed27723276a2c9445fd5414135bb1ccd3527179a4218b362e44a370f2a072a4eb00c8cab3a48890077ccf31240a4d092480b6d8b010cf408d4685759ee5"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-type-7702",
+      "defect": "an EIP-7702 (type 4) tx with an authorization list",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHhiOWI0NGRlOTgwNWFjZWQxZTVmMTFkNDY2MWMzZDRmOGQ5ZDc5M2RiYjRlMDM3Yjc0ZDliNmFjYjAzZjVmYmYxIiwiciI6IjM2ZjAzZjdlOTFhYTQwNzU0OTZjMDUxZTI5ODNmMjNiYzRlMzlmMWNlNGQ4NWI1MTU2NmU4MzVmOGRkMWU2ODAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNjMwMDAsIm4iOiI5YTY3MDQ1MzVkMjRmMDI5In0.lCEuYQsYtk_NpE3xd0uaOLroFyIO41JjwPTGFMBrcgY",
+      "now": 1791504044000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x04f8fb827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac0f85ef85c827a699454fe0fe5d347410e7afdc3428ad92a2f2a7f7bf68080a0b7e42bd283eadd496dc874edefb678e61ed505ea618d5a909760056273fd177fa044824ed37fc2d9600664b74b21d395d6e993c6a9f15f2377b09c06336e158e2e01a080d0c8e4b26956a323255cdef73a63a618de76b618cc001e679703c20462e438a0030df1bf506877f06c1056c00208a9dd50263db44c56c5f367d35ba30c46d6d0"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-chain-id",
+      "defect": "signed for chain id 1 at the local relay",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHgwNmEyM2E1NjQ5NTRkNjM5YzBhZWIzNjdiMjNlZGU0NTg2ZTE0ZmM4ZTgyZDNiYjE1MWVkM2VjZmQyNWM3MDRkIiwiciI6IjRlMTMwMWRhNGQzOTQzZDVjZWExNzdiZjgxYzI1ZDliZjUzZThmYjA1NjU3ZjAwYmM4ZTE3ZTUwNmFmM2EyNDAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNjQwMDAsIm4iOiJlZjA5MzZmOTNiOWJhNTA5In0.2FMiM3maBT7nz-tkDWfuJm8q_GYcRJCnasSE9rleEoA",
+      "now": 1791504045000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f8990107830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0438a6b72faf4763f2d8b466ab9b1eba8d83e9d9bdba235b0d791902f6e1ab19da01b112e47acda28fe5f83d955bc7ff859ef6aaf02307f2ca9b20c432fd8c2d49b"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-sender",
+      "defect": "signed by another key (recovered from ≠ a)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhmYmRjZmIwOWU4OWU5Y2I2NDMzNDQ2MThiNWZiZjlhMzRkZWM4MTMyNDMzNzQzNDg2YWM5NmMwODRlOWQzM2IyIiwiciI6IjRkZWE4NDdhZmRlZDc4ZTMyNTUyZDI2OGRkODg1ZGVjZTM4NTgzOWVmZWFjMTQ2NDkzZjZjNzI0MGY2ZDY4NmUiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNjUwMDAsIm4iOiIxNmVlOTAzZTNiNDcxZjZjIn0.-woZEMWoGZ6nxaTOeYa_VIJbYILrHGlGEZ-RJl3xin0",
+      "now": 1791504046000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac080a0867f6743fac95f5cbf88f9143e2fd3b0a486b8d67eb8d9d8648156937ce9a175a07baafc1b06a1aec7b470509fce3f8f4c5b4574e2eb6833c8b0652d34abbe4cf9"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-fee-gas",
+      "defect": "gas + 1: gas × maxFee > f",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHg3N2UyOWY5YTg5MzJhNzA5OTIwMGFiNjgwNDkxYTg4ODdmOTFmOTQ1MjZmYjg3NmUzNDA0NTEwZDE2MTBkNTljIiwiciI6Ijk1Y2FlYjAwYTlkOTM5YmZjOTA0MWViZGJhYjk0YmZmZDZhZGZmOWQxMGU1ZTU2MmFhNjllNjZjODI4MTI5NmIiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNjYwMDAsIm4iOiIwMmE5MzE2Y2U3MzQ0ZDkxIn0.SJAnfrhHAMB6i_tu5Nyc03_ee2q1WZZ0d_Ims-IP-1w",
+      "now": 1791504047000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6194000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac080a0c6c88558080f3c3b1f6e737d119900b3534c139ee7e3b9a8c65de5f92bd06ed6a0683a27b039958bd7960ae0ffde67d67efc8cfb01a8f4e725419ab3e66cb31ca0"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-fee-max",
+      "defect": "maxFeePerGas + 1: gas × maxFee > f",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHgyMTRhOWYwNDgwZDg1ZmQyMmEzNTcxNjg0ZGZkN2E1ZmM2YTBjZGI5OTE4ZTkxODkzOTVjNGI3MTM0MzJhMzlmIiwiciI6ImUwY2I0YTg4OTRmNTVlZGVkMTk0OTNlNWY2NTU2ZmU2NDFmMWUyNjgzYzIwZjYwNjM2MTE3MDJkYTNlYTE2MjkiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNjcwMDAsIm4iOiIxNjJhYzljMDM2ODljYTJkIn0.KYdgJOa5GKPRWLxQKlAwv7hZDCcVYDFTsu41951KSLQ",
+      "now": 1791504048000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0182ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0124d9a648a58419a3c3c0745280b669cfcaffbeacd29eccb9c4aec5d09fcb103a00c11b2faf2fb11d029f5eddcce39e6ea85f44d0976a5c80d77f4e1fbdd135d03"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-gas-zero",
+      "defect": "gas 0 (absent): gas × maxFee = 0 fits f, but gas must be present",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjYzk5YzYyNjM0ZjQ2MzUwNTc2YTc4MmZkN2JmMjAyNDgxYTAyMTA4NTNmYjQ0MjY3MDYwMzA4MTI0ZjY5NTg0IiwiciI6IjkzYmE0YmU0NjMyY2I3NzY2NzcwMGQxOGM3NTMzNjIyZTMzZjQ3NGViNWMyZTYwYzNmM2I3ZDc2Njc0NTBlNjMiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNjgwMDAsIm4iOiI1MzA4ODI2MjczZWIyZWQ0In0.brCx4QUV9BO86i9jUeM4tobMrcdX-EKArbUqCqts17o",
+      "now": 1791504049000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f899827a6907830f424084b2d05e008094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac080a0b9058aaca5250a61d35df06f56f988e5f891afe52d4ed91586b3789222748821a0160b3b8e35f3b0568383153f9a0d90f0580107c418740e043718c35d6df9b6e4"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-max-fee-zero",
+      "defect": "maxFeePerGas 0 (absent)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHgzNGYwZmUxODc4NDcwNDkzNmRlYjM5NWNlZTJiMjQ0NmU1NDg3NWVhZDA4ZmI3ZDhmMWU0OWIxYTEyNTBmNzdiIiwiciI6IjlmYzJhYmJjMTcyMjY2M2Y4YzdiY2E4ZWJjMGNjNzQ3YjNiOGQyNmYyYWY3Mzc3ZDJmNDljODcyYzYyYWVhZmIiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNjkwMDAsIm4iOiI2NDYyN2ZjNTM0NWNiYzVhIn0.4bbkjUSWk5XF9OBymr7FQvamWv8X-uWOCAzm5NLOQyc",
+      "now": 1791504050000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f894827a6907808082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0b9ea53f239f3aad8a04af3929b826e682d6935e86a2f2f3d0d41894750ac0884a065cc7618f7e54937901df9d4ffe3faed2e985679dc03cd4cf3413429a7476bd8"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-tip-over-max",
+      "defect": "maxPriorityFeePerGas > maxFeePerGas (RLP by hand)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHg0MzM4MzY0YzdhNWY2OGM5NTJlY2RlMzBmNTFjMGJmN2Q5ZDRiYTkyN2UwY2FjZGNkNDEzYTVlOWU4OGRhOTQ4IiwiciI6IjE4OTEzMmEzMWMyNGI4Yjk2OTlmMmEyN2I0ZDBjN2ZiYTVkZmQ5ZGI1NDM1OWQ4M2NiMWRhN2M5MDA3NmIxNDUiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNzAwMDAsIm4iOiJkYTYyZGUwNjNhMDgxODRkIn0.AoYND9cJcEjezx6mhIqZTmdxlMCQuP6mnrAPnUj6tPc",
+      "now": 1791504051000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89c827a690784b2d05e0184b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac080a088d8a2399cb994d62ffde2a65bad8099bb2e4ce26d7f2726aa29aa4501c99e62a009d2da5444dfcf60642364229c9d549918226bd91c18a0ba1698e35176688776"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-job-value",
+      "defect": "a job tx with value 1",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhkODk4NGMwM2FhNzA0MzY5Zjc3YjNiZWY5OGE2M2M3OWVhNDQ3YTc1MGM4MTllNTg2OTY3NTBiNWJmOGVjMWZmIiwiciI6IjNlZDA5MDllZjNkMmUwNTZhZDg5ZWFhMDA2ODE2ZmRkZDNhN2Q3NDc3MjA4NWMxY2YwNTgzMzE2YWI1MGQzYmMiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNzEwMDAsIm4iOiIzYmEwMWM3NTU5N2RkNmUzIn0.FnP3TL8124oWkp5t7iRbrsDklXvsxjM11wbGsJ2dO0o",
+      "now": 1791504052000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000001b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0d75102373fcafeca9e054bd7519fabff2b7236220df8325c0b597030ad05e194a066d917f9532726400ddf23a3b3be0569448e28212fc7589298e25eb53e4988ad"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-job-to",
+      "defect": "a job tx to a third address",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHg5ZTBhMjRlZTY5ZDI1OTNhNzQxNjE0M2I2MzU4NTM4ZDJlNmRmNDcxODY2N2FjNmIwNzRmYWJiY2ZkYmU1MzAzIiwiciI6IjkxY2QyMzhjYzA1ZjNhZTAzYmJhZGE4ODBhYTZmODBiMmFhN2Q0MTcwNjY3YmQ0YWM2ODNmNTA5YTQ0YmFhYTMiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNzIwMDAsIm4iOiIyNDAyNWRjOThlNGYyYjI5In0.gaF-SWmpfb84k8_27IbUXTvTvjHolW50BHSO97o0sVM",
+      "now": 1791504053000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea609454fe0fe5d347410e7afdc3428ad92a2f2a7f7bf680b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0368acef093b0b2b7c25b061a6c3ddb57be2598912a9aa40514c76ad9acbb23f7a021cc66f518ab90e13f5f45411e43d2f693aeee240b0fba82dce8b60b8b19c3f0"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-job-create",
+      "defect": "a job tx with no recipient (contract creation)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHhjZDExYzJlNTk2ZjRmZjVmMTQxOWNlYjRmZGYxZTg2OGJlNzNiZjQyYzdjNzNlNzRlYWViYzhhMTZlNWZhNTFhIiwiciI6IjdmZDlhYzI3OGE0MjRmOGNkMzE0NzBkYmFlMWU3MzQ4MTNlOGQ1NDM4YjMzZTk2ZmYwM2VmMTRkNTJmZDFkOWQiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNzMwMDAsIm4iOiIxODYyYThmMzg3M2EzYjZkIn0.v_cMCzBjLNL_0q32sxdQk_4KW0BmGH-RVHolygffZDQ",
+      "now": 1791504054000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f887827a6907830f424084b2d05e0082ea608080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0e164c417b9f2cf4b552aec78843b953f7a8e64e23a96ce99a44605e0ad3fdfeda050cbc9dae68b1f89a50475a051a12a9225527f368fddf75aaee2b2d2e09561b5"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-job-payload",
+      "defect": "one calldata byte changed: sha256(data) ≠ p",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHg3ODMxNDRjMGM0OTk0OGY5ZTM1ODYzMjIyNzA1ODVhNzliMjlhMTAyM2MxYTEwNGFlM2IyYTFjOWU1MzYyY2MyIiwiciI6IjEyNzYxOTQyM2E2NDg5NzY4OTQyNjU3YWU1ZDc0NGExOThiYTA4ODc5MmE3NjcxMTA5ZjFkNzM1NzJlZDYxNzciLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNzQwMDAsIm4iOiIxZTZmMTlmZDhhNDljZTliIn0.aiU_RQjCveTE-7kR9-C14ywQ9HDCzUVvvYWH1ydMqs4",
+      "now": 1791504055000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f30207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a09827a9f988c5d191aaa6276222677977164b114a7366ea6bd835da830cc98648a0386a0c5d202aec64a0d37b4698784bc300bf92e94f8566cf613bbc9e4d843bf7"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-access-list",
+      "defect": "a non-empty access list",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHhhNWY5MzBkMDNiMmY5MmNjMmViYTA1ZDU5NDIyNDQzMjg1ODBlMDMwYzY2NWViNjg2MmRmMDlhZjVhMTRlNzI3IiwiciI6ImQ3YjZhOTQ0YTY2NzUwNmRjZjZlNDNlZGJiYjkzMDkyMmU5MjEyMDNhZTA4Njg1NjFmMjY5YzY1YzA2Y2Q1OTkiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxNzUwMDAsIm4iOiI0MmY0ZmZiZDNhMmJlYzdkIn0.AmLAFrc6ZmiHdQ4Xh62zv7EXquHGrOnIIaFcwIao2no",
+      "now": 1791504056000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f8b2827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ad7d69454fe0fe5d347410e7afdc3428ad92a2f2a7f7bf6c080a0df3dd8b10682fdae658c3adc116f003845b9d9604c87bad932f7e218db0e5a69a078f55feb903681a2c8e711c4cb1261da59f3de432b40532047d3e46ea899b336"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-clawback-to",
+      "defect": "a claw-back to another address",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHg2MzVhOTkwM2NhM2E2ZTAxYWM5YTJmNWEyNGM5M2ZjZWMyN2VjOWJkM2Y1YzE3MTIzMzZhYWYzY2NlNWFjZWIwIiwiciI6IjFiZWQzNGFiYTAxYmJkMjZhNDBmOTE1MzhiOTc2YmJjYWVkOTAxYTdlZGNiMjRiM2IzYjg3OWYzMDk3OTBhZTAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImNsYXdiYWNrIiwicCI6bnVsbCwidG8iOiIweDU0ZmUwZmU1ZDM0NzQxMGU3YWZkYzM0MjhhZDkyYTJmMmE3ZjdiZjYiLCJ2YWx1ZSI6IjI1MDAwMDAwMDAwMDAwMDAiLCJmIjoiNDIwMDAwMDAwMDAwMDAiLCJxIjoiOCIsIngiOiIyMTAwMDoxMDAwMDAwOjIwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTc2MDAwLCJuIjoiOTJlOGQ4ZTgxNTk2YTczNiJ9.N5vJnSj3tQxWUve1J9kd--OZICywtyVEEJvwiy2DG28",
+      "now": 1791504057000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f872827a6908830f4240847735940082520894c6b113dd324b4b0557e0b971a89cdc5ad47079878708e1bc9bf0400080c080a05c6465c1a59703e9193383d85452ac2d8ead885a27a156d43e9c3dd0e4187296a060837f0c3f2bbfce3b8b4e22f4588f0ecdbdeb4b53fdcf1391ee7ec9f1a1217b"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-clawback-value",
+      "defect": "a claw-back of value + 1",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhhYmMyYzMxMDdmOGZiZjM4NDk3OTgwZTc2NDFiM2I3MTEzNWVkNWUyNDllZTUzYjNkNThlMTJhODU1MzJlN2FkIiwiciI6IjlkNzZkZGVlYTlkNmE1NTY4ZjM5ZjQzODAyYWZkYzIwZjdlOTJjN2I3OWYwMjRhNmI4ZDMzYjc4MmQ2Y2FhMzkiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImNsYXdiYWNrIiwicCI6bnVsbCwidG8iOiIweDU0ZmUwZmU1ZDM0NzQxMGU3YWZkYzM0MjhhZDkyYTJmMmE3ZjdiZjYiLCJ2YWx1ZSI6IjI1MDAwMDAwMDAwMDAwMDAiLCJmIjoiNDIwMDAwMDAwMDAwMDAiLCJxIjoiOCIsIngiOiIyMTAwMDoxMDAwMDAwOjIwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTc3MDAwLCJuIjoiNGRmMGZjMTVhOGZmNTdmMyJ9.TJWPdz8WWdYFv-2g5RMf0ySbEAY7oXUBF0taT1XJ13E",
+      "now": 1791504058000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f872827a6908830f424084773594008252089454fe0fe5d347410e7afdc3428ad92a2f2a7f7bf68708e1bc9bf0400180c080a07d4aac0e4d9d614f3fdf88dc6dbc2c30fba05c4008462a638fa21f8ef22d59b6a0117fb0619669aa3c12a02c87a5ebfcf5c9675a73223979a8ac72d2ae1c943fea"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-clawback-data",
+      "defect": "a claw-back with one data byte",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHg1ZmU0ODEzNDMzZTVjMGM4Y2I1MzZkZmMxODk5Mjc4NDZhNzYwZmRmN2Q3ODg3Y2ZmNzc4ZWEwNTllODFjZjcyIiwiciI6IjU4MDgwNTY4M2QxNWE4YTQ5MWUyYTAwMDM5ZWY3MDZhOTYyYjlkM2IyNzFiYjljOGJjYWQxMmNlNjM3MTRjODIiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImNsYXdiYWNrIiwicCI6bnVsbCwidG8iOiIweDU0ZmUwZmU1ZDM0NzQxMGU3YWZkYzM0MjhhZDkyYTJmMmE3ZjdiZjYiLCJ2YWx1ZSI6IjI1MDAwMDAwMDAwMDAwMDAiLCJmIjoiNDIwMDAwMDAwMDAwMDAiLCJxIjoiOCIsIngiOiIyMTAwMDoxMDAwMDAwOjIwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTc4MDAwLCJuIjoiN2FhMjgyNGI2YTNjYjY5ZiJ9.cr3lA8h7UQEnKmIjeRV9qpiytjMfMwAX5FZ2uEVSE84",
+      "now": 1791504059000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f872827a6908830f424084773594008252089454fe0fe5d347410e7afdc3428ad92a2f2a7f7bf68708e1bc9bf0400000c001a0b2336fba65173c1df1f954fdf114cb8b7edffd4687f34561e189e83e7f38ac08a02a99c7278d6652545a1f7f302eae70f9decb7141323364d0b8217080d33961ec"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-kind",
+      "defect": "a genuine job tx under a claw-back ticket",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImNsYXdiYWNrIiwicCI6bnVsbCwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6IjEiLCJmIjoiMTgwMDAwMDAwMDAwMDAwIiwicSI6IjciLCJ4IjoiNjAwMDA6MTAwMDAwMDozMDAwMDAwMDAwIiwiZSI6MTc5MTUwNDE3OTAwMCwibiI6IjE0MWU1MGUyOTI3ZWU2M2UifQ.8syfVoDs0eBuKp4YICT5UQ_mpmH7caPeGO0UQGJwIOg",
+      "now": 1791504060000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-tx-id",
+      "defect": "the ticket t is another tx's id (r still binds these bytes)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHhjZGE2OWFmOWQ3ZmU3NjUwYzdmZGYzMDU2MjIxNzlhMGRiNjQzOTk3ZWIwOTdkYTY4Y2FkMzNkMjg2OWViNzdmIiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxODAwMDAsIm4iOiJmMmQxZGViYzA1ZGFkZjIyIn0._8pkYn-h_HLlMX0FLj8S0_hR4znbwoUTKeYl3jAx14s",
+      "now": 1791504061000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-high-s",
+      "defect": "the same signature malleated to high s (it recovers the same sender)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHhmN2Q4ZDliOTZkMzE3OTg3OGIwYTVjNzNhODk4OGQ0NGY3ZDdhMjVmNmZiMjY2MGUxMjcyNTgzMDI1ZjZhNWNhIiwiciI6ImZiNWI5NTFhZmIyMGNjMTk3M2YzYjk3ZTEyYmUxNGYxOTEwOWI0YzM0ZjRmMDA4MjFlYmU0ZDc1ZDYyMTNlYmIiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxODEwMDAsIm4iOiJjYTNlZjdmZDFiODc4M2FiIn0.EJo1ZutskX_ksq__fhYiUTXrJ49mMv_uatshD05Tlmo",
+      "now": 1791504062000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac080a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa0e2b8e1341f1842327b72755f052f0df48fd98d2262e5230a4ed046875259ce8f"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-non-canonical-rlp",
+      "defect": "the nonce written with a leading zero byte",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHg0ZDQyOGQyMjE0YzliZDVjY2M5Mjc3MzBiZGEzYWM1Yjk0MGU3NTA1MmNiMzA2NzI1ODdhOTQwN2Q1OGI1MDc5IiwiciI6ImUyOTRiZjVmZmRmOWUyOTYwZTM1YzhjNzVkMmU2NjQ1YjEyMTc0MWZlYjdmYTE2MzdhMDc5NjBkZjZjMzE4NzIiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxODIwMDAsIm4iOiJiM2QyZTJlZjVmODIxZDc3In0.8gnV16s4rFh59Z4Kwf8n8vuack3TLhUpWN2z9cV4i8s",
+      "now": 1791504063000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89d827a69820007830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac080a052b11b3aeefb80b6357ce06875e41b7977bd8a52aedd1ea2c84bb0b61dba37d1a04aec1f5f5b83fde4429f174eeea5cecad5720b713b5d4782be8412d550252adc"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-trailing-byte",
+      "defect": "a genuine tx followed by one more byte",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHg2YWNjZmZiYzQ3MjM3MGZiOTA4NmJiMDQ3YjY1YWFlNjkwNTdiYmQ5ODFlYjM0YjQwOWMxYmMwNmVmNWQwNjQ3IiwiciI6IjViMmQ5MzUyNDk0YTNjOGM3NTgwMmExNjRkYjMyZmZiZjA2NTQ4NjU3MDAyMmVkZDM2NGFkMTc4NTIwZTBiZjUiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxODMwMDAsIm4iOiIzODU5ZjJkMDUxYjViMDUzIn0.fPwn8iMj3VVHv4Se8fzGYi-ceF6sfXemAj1rRJKfBNM",
+      "now": 1791504064000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b200"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-nonce",
+      "defect": "signed at nonce 8 under a ticket declaring nonce 7 (a \"bump\" of the nonce-7 family that is really a new nonce)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHgyMmY1OTZhZTFjYmU5MGNlMGJmMzg5OTYyM2FiMWQ4ZTgxY2E2NGU1ZmIwMzBhZjc5MmJlMjUzNzg5NDcxZDAyIiwiciI6ImQyNzRiOWRmZjg1ZjQzYmRjMzIzZmVmMDNjMzE0Y2Q4MjAxZTU2NmY1MTE0YTAzZWEwOTE3ZGEyZDdlY2VhYTkiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQxODQwMDAsIm4iOiIxMGU5MDRjMjcwMmNkZTU2In0.-2u4nZ6nFPXXoAuR1owmyefSvTE1D-48uHENf_h9dj8",
+      "now": 1791504065000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6908830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0020b5cabf045e4830c505d3b6784a2b6e1cf5a429e35abfb70a867796236dd2fa04b6de8715f6e239dd784227b9173234630c987748e2be6d75ca431f31c89e68d"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-clawback-nonce",
+      "defect": "a claw-back signed at nonce 9 under a ticket declaring nonce 8",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHhjYTliZWU0MWYxYTU0MDFiMzEyZGQ3N2ViNTcwYjg1NzM3Y2Q4NDAxNmZmZmU2ZTNkZTQ1YmM1Y2E1OTY3NGNmIiwiciI6IjE1YTM1M2YzNmU2ZTU1NmNhOTNjOWQxZDI0ZjQ4NDAzOTk2YmM5NmFiZGUxZWNkZjI3OWYxZWY5ZWQzZThmYzUiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImNsYXdiYWNrIiwicCI6bnVsbCwidG8iOiIweDU0ZmUwZmU1ZDM0NzQxMGU3YWZkYzM0MjhhZDkyYTJmMmE3ZjdiZjYiLCJ2YWx1ZSI6IjI1MDAwMDAwMDAwMDAwMDAiLCJmIjoiNDIwMDAwMDAwMDAwMDAiLCJxIjoiOCIsIngiOiIyMTAwMDoxMDAwMDAwOjIwMDAwMDAwMDAiLCJlIjoxNzkxNTA0MTg1MDAwLCJuIjoiZjkyZWM2Njk4OWUzZTNiOCJ9.AWuJBGuyaj7p4h7GQLZEt7STXCyL5NzgybzpRsmFFys",
+      "now": 1791504066000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f872827a6909830f424084773594008252089454fe0fe5d347410e7afdc3428ad92a2f2a7f7bf68708e1bc9bf0400080c080a00dbfd2475c35113ea689f8556a91908ddf9ed78ccc23df8839b22cd2dd9fadfea07f19eb74c417f5d96baeddc62507c85c45700cae7a9858fe64292ec64659e1d5"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-fee-payer",
+      "defect": "the fee payer (and signer) is another key",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiIyalNEdXBlVHI5WnB5d1hCTnE4VGFUNk1HVXJDYTZBR1c5N0VmVTRtNG9weVpLNENLZmdWUDhOeWVjQ0FqUndTbnJSa3BveDhqR2FiM3UyNEhOS0RXdmJLIiwiciI6IjgxMzkwNzlhZDAxYmM1MjVhYTA2MTNjNDI3MzQ2YjhlMWIwZTU5OThjOGYwYzM2MzU4MmZmZmUxNzA1OWJhODIiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTg2MDAwLCJuIjoiYTdiNTdmNmMzMWMyY2EzYSJ9.bWNdHb3-Ndu7oLYw0B5yc117EzdlMxkIVhNz6XXuqT0",
+      "now": 1791504067000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AVaceQP5yEik5gT8wf1ilU41e22RGKKzDvW8z8SiHipYitPMSVM4DYPsmO6HMn0/SWQAZjvBYsHZ4Fofli8kQQIBAAIDk+nEYbQjS+bAMcYkc6x9r0SoxSlJF3fbSIUX4xr+x4IDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-signature",
+      "defect": "one signature bit flipped (t = that signature)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiI0QzIzY1NXQ0V4TGoyOVpyVGc3YTloSHRxTXFVWTJ3R3VHY0Z4RlNrdGs5N1hDdzdVMlU0TFZKQnhLMzJQb1RESkFhWFN4dFc2d3ozeEJVY1RKZnhiWFlIIiwiciI6Ijg3YmE3NGMwNzkwMzU1ZGIzNTQzOThjYmY0OTQ1YjBiNDkzODEyNmQ1YWMyYjgyZGY3N2M1Yzc5ZmQxNWQ0YWUiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTg3MDAwLCJuIjoiMDNjMTNjNDE3MGVhNTAxMSJ9.r-de4Mm4XGQBZ1IDA_MUmZm9IdhoRQWhWBW-dDcKvNw",
+      "now": 1791504068000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AZ+NcaO6aKrtSk9ECHagzdKtPVTjty9Pv9ObVgcP9LOFBaEUkfO4xfC0fHLiwYl/X5pFi3sL5rj+rfhWtmSmaw4BAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-tx-id",
+      "defect": "the ticket t is another tx's signature",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiIyY2tWVDRiYkJacWpvTDg4b1k1dG5ETVZBUlM5ellhcEdYQUVKeERKRkFScGlFaTFFTmpDY1pHYjFXQzRXZ3BMZWs0TVZxQkVKdGtvM05ZeUZ0VkpyUE51IiwiciI6IjY1NzNmOWNjMjk0M2U1NmM4MjEwNDdlYWM1ODNmMWE4YzIwOTQ2ZWI4NGQ2OGVmMDNmNDM4YWNjNjk3YjQ5NzciLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTg4MDAwLCJuIjoiZmQyZWEzZGJiZDY3ZWUyZiJ9.apJeRx-99LdQZHm8eGfe9Ch3T9ofQw_6ntJQ_nFF8xc",
+      "now": 1791504069000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AZ+NcaO6aKrtSk5ECHagzdKtPVTjty9Pv9ObVgcP9LOFBaEUkfO4xfC0fHLiwYl/X5pFi3sL5rj+rfhWtmSmaw4BAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-fee-price",
+      "defect": "CU price + 1: ⌈30000 × 12501 / 10⁶⌉ = 376, the fee exceeds f by one lamport",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiI0ZWdHNUJMRlc1a1puRlhpUnRta2lhOWM1WGNtNEM5dm1KclU5Nk5HQkhaeXBrODdNeTRtTGlmcExlam90aFlRZGRWRUNqQzJGVktmc2FGbmJ5bjczR2g4IiwiciI6ImE4MTRmNjIyYTJkNDA2NTcxOWNmOTdjYjgzZDY0NjE5MTY5NmYzMDQyMTE3NjZlZjJmMmQzYzY5NGYxODFlM2YiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTg5MDAwLCJuIjoiY2QzYzE1ZDcwZmY3Y2Y2YyJ9.eK2BApxWdzHcInyniZZGBD4GF7OmVpwNT4ZmE8RVdkQ",
+      "now": 1791504070000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AbaKyEeL1UHs43OokgicdqPCAKw8WF4vPsj6KDVEwrVWVN/9/TRcYJuAaY9ws27aXjNuR+eUsVkSg0e6Jmj3zgMBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1TAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-fee-limit",
+      "defect": "CU limit raised so the fee exceeds f",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiJFZTNYWHVtVHZLR1lwb3dxTm1VazFwZDhVdmF2eEpnd2VITTljRXVUWmJYUE5pcDhQeG5hVG1qRTltR2dDNU52eVI4OVhFQ3hOV2lpYzlyRFppb1NZRlQiLCJyIjoiZmI2YmNlNmY0NTc4NmM0NDdkMWNjMzQxNzhhYzZjODVjODA0MTZhMmUwMDFmZDA4ZjM1YmMwYjVkNmVhZDVjOCIsImEiOiJKMWlEODRER29kU3JZNlZXdnVmZW1YNFkxYXh1UktFWnZ4VXVEWHF4UTFUcSIsImsiOiJqb2IiLCJwIjoiY2UzZTBiYzg0NDM1OTkzNjQ1NzgyNDU3YTUyODdmMGIwODZjOWMzYjUxZGYwZmQ4ZmRkMTQ1ZjVhNTBmMjI2MSIsInRvIjpudWxsLCJ2YWx1ZSI6bnVsbCwiZiI6IjUzNzUiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIzMDAwMDoxMjUwMCIsImUiOjE3OTE1MDQxOTAwMDAsIm4iOiIwMTkzODcyZDI0ZDMzOTQwIn0.MvWxVTRjMjH23fvjFu1QqTlW0yowDFeuGGIZgyvVJrQ",
+      "now": 1791504071000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AQvC8HbcQulGHp9HZ4Zg4vWiIK7MiqCXW7VpkUGYa9Wgp82q9/p3bs8AbiCWKE7x0dGX4VgUwlUuT337XVGTYwoBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFArCtAQABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-price-without-limit",
+      "defect": "a CU price without a CU limit (counted at 1,400,000 CU)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiIyeEg4R1RLaTVhUnBxNlJHYTdTRlEyRm9ndDVNaEFWZk5QZTdIN0ExbXBxeUVOSmk4THRMUmlkYlA0Tjd6b05ZdVF3Y01SM1VVejRSdXZXWFE2TG9weFZaIiwiciI6IjI4M2E2ZGY3ZWYyMzI3ZjlkY2NkZDhkYzIzOWFmZWQxNzFmN2FmYWU4MmZjNDQ4NGEzNWVhY2M3OGRkOTY4ZjkiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTkxMDAwLCJuIjoiOTZlYjYxZDdmMDgzNzhhYSJ9.uspitddcAZalPKcMDSRe0rKqpBA2t-m0jqz8sIDvL4g",
+      "now": 1791504072000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AWGvyV4aj8gEzCxjQl9TwD1cTMLc7+OcZOFSi9yUG/qfdtxc7YIbfOXTZKKSRk31TBZe9IMstLtFRt5WzitTzwwBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YCAQAJA9QwAAAAAAAAAgAwWzEvMSB0aWNrZXRdIEEgc3ludGhldGljIHZ0IHRpY2tldCB2ZWN0b3IgcGFydC4K"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-compute-budget-twice",
+      "defect": "two SetComputeUnitPrice instructions",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiIzdHpuVFd4U3N5S05KazhLS29Hd1NjR2lCM3FScTM5WnJwRzJBZkJWM2dyTGFIWlF5RVBLazZFeUdBOHZIcTRtUGM2ajFNUWpleWR4QU1mdmRRTUg4QmRVIiwiciI6IjUwYWVlY2VhM2JjMTFlZmQ4MzEyNGVhMDRlYjA0ZDYzOWViMmU4MmNjNThmMTVmZjVhNGRlOGQyNTc1MDc5YTMiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTkyMDAwLCJuIjoiZjA2Mjk2NzQ5ZmRlZTI2NCJ9.T9KENq_KQhy-YsvK5p1j1uf91VPuKryJxo35licLPWA",
+      "now": 1791504073000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AZDfpL6SY+UqcSMhvtsburgQwtl+ZaA9TlEGrOtVOwn1LTP6Qz0x6tqakQk94nWtduWNVM84NALWx1amAUvZ5wMBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YEAQAFAjB1AAABAAkDAQAAAAAAAAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-heap-frame",
+      "defect": "a RequestHeapFrame instruction",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiJhbmZLMXl6cDJLUHY0cHJ5UHRjU01OY3A5MUw1aUs3WXJ0NFIycnY3c0VkVnU1Q3ZkZ3ZGS1pLU0ZuOU01OW9hWDN0RHhXdzZWWnRhcE1VSDFubTVzeEYiLCJyIjoiNTZmMTUzOWRjNjZlMTljNGNhYWMyNmU4NTZmYTljYTkxMTU1YzFkY2YwOTg3MzBmMTBiYTRkYjhhYTE3ZjdlZSIsImEiOiJKMWlEODRER29kU3JZNlZXdnVmZW1YNFkxYXh1UktFWnZ4VXVEWHF4UTFUcSIsImsiOiJqb2IiLCJwIjoiY2UzZTBiYzg0NDM1OTkzNjQ1NzgyNDU3YTUyODdmMGIwODZjOWMzYjUxZGYwZmQ4ZmRkMTQ1ZjVhNTBmMjI2MSIsInRvIjpudWxsLCJ2YWx1ZSI6bnVsbCwiZiI6IjUzNzUiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIzMDAwMDoxMjUwMCIsImUiOjE3OTE1MDQxOTMwMDAsIm4iOiI3MDdiM2ZhNDAzM2UxODNlIn0.wkpwA1zH3y9v9G7lYQnkq5y1fhwdx1GmQ_8F85CeFqQ",
+      "now": 1791504074000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AR0jCBiz9qeN967taW2nR8wn6fNa0+OYxzMDRM4VFYj/NWUU93AgcgLoJYeMByH68Gw5LeBtjpyTR3BdM3n20QwBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YEAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0LgoBAAUBAAABAA=="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-other-program",
+      "defect": "an instruction for a program outside the allowed set",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiJtRHkxQ0hqTGhpdHNISFh1NjFHcGNkaEVqelNVOGRVNm55UFczQmJLZks1bVB2V1JKbzRKWmYzNm9xblRGUmdMOWViZW9VVkh1MUpSQnZGY1ZSQjRKSnIiLCJyIjoiOTJlOWI3NjJlMzk3YzE1YTNjNTFjZDc3OTRkMDhjODk4NTM1ZjEwNWJmYzBlNTcwM2U4M2VjNWQzNjZlODEwOCIsImEiOiJKMWlEODRER29kU3JZNlZXdnVmZW1YNFkxYXh1UktFWnZ4VXVEWHF4UTFUcSIsImsiOiJqb2IiLCJwIjoiY2UzZTBiYzg0NDM1OTkzNjQ1NzgyNDU3YTUyODdmMGIwODZjOWMzYjUxZGYwZmQ4ZmRkMTQ1ZjVhNTBmMjI2MSIsInRvIjpudWxsLCJ2YWx1ZSI6bnVsbCwiZiI6IjUzNzUiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIzMDAwMDoxMjUwMCIsImUiOjE3OTE1MDQxOTQwMDAsIm4iOiJiZTc0ZDVmOGQxYTNjMDlkIn0.EndPI7f2UiWiPmQMWcJYLDwbTb5U5f02HrJ39pB-9jw",
+      "now": 1791504075000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "ASYi/ypKFYx4rlH4tINJFGPxyLkzrMsTC+p1dLIyXX3sLq5w8jXLjGqvdMhDu/z4nU6KE/VBiBXCmylpBOOiYgcBAAME/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNXcXhRT4Rwlb6ALj0BPC2c/t0hEDy5gUi3Vkh/EYW+NsAP3LATIQ7nHnw7AFJkfOlBAVLDFyS5BeIi/EQ8nAjdgQBAAUCMHUAAAEACQPUMAAAAAAAAAIAMFsxLzEgdGlja2V0XSBBIHN5bnRoZXRpYyB2dCB0aWNrZXQgdmVjdG9yIHBhcnQuCgMAAQE="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-job-transfer",
+      "defect": "a System transfer inside a job tx",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiI1VEp4VmhLS0VSYTljVEgxNUFCbWU3Y0JwWjFQQlRYUVFOeG1peHZpR0dUa0Y1dTlRcjg0cHMxRDJ5MmZUR2gzVkpFeksyQlhqb2QxVHUzd2FEZlJUbTVnIiwiciI6ImEyMjczODkwZDRhNTlhODY0MzY0MThlYzkzZWE3MDNiZDdjOTkzNGJkZDNiNzkzNjczZDZhY2M5ZDFkN2IzOGQiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTk1MDAwLCJuIjoiNTk4NjBiMDk2YmJiMmNiYSJ9.USCrCCiTOvwF_Yt5ztV5aVVrMc-Y7KTLJwmEkU9h9RA",
+      "now": 1791504076000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "Ad7BowkrgzyDAFAPbJ7ZQH3rwJ3LF7UbONKQ+KlopdU2STAKdtCKrM7NvhtfpNLNA5cdZjvxth45Bu2WVqM86g8BAAMF/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wMGRm/lIRcy/+ytunLDm+e8jOW7xfcSayxDmzpAAAAABUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/csBMhDucefDsAUmR86UEBUsMXJLkF4iL8RDycCN2BAIABQIwdQAAAgAJA9QwAAAAAAAAAwAwWzEvMSB0aWNrZXRdIEEgc3ludGhldGljIHZ0IHRpY2tldCB2ZWN0b3IgcGFydC4KBAIAAQwCAAAAAQAAAAAAAAA="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-job-payload",
+      "defect": "one memo byte changed: sha256(memo) ≠ p",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiIzQW5aeTNlZTV3ZURyd3FEWHZleWJxY0N2NktKanBWc1lnOEdxYTZVZDU3YmoySmRVS0d1Z29aVndmY253dEUyVmpHYkpSdW5MZkNaVll6RGdLQjNXdWJRIiwiciI6IjAwNTkwNmFhMmE5Y2M4YWMxOWVmYmEyODhkM2Q1NTczYmNjNWE4YmMwOWJlNjI0NGU5Zjc0OTI0OWFjNGM1NjkiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTk2MDAwLCJuIjoiOGJhMzZmMDA0NGViMDZkNiJ9.iNiATCycSweimBc4gpIYx7O1cotyvjuhhlIhNoKkYAU",
+      "now": 1791504077000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AWx5CB0SgieS4KO5Y5CLLM6kPTFe7YznnlMFQtVbSo5pc0M5SZI+p4d8Hq3Pb/ah0qx9pCv3adFpU52CIwBo+AMBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8wIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-job-two-memos",
+      "defect": "two Memo v2 instructions",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiI0Z2ZWNk1KRGlOUEsxWHBqMkdmaG1EcjlmNUJFbjVvZFB6NVhrM2M5YW9DVTJLbUJxVmZod201OEo3bWhRNXFzWGZWNjUxQnVXMTI4VWNHOW1taHNKSzhZIiwiciI6IjQ4NTc5NDE0NWZhYzA4MGExNjY3Y2I3Yjg1YjllMjg4MWVkMjU2MTAzNzkwZmRkOWI4Mjk5MDc1ZWEzODdiNzUiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTk3MDAwLCJuIjoiMjdkNDM5MjkwNzBlZDE5NCJ9.BOp3gfdX0h6DCjRoI8pkUTk3m0rm2CzkKdQS1jaV-Zo",
+      "now": 1791504078000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AbhBXCD+LSwVauIhOQ18DP+170jZsxX57G8wxDxmrltM1e0LQavGBcSzEChl+IJfxCkRtcPP5DBFuNeZ9hll/AUBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YEAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0LgoCADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-job-writable",
+      "defect": "the memo names another writable account",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiI1ZnFBZFpzam5iVm94czZzbTNQQWs5amJ3dWgzOGJOZjZnU3JGRVlLZTV0VUJQR05XUFFvZjFxUjJlRTlmNkhrcHp3QktTcU5GRnhTVUpuZDN6aTNySzRqIiwiciI6IjgxY2FhODI1ZDdiNzMxYmM5YmE1MzVkMDA5NWQzZTU5MDIzMTYzODMxNmUwNGIxZWM4ZjhhNWM2ZWFlMzFhMTkiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTk4MDAwLCJuIjoiNDFlZTc0Zjc5OTFmZmEzYiJ9.zdrq-XCnFfrqJIMT5zNgdar9vzU6hSir2KpfGZiv_MU",
+      "now": 1791504079000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AemNzE/GJzBmoAqy56M1KsgogVJXTu+vN1gDqKSg955YNHz731pzLHCpTFA9cjq9BI/6zk2CJZJGH7gGYcO0OwgBAAIE/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wMGRm/lIRcy/+ytunLDm+e8jOW7xfcSayxDmzpAAAAABUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI0AP3LATIQ7nHnw7AFJkfOlBAVLDFyS5BeIi/EQ8nAjdgMCAAUCMHUAAAIACQPUMAAAAAAAAAMBATBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-two-signers",
+      "defect": "a second required signer",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiIzd2t1d0oyNFlkamVzQTRXMU5GYTFpaXFnVnlING1hRGZNcmNLS1RXRlVZYndlZDlRU2t3REZya2NIN1JiWWo1QTdqQW52UzVoeWtkVU1kQkJ5a3E4Z2FMIiwiciI6IjQxNTlkYjUyZTYxNGZlYTgxYmY2NTVhNjUzNDY3ZmM1MzMyNWYyMWY5MGM5ZWE3ODM3ZWZlMjhhN2E4Yjk0NmUiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MTk5MDAwLCJuIjoiNmZmZThmYTU2NTExYjJjMyJ9.xc4i8EpHLG2gtKaf9-5Zc3OihhQHSi3MkgedhU2TKaE",
+      "now": 1791504080000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "ApNBI+7F98uzVFdhqFmmKTOg9T5b2iOH4t7uxYrDYxrZLdWCeQDzRfxJ5eu7l6H+4eGdPpaqoXMoxgY/aal19QGtAKGAq9GYrFKnM5JSxwwVwdac1FGOV3omujHaXROlirqrW9x/chznAVoMbSJJYwh6CqoOs+TmfXHsyQYkyE0OAgECBPzFRd0pUD5gOgHkEctM1RokL/1LMYzR/BPWxDuXZuuck+nEYbQjS+bAMcYkc6x9r0SoxSlJF3fbSIUX4xr+x4IDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAgAFAjB1AAACAAkD1DAAAAAAAAADAQEwWzEvMSB0aWNrZXRdIEEgc3ludGhldGljIHZ0IHRpY2tldCB2ZWN0b3IgcGFydC4K"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-lookup-table",
+      "defect": "a v0 message that loads an account through an address lookup table",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiJXTjlocGdnenI2cTlWcmlqM0RCZDhjYTNBeGhEMUFua1RXcW1ZQ1RtY3h3R3diN1hGZmFVQ3pxVUdwRGZVTm5NTlZGR1paVjR5a1JvVEF2dWJMNkVOaUUiLCJyIjoiZGI4NWIzNWFiMzFlYzI2OTExN2U3YTM0NTljY2NkNTEwMmY2YTk3NTkxODk3NTEyNjJiYWJhZGRhZDJkODNjNyIsImEiOiJKMWlEODRER29kU3JZNlZXdnVmZW1YNFkxYXh1UktFWnZ4VXVEWHF4UTFUcSIsImsiOiJqb2IiLCJwIjoiY2UzZTBiYzg0NDM1OTkzNjQ1NzgyNDU3YTUyODdmMGIwODZjOWMzYjUxZGYwZmQ4ZmRkMTQ1ZjVhNTBmMjI2MSIsInRvIjpudWxsLCJ2YWx1ZSI6bnVsbCwiZiI6IjUzNzUiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIzMDAwMDoxMjUwMCIsImUiOjE3OTE1MDQyMDAwMDAsIm4iOiIzNmEzNjI2ZjAyYjk2ZmU5In0.pcrsG2vTNX_3JcMUmVWGUbbIkwUAT4sR9TB3fY_pBao",
+      "now": 1791504081000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "ARlSrdTEkkk0x15u0ddmZwEtM5gBylIwFzxLApoEXflDVyIYz+41KwZkytXEGlhoN/vL0xucgivblMnhrQ3YOwOAAQACA/zFRd0pUD5gOgHkEctM1RokL/1LMYzR/BPWxDuXZuucAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAAAFSlNamSkhBk0k6HFg2jh8fDW13bySu4HkH6hAQQVEjQA/csBMhDucefDsAUmR86UEBUsMXJLkF4iL8RDycCN2AwEABQIwdQAAAQAJA9QwAAAAAAAAAgEDMFsxLzEgdGlja2V0XSBBIHN5bnRoZXRpYyB2dCB0aWNrZXQgdmVjdG9yIHBhcnQuCgFmYhixbmAV1iCiMCC43Pd8LHRC0UmscxrGnI+LPeAfpwABAA=="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-clawback-to",
+      "defect": "a claw-back to another destination",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiI0cHk4TFBSalh2U0JSSGRqYXROTVI3M1hEN3NRY3lYRGtjTlZ1d3hmUW1EaEdlZ1A4RkE4MllIMm9EZlFmWlJKdVFDbXJhR2F3ZnhQOFNxNTdyRlFxbVhRIiwiciI6IjA3ZjYzOTcxMTZiMWE1Mzk0ZjE2YmExNGQ3ZTgxNDFhYzE3N2Y3NGZiODI3Zjc4M2QzYWRmMTBhNjhkMDhmMDUiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiY2xhd2JhY2siLCJwIjpudWxsLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOiIxMjM0NTY3IiwiZiI6IjUwMDAiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIyMDAwMDA6MCIsImUiOjE3OTE1MDQyMDEwMDAsIm4iOiIxYzM2OTcxNzM5YjY4Yjg2In0.zZ_Jt_COczODL566fjucPQ_1syvcSOXZh81AI9ObYe4",
+      "now": 1791504082000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "Ab9qoNWdzDWyLqL+2tf/IYVYxATjBmPAv8GHNMuPOYNwIXLyH/aFEU6b91rlIkuroRI8L8+2aRbw0B6GM7btvQMBAAED/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65zGsRPdMktLBVfguXGonNxa1HB5h/hYFuAeZ8rNKM2KCgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YBAgIAAQwCAAAAh9YSAAAAAAA="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-clawback-value",
+      "defect": "a claw-back of value + 1",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiIyZk5kZ1BaMzhyU0hxaDlCckZ3MUFOeWpvSDdvRVh4dllrVEV0MkozaW9mWU4yOUFUeVZLS3FCd1l4SHhoNVBmNm45YXFCM0NzeWloOFA3S2dNS2ZrQVhnIiwiciI6IjNiNTM4MjExOTY4NDQ0Zjg1OTQ3YzE2Mjg1N2IxZWJmYTYxYmY1NzlkOTY0ZDg5NzJjM2FiODRjMDZjYzI4NTYiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiY2xhd2JhY2siLCJwIjpudWxsLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOiIxMjM0NTY3IiwiZiI6IjUwMDAiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIyMDAwMDA6MCIsImUiOjE3OTE1MDQyMDIwMDAsIm4iOiJhY2EyZjNmNjYyNDFkNmVjIn0.jvgCxLn1EDC7E41ZBMH76B4t0DJpYatrW3D0dqMA5pU",
+      "now": 1791504083000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AVMbv6e7ryGj9AkNGPIWGsbko2PqkhN17Ec5KHebC4OK24C3/oUteo6XpATNrFt8wvDN88gZxak5/Mm9wtd0bA8BAAED/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YBAgIAAQwCAAAAiNYSAAAAAAA="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-clawback-memo",
+      "defect": "a claw-back that also carries a memo",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiIyRTF5YlNOMjZHUjZMNkVaRFhFMjFwNzhrRDhYY0t1SFBaY1Q2NlNTQ2VCSnE3QmZwWnByMWhFcHc5RXVHUmE5OWFSaWdiVnduM3VrYUZiOVlydlhoVEZtIiwiciI6IjAyZTk0MTVmNTU0NjVhYzNhZGQ3YTc3M2JhZDVlNzhiNDNiYmIwOGY3Yjg3MWUwYTNjMmI3ZmQ1Mzg0MGY2ZjkiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiY2xhd2JhY2siLCJwIjpudWxsLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOiIxMjM0NTY3IiwiZiI6IjUwMDAiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIyMDAwMDA6MCIsImUiOjE3OTE1MDQyMDMwMDAsIm4iOiIyMGEzOTcxYWZjZjM1ZDExIn0.DRLzaFlnBw5gIsTR1ERcT6hOPXdbxJ1Vpwcg_K-Zq8Q",
+      "now": 1791504084000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AT0+AadiF4TYTmAR42ue1vwJ+Ekp+c6xEG+vLQ7HEQpW5f84GGHjHXlq4s2FLmgCz2QXiX5sJ0KiJ/mJUs1EVQABAAIE/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI0AP3LATIQ7nHnw7AFJkfOlBAVLDFyS5BeIi/EQ8nAjdgICAgABDAIAAACH1hIAAAAAAAMAMFsxLzEgdGlja2V0XSBBIHN5bnRoZXRpYyB2dCB0aWNrZXQgdmVjdG9yIHBhcnQuCg=="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-clawback-two-transfers",
+      "defect": "two transfers",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiIyWndTVWFnQW1MeFQ1OUtQbmdRazNTZ24yWXBYTFFTaW0xWkFWYnZ3a1FVOGpGR05SOWdBMkI3bjNoa3ZDb3pLcU51bngyMmMxMXd3VVJTVXRtN2Y5WGM1IiwiciI6IjQzZjVkOTllZGM2NGRiMTc5YzNlMzExNDA3OTZmM2Q4ZTg0Yzk4ZTE4NGQwY2IyZTQ0NzY5Mzk4ZjM1YzAyZTUiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiY2xhd2JhY2siLCJwIjpudWxsLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOiIxMjM0NTY3IiwiZiI6IjUwMDAiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIyMDAwMDA6MCIsImUiOjE3OTE1MDQyMDQwMDAsIm4iOiJlZjMyMDM0Mzg4NjFiZTQzIn0.0RzE_5xxobHnZSyPf8wIlUcd9O4_KlWP3Z9s-oJCXjg",
+      "now": 1791504085000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AU5sCGYJGsO+okGIqvt8h6UqxmOY28EPuLzP7Ff+dcP+kLXCwyzlpQ3Pl7I35lIzpKBlM7j7QUFeN5vF6b38fQoBAAED/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YCAgIAAQwCAAAAAQAAAAAAAAACAgABDAIAAACG1hIAAAAAAA=="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-kind",
+      "defect": "a genuine job tx under a claw-back ticket",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiI0QzIzY1NXQ0V4TGoyOURES3Z4a3d0aENRSlZHWm5yelh4amtIZnBtQ2Nla2pvMVFkbkRzU1dtaWlzWGViZzZjTUgzaTM4NVVNR1ZXd3J2cDZlTEZRZWZmIiwiciI6IjY1NzNmOWNjMjk0M2U1NmM4MjEwNDdlYWM1ODNmMWE4YzIwOTQ2ZWI4NGQ2OGVmMDNmNDM4YWNjNjk3YjQ5NzciLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiY2xhd2JhY2siLCJwIjpudWxsLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOiIxMjM0NTY3IiwiZiI6IjUzNzUiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIzMDAwMDoxMjUwMCIsImUiOjE3OTE1MDQyMDUwMDAsIm4iOiIyYjgxMDBkNGMwY2NhNTMyIn0.vZE0ZvynFWya9FF2nDZ2pnbqp40XxP7veZfwaWCYdVU",
+      "now": 1791504086000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AZ+NcaO6aKrtSk5ECHagzdKtPVTjty9Pv9ObVgcP9LOFBaEUkfO4xfC0fHLiwYl/X5pFi3sL5rj+rfhWtmSmaw4BAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-trailing-byte",
+      "defect": "a genuine tx followed by one more byte",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiI0QzIzY1NXQ0V4TGoyOURES3Z4a3d0aENRSlZHWm5yelh4amtIZnBtQ2Nla2pvMVFkbkRzU1dtaWlzWGViZzZjTUgzaTM4NVVNR1ZXd3J2cDZlTEZRZWZmIiwiciI6ImJkOTQ2MDBjNGFmN2ZiMzFhMmM2MTY2ZjI2YjA2MzQ1NzlhNTY0YzI2MjE2ZGIwNDI0NjIyMTBkNWM2YmZlNzkiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MjA2MDAwLCJuIjoiZjJhZWVkODkyYTAxZjM1MiJ9.xM_jXJ-N0eXA_KgBGAI_1mDAFMI2BWGxx-hrZ6saQyE",
+      "now": 1791504087000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AZ+NcaO6aKrtSk5ECHagzdKtPVTjty9Pv9ObVgcP9LOFBaEUkfO4xfC0fHLiwYl/X5pFi3sL5rj+rfhWtmSmaw4BAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0LgoA"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-blockhash",
+      "defect": "signed over another recentBlockhash than the ticket declares",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiIyWTQ4ak1lZk1LVzlUcXdSaGNVclNBYnBKSG1xd0VSYzhwY0M2RzZkZ0hZWkEyMXdzVERwY1J5akFCMUcyTEVHY1FGWVJ3alhWQ1F5blRlR2tZd3lpcWlQIiwiciI6ImU2YzQwZDFkZmNlMzY3YWVhY2ZkM2ZiYjU4MzEzMGQ0MzVkYzI2NDIxZDg2NGZiNWY3YWZhNThjMWFmMTk5OTQiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MjA3MDAwLCJuIjoiMTNkNDM1YWM1MmI2NzExYSJ9.pVjhrrzFfTpFtbHUqeGnmLmcWoIV3jyeGSCgWZQ1Kj0",
+      "now": 1791504088000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AUzL+6AZSH3euZ36jIZeflweR5Z828Xed83Xq1HtdXrXnVJE50bOZrZ3vwnayMjZjwOvAT/T1mj0fesUpq3KYggBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSN6Aq06ePnMLdDpOlZwnmbIr4zrULmtCy0kOlTs1n+cZgDAQAFAjB1AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-clawback-blockhash",
+      "defect": "a claw-back signed over another recentBlockhash",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiI1WlV6YWJOQjdCN2UzVHZ5WkdWZjJ3NnZhWFRma2drSkRhaXVVVE5SZGVxZmZCOVF5TWJ6NUVxYU4xU2RyZlJMYmIxQnNrU2piVnZwWVVuYWJzTmNVa1hhIiwiciI6IjAwYmFiZWRmY2I4YmJhZTQzNjMxMmVmMDhmMDgwNzZhMjNkNGI4YjYyMmVlNGEzMmViZjkwMWZmNjkwZmZhYmYiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiY2xhd2JhY2siLCJwIjpudWxsLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOiIxMjM0NTY3IiwiZiI6IjUwMDAiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIyMDAwMDA6MCIsImUiOjE3OTE1MDQyMDgwMDAsIm4iOiJmNWUxM2U0ZGE1MGQ1MmU2In0.P5LQ5C2VltHvI9AdRbWCf89O7pXp-jI3RrFHcg7c3fw",
+      "now": 1791504089000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AeQUbLQSleRdPdOiQyvyr0lIZe4fNX7cQtoZS63OEe4UHcZCEQv3BHHlAr3YYSrecHs2kE2uEQMm2qf0bhQKMgEBAAED/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6Aq06ePnMLdDpOlZwnmbIr4zrULmtCy0kOlTs1n+cZgBAgIAAQwCAAAAh9YSAAAAAAA="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-price-without-limit-at-default-minus-1",
+      "defect": "a CU price without a limit, f one lamport under the 1,400,000-CU default (5010 - 1)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiIyNnFSODJwb1A0Y3R5alpNb0s0UHZWTVBUQzd2aDRSS2NvR3ZZWGNUQXllbkh4R1RLZmRYM2k2dm5NRTE3N2ZEaTI2dTlOSzk2OW95cGpuYTZRRFhDZVJKIiwiciI6IjQ3ZTc4NDRmNTc1MjM5MWE0ZDBiYzVkOTRiYzEwNWJlZDEyOTdhMWZmODgwZjE3OGQ3NDgwZTJlODlhNjg0MDEiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1MDA5IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMTQwMDAwMDo3IiwiZSI6MTc5MTUwNDIwOTAwMCwibiI6ImY3YzcwMDVjZDIwYzNhZjYifQ.W7U54e2Md6qh6ncltHT7O_7i_q_iZ1iyMXuJubeHkRE",
+      "now": 1791504090000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "ATcMdbPqdfZTCydmRI4ALAp7TFPFa3MlIyMPlzIGNKXpzPbjfrRw6bQ7H7q3zVUlvPieqrkjU8NIKMDWElAobg0BAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YCAQAJAwcAAAAAAAAAAgAwWzEvMSB0aWNrZXRdIEEgc3ludGhldGljIHZ0IHRpY2tldCB2ZWN0b3IgcGFydC4K"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-job-to-self-under-null",
+      "defect": "a job tx to the sender itself under a ticket whose recipient is 0x000…000 (eth.calldata.null)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHgyZWIyNDdjMDk1NjhhYTE0ZWU3MTAxMDllY2YzODI0NTJiNDVjNDRhNTE1NjExOGI1NjE3ODRjYzA5ZDU1NWQ3IiwiciI6IjY3MWFiYWI0Y2YxMTA3NDYwMGY1MzkxNDYyYzY3NDdhMjYwZTIxMzYzYWRjYmY0YWVjNmY5NDNiMGYyNjQ0Y2IiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQyMTAwMDAsIm4iOiIyMGYyNzJkNjRiYmM2NGNlIn0.7ROmdTjVitFQlToTtxCINUUqVA21Hjz2ga9O-0C1M6M",
+      "now": 1791504091000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094730df477b1925aac514cdf0faabe4ecff6d57d3580b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a09db127f9649753c93fffa7a475606c7b9be2e0fc2c9eaf7cf8fdb6506b61d734a0294a95041aabeb0b18ac1ba20681aa496deab8708275dc7131962cd910d2538b"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-job-to-null-under-self",
+      "defect": "a job tx to 0x000…000 under a ticket whose recipient is the sender (eth.calldata.self)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHhjOGUyODI2ZmI0NTBjMGFmYzdiNWQxMTkzMTI5ZDc1N2Q3YzQwYmNlZTc0Zjk0MjVmZGMzZDg1MjUyMzVlZGY4IiwiciI6IjM3YzRiMTA1ODE4MTFiYjBjMjE1MzM5ZTZmMmQ2MWExNWM5MTYyNDA2YzI4MjY2MmY3YTY1ODY0NjAwYjU0YjAiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDczMGRmNDc3YjE5MjVhYWM1MTRjZGYwZmFhYmU0ZWNmZjZkNTdkMzUiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQyMTEwMDAsIm4iOiJlOWU2ZTEwM2JlZTY0ZGU2In0.q4iEY7XyZ_3OIiwpdTg-MZ9GdzGCOtDujVJ3-17V064",
+      "now": 1791504092000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a0270dd4c76cfa708f37a24a1830e8485b6f2d09ebefe48c40a07d1373b7841aafa01d471ecbe0e7bdcd848d8aa0fad0f20a2ad54fc44c637d31710218057ddc72b2"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-job-extra-key",
+      "defect": "a job tx whose message carries one more read-only account key that no instruction uses",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiI0blM4TUdWYzNUSHIxOG1XVmV6d29yNnVaMWJFeWQ0MW82SmRmaWU2b1ZDeTJuU21KY0RVN1RwcnVnb1ZqUzZDY2ZWWWtYdkhZU2JVcThNOGFmblZoZ255IiwiciI6ImQ4OTI0YWY5MmNlMDFiZDM0YTgyYWNjNmUyZDlkODZmYTc5MTYzMWRjYTA5N2E2MDFjYWQyZDY0MTAxNTFlNDIiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MjEyMDAwLCJuIjoiNzhjZmMxNzU4OWY3MmQ5MiJ9.mLB81ZYPW1kiA6KctPLMdJ84xsr1IBuuEAsIx4yUb6A",
+      "now": 1791504093000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "Ab07Gt+Wmg4kzQRrvANBUcIAennk5p0xBNk9H+o5qAmNTWxhNG5ygnizdUWKhvHHKfVVA5vkAfWOn4o14EdWvwYBAAME/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNRmj2yT8fXTR+MhE/TN4HdQh4rZlylKKabgHM1BvmkwgAP3LATIQ7nHnw7AFJkfOlBAVLDFyS5BeIi/EQ8nAjdgMBAAUCMHUAAAEACQPUMAAAAAAAAAIAMFsxLzEgdGlja2V0XSBBIHN5bnRoZXRpYyB2dCB0aWNrZXQgdmVjdG9yIHBhcnQuCg=="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-clawback-extra-key",
+      "defect": "a claw-back whose message carries one more read-only account key that no instruction uses",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiIyeDRpeExhWldrd2dESnpUeU5hQ2gzYlFhbWdQTHJrazQxWW5WQ3pSYjVhZTNzWGk1OEdrcGtVYmtRejkyb1BQWTk2QkI3dFE1V213amN5cDh6Wlloa3ZBIiwiciI6ImI1Y2NjMGU1YTE0MzZjMDIwMjVmMjY0ODBjNDliNGFiMDE5NzU1NjgyMDNhNmJhNmQ2NjFlNWYyYThiNTE3ZjAiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiY2xhd2JhY2siLCJwIjpudWxsLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOiIxMjM0NTY3IiwiZiI6IjUwMDAiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIyMDAwMDA6MCIsImUiOjE3OTE1MDQyMTMwMDAsIm4iOiJjYjFmYWI5MmQ1OWQzMzk1In0.JC06eKflADBMWr-Ighj27OLa82jbFlqMA4CbXjwmoE0",
+      "now": 1791504094000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AWGAlMz3Y7DmE/BtPTYPYl6Ar0QddlOeFJY5YlSrAh1F5BCOeV0JrGCbTmS7j78YodSzSbEW0QptvwnS9uz7iQcBAAIE/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKji4TXYfbIBLsymblX+SEhzKcSr0/2sV+uRfWQUw1VwAP3LATIQ7nHnw7AFJkfOlBAVLDFyS5BeIi/EQ8nAjdgECAgABDAIAAACH1hIAAAAAAA=="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-gas-members",
+      "defect": "gas one below the declared gas (the fee fits f, but x says 60000)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoyLCJ0IjoiMHg0M2U0ZmY0MmNhNjE4NzA2MTM2YzRkNDYzYTliNGRhZjMxODYwM2M1ZWJlYWUzYWEyYWMzZmQxMmM0ZmU1Y2FhIiwiciI6ImZiNDNiMTZjNmNiMmQxMWJjZTU3MmI2YmY2OGZiY2Q5ZGM2MDFlYTUwMzY1MzUwMTZkNzQyZmMzOTQxYjA2ZDMiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQyMTQwMDAsIm4iOiJkN2JjM2RkN2UyN2U1YTIxIn0._TDLAtGFHv1YnOIUSLRFE-_wpCj-tM50ZdHcVvjOfWY",
+      "now": 1791504095000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05e0082ea5f94000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac080a032aba17062a5990f4d2260c105c5edba7829b3668d143d1bb69a472f131c64d3a01cf1ccd67786695e8ab03edb4bc699dcebafa7adc7c74bafcb0150edf7628397"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-tip-members",
+      "defect": "a tip one below the declared tip",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjozLCJ0IjoiMHg1NGFkY2JlNzEyYjFmZDk1M2FmZTVlMTlhMDE5YzgwNWI0NDkyMGY3M2E2YTZhYTcwZTIxMmRkN2QzOGVhZjAxIiwiciI6ImRjYzA3YWIxOWExNGRjMDE4MGM5YzNlNDVmNDM4MjhmZThiNTgyNjI5OGE5MzgwMDk3NDIwNzI0ZjU1MGQxZmUiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQyMTUwMDAsIm4iOiIxMGJmYmE1OTdkZjkwZjE2In0.IyqPdPykKBDyyk9fS8htnXYUJVqpf_bHZTl3LAfQY20",
+      "now": 1791504096000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f423f84b2d05e0082ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a095573a0622ea8c7688887f2d788ff1b4198fd73fafeef8cb8e95e83ccbb0bccea02299157ec17309311024fd5b2d7908748de0d8444d01a149dee2f8f79b876f49"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "eth-max-fee-members",
+      "defect": "maxFeePerGas one below the declared maxFee",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJsb2NhbCIsImMiOiJldGgiLCJnIjoxLCJ0IjoiMHg3YmEzNzVjNTMxNWZkNzg5MGYxZmMxMGIwNzY3NjhjMTBjZjFkZDQ2ZDk0MmRkYTA3OGM3NzMxNjlhNzQ5Zjk5IiwiciI6ImNlYjRhMDk4NGNkNWY3ZGIzZjAxZTk3YTQ3M2Q5ZjQ2Yjc3MWE2ZmVmYTA1YjdhMDM3YmQ5NDYxOTJkYjc4ZWUiLCJhIjoiMHg3MzBkZjQ3N2IxOTI1YWFjNTE0Y2RmMGZhYWJlNGVjZmY2ZDU3ZDM1IiwiayI6ImpvYiIsInAiOiJjZTNlMGJjODQ0MzU5OTM2NDU3ODI0NTdhNTI4N2YwYjA4NmM5YzNiNTFkZjBmZDhmZGQxNDVmNWE1MGYyMjYxIiwidG8iOiIweDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ2YWx1ZSI6bnVsbCwiZiI6IjE4MDAwMDAwMDAwMDAwMCIsInEiOiI3IiwieCI6IjYwMDAwOjEwMDAwMDA6MzAwMDAwMDAwMCIsImUiOjE3OTE1MDQyMTYwMDAsIm4iOiJkZTM5ZGQ3ZWNiZTc3ZDFkIn0.7BkyqyZJ9U9hUb5I7GvinWeTmW5G3bpDubadiIhkqY4",
+      "now": 1791504097000,
+      "context": {
+        "network": "local",
+        "chain": "eth",
+        "raw": {
+          "encoding": "hex",
+          "value": "0x02f89b827a6907830f424084b2d05dff82ea6094000000000000000000000000000000000000000080b05b312f31207469636b65745d20412073796e746865746963207674207469636b657420766563746f7220706172742e0ac001a051e916ab9eff8c2b71e4f2d75bb90073f2880f80ccc8136c5852485dbfce8f51a045fff74d2f05556602a0815365fae2499d17585d24b04e0b043c3a998cfe30c4"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-job-v0",
+      "defect": "the builder's instructions in a v0 message (vt signs legacy messages only)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiIyMzJaalJnaTU0M3RqYmppeXI0cWJOUnVpeUNFMkVGRTdmbkRXeTE2NlFmdFF3OEFNalR1ZnZNZnRDRlZZcFB2TldSYlo3N2hVdlZuaGk0RGM0cWRlUENtIiwiciI6Ijc1ZTdmNTQyYzU2NmFmMDBjODAxZTk3ZGFkZTk4ZTEyMDE0Y2FkYTFkZjJlNjI2Mzk3Y2U5ZDQ1ZDU5M2QxMzMiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MjE3MDAwLCJuIjoiMGY5N2NlYjc5MzljMTc0OCJ9.pH_PRqFu7-rIFhnM4H8dh7JCCaTHeInzsjPBY5xeVuM",
+      "now": 1791504098000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "ATPD1dPPqysdbZpYpyaeSPcUcji+QCUuKwsJ7yx2l1tBbKNnv8OTlhpWPxeA8A21Yql6nEIjpEw5nmz1WyfWAAqAAQACA/zFRd0pUD5gOgHkEctM1RokL/1LMYzR/BPWxDuXZuucAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAAAFSlNamSkhBk0k6HFg2jh8fDW13bySu4HkH6hAQQVEjQA/csBMhDucefDsAUmR86UEBUsMXJLkF4iL8RDycCN2AwEABQIwdQAAAQAJA9QwAAAAAAAAAgAwWzEvMSB0aWNrZXRdIEEgc3ludGhldGljIHZ0IHRpY2tldCB2ZWN0b3IgcGFydC4KAA=="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-job-order",
+      "defect": "the memo before the ComputeBudget instructions",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiIyM1VQUEh6OE1XS3p4Q3pKd1lOWnRvRUc5c2RQbzRkQVBxVWZpZEJNdVpwOEZDR3c3WHNrdEhSaFRoTUtGd2lBUnhqZE1wamtzVmtxdmVxQ0tYMnRGUnZoIiwiciI6IjIyODRiN2UyY2I1OWE4MjQzN2FkYTFmOGY4ZTdmZTQyOTQyNTk1ZjA3N2M5YmM3NDg1N2ZmOTMyMjAxYzdmYjYiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MjE4MDAwLCJuIjoiYWQxYTI4NTViOWNjZTA4YyJ9.DfGqPPCIzywz9bYuTGi81fCAuUEy9gexnkn82cdv9co",
+      "now": 1791504099000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "ATQmHqUC7zavFunSNZWQ371I/K54V8Ud7LMEj2vK6ehkR9ZrFVs5cQUzkk14zGtbjILff5U1lbjff2Pvvl2KxQoBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wFSlNamSkhBk0k6HFg2jh8fDW13bySu4HkH6hAQQVEjQMGRm/lIRcy/+ytunLDm+e8jOW7xfcSayxDmzpAAAAAAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAwWzEvMSB0aWNrZXRdIEEgc3ludGhldGljIHZ0IHRpY2tldCB2ZWN0b3IgcGFydC4KAgAFAjB1AAACAAkD1DAAAAAAAAA="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-job-cu-limit-members",
+      "defect": "a CU limit one below the declared one (the fee still fits f)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiI0ZVR0VXVIcllXRVpmNWM5OE1SU05pMVc0eE1GeGY1cHJmV1ByTk55WnhtYlk3V0NDVEF5eWk4WXpxVWZSRlRvcjNHck1rZ1dSWVRyWW1CRmpja3dUVFV0IiwiciI6IjA2NDY3ODBmNjBiNzJjY2Q4MGQ5MmZmMDkxODdkODYwN2U0ZDg3NDcxOTVlOTE0ZWZmODIzYjYwNWE5ZTM1YjAiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1Mzc1IiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MTI1MDAiLCJlIjoxNzkxNTA0MjE5MDAwLCJuIjoiMzYxZjJlMjg1MWYwYmIxNiJ9.5_6tknFKEDx9P9u0LsL3qIDW9ZoKNML64VEVZqs__OQ",
+      "now": 1791504100000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AbZbsKHEl5UAUH+Rm9WXNRx6a5L7YKjHxTeCz65xQCK4u8dj+5KYYlTFWIysgLSpyUnIqCrSyBvl0slZD0YFJQkBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAi91AAABAAkD1DAAAAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-job-price-without-limit",
+      "defect": "a CU price without the CU limit vt always sets",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjIsInQiOiIyNnFSODJwb1A0Y3R5alpNb0s0UHZWTVBUQzd2aDRSS2NvR3ZZWGNUQXllbkh4R1RLZmRYM2k2dm5NRTE3N2ZEaTI2dTlOSzk2OW95cGpuYTZRRFhDZVJKIiwiciI6IjQ3ZTc4NDRmNTc1MjM5MWE0ZDBiYzVkOTRiYzEwNWJlZDEyOTdhMWZmODgwZjE3OGQ3NDgwZTJlODlhNjg0MDEiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1MDEwIiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMTQwMDAwMDo3IiwiZSI6MTc5MTUwNDIyMDAwMCwibiI6ImFkYTRmZDVlZTcxMjQ1NzIifQ.SlDjfzy_CXDb-x-6Vb1zFT9zDloyvSsA-2CClyq735g",
+      "now": 1791504101000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "ATcMdbPqdfZTCydmRI4ALAp7TFPFa3MlIyMPlzIGNKXpzPbjfrRw6bQ7H7q3zVUlvPieqrkjU8NIKMDWElAobg0BAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YCAQAJAwcAAAAAAAAAAgAwWzEvMSB0aWNrZXRdIEEgc3ludGhldGljIHZ0IHRpY2tldCB2ZWN0b3IgcGFydC4K"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-job-limit-zero",
+      "defect": "a CU limit of 0 with a large CU price (64 free bits; the tx fails for lack of compute, the fee is 5000)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjMsInQiOiIyMWFIVkxCczR4OFNvcG5udXBiY0xpVW1tZVRmbXlMNEM0Zm9oeFdUUHg5eExiMWQ4a3YxMjlkbzZYenJyV2U0bkFWOVR0bTd1WGNkQ1dTV2d6Vng1TmJNIiwiciI6IjY1OGZkOWFlZjg5YmU5ZDBjYTQwMWJiYzhkNGI1ZWQzMjZjNzNmYWZmMTY2MTNiYTJiYzJmY2NhZTBkODJlMjIiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiam9iIiwicCI6ImNlM2UwYmM4NDQzNTk5MzY0NTc4MjQ1N2E1Mjg3ZjBiMDg2YzljM2I1MWRmMGZkOGZkZDE0NWY1YTUwZjIyNjEiLCJ0byI6bnVsbCwidmFsdWUiOm51bGwsImYiOiI1MDAwIiwicSI6IjF5N2NMRG9LR2lFY0tTQThVREh3aUR4cWdyb3duZ251dzdLRmRhYjk4VmIiLCJ4IjoiMzAwMDA6MCIsImUiOjE3OTE1MDQyMjEwMDAsIm4iOiJiZjE4N2Y2ZWEyZmJlNzNmIn0.9cQGT1nC1A-BjVkQ3Vajeu8MKvAM5klB4r_yGJIOZb0",
+      "now": 1791504102000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "ATKDCohqfHiBQn5mnBlERNcLFoGER5nJsdMIgebxjsSFGOj4bo1dAKs8fUJPtRrfsBhA8EnUNefBBMpYJqaXoQwBAAID/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65wDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAVKU1qZKSEGTSTocWDaOHx8NbXdvJK7geQfqEBBBUSNAD9ywEyEO5x58OwBSZHzpQQFSwxckuQXiIvxEPJwI3YDAQAFAgAAAAABAAkDAAk9AAAAAAACADBbMS8xIHRpY2tldF0gQSBzeW50aGV0aWMgdnQgdGlja2V0IHZlY3RvciBwYXJ0Lgo="
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    },
+    {
+      "name": "sol-clawback-limit-without-price",
+      "defect": "a claw-back with a CU limit and no price (vt sets both or neither)",
+      "ticket": "vt-ticket/2.eyJqIjoiZTNkNDVmNzNjZjY1YWJhYSIsInciOiJ0ZXN0bmV0IiwiYyI6InNvbCIsImciOjEsInQiOiI0WGY5bUxCMjRXb1NQZlFKUzI1NUZQZ1Rod1JLVUZCV1ppQ2RydzltY3lBbm1nbndmUllqYjRxZjJFQWlmOGpNSmp3dlAxVGJRVjNkejZnN1dUa29NekVxIiwiciI6ImQ1OTk5NDFhMDk0MTU4M2JkNmEzNTQyMWYwNDlmNjJkNTRkMWRlNjNhMGQ5ZjI4NWZjODNiNTg0NWZiOTExMzUiLCJhIjoiSjFpRDg0REdvZFNyWTZWV3Z1ZmVtWDRZMWF4dVJLRVp2eFV1RFhxeFExVHEiLCJrIjoiY2xhd2JhY2siLCJwIjpudWxsLCJ0byI6IkcxNDdxVm16eW5ITDNFalE4dHZCR0Rtczd1NkZEQ1diRmZGbXpOTVptZzF4IiwidmFsdWUiOiIxMjM0NTY3IiwiZiI6IjUwMDAiLCJxIjoiMXk3Y0xEb0tHaUVjS1NBOFVESHdpRHhxZ3Jvd25nbnV3N0tGZGFiOThWYiIsIngiOiIyMDAwMDA6MCIsImUiOjE3OTE1MDQyMjIwMDAsIm4iOiIzYmRlNmZjYjRkNjc2MDM0In0.C6zH9-uqCiWFfmTi4uoufe2j4UA31t_IfgndZtEQNuA",
+      "now": 1791504103000,
+      "context": {
+        "network": "testnet",
+        "chain": "sol",
+        "raw": {
+          "encoding": "base64",
+          "value": "AbB9NZaMOuslUSjATZzZ8myaS9ia8mb6xZ/Fz8S+fT4bQMdTLaHnbxNHY0SAxqxsZjtegoT0bvDlIEWvf1mbQQYBAAIE/MVF3SlQPmA6AeQRy0zVGiQv/UsxjNH8E9bEO5dm65ze4tRLbOhdXT90MOL/deI3Xe5gYBN4Aqz+PXycWdzL0wMGRm/lIRcy/+ytunLDm+e8jOW7xfcSayxDmzpAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP3LATIQ7nHnw7AFJkfOlBAVLDFyS5BeIi/EQ8nAjdgICAAUCQA0DAAMCAAEMAgAAAIfWEgAAAAAA"
+        }
+      },
+      "guard": "relay.decode-mismatch"
+    }
+  ]
+}

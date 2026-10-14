@@ -1,0 +1,17 @@
+{
+  "format": "vt-job/1",
+  "network": "local",
+  "name": "btc defaults filled in",
+  "message": "A synthetic vt fixture message.\nIt has two lines.\n",
+  "chains": {
+    "btc": {
+      "mode": {
+        "copies": 2
+      },
+      "distinctCopies": true,
+      "keyAddress": "bcrt1q4nd3dampr5gwycmrdxv0c0n7898l5uy5thufr2",
+      "budgetUsd": 5,
+      "clawbackTo": null
+    }
+  }
+}

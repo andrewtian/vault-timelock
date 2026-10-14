@@ -1,0 +1,4 @@
+{
+  "request": { "method": "GET", "url": "https://api.service.example/v1/status" },
+  "response": { "status": 200, "headers": { "content-type": "text/html" }, "body": "203.0.113.77<html>blocked: 203.0.113.77</html>" }
+}

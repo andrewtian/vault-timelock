@@ -1,0 +1,37 @@
+{
+  "name": "@vault-timelock/core",
+  "version": "0.0.0",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "exports": {
+    "./contracts": "./src/contracts/index.ts",
+    "./contracts/vt-job-1.schema.json": "./src/contracts/vt-job-1.schema.json",
+    "./job": "./src/job/index.ts",
+    "./chains/*": "./src/chains/*",
+    "./engine/*": "./src/engine/*",
+    "./gates/*": "./src/gates/*",
+    "./executor": "./src/executor/index.ts",
+    "./executor/node": "./src/executor/adapters/node.ts",
+    "./text/*": "./src/text/*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "sh ../../scripts/test-root.sh packages/core"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "@scure/base": "2.4.0",
+    "@scure/btc-signer": "2.4.1",
+    "@solana/web3.js": "1.99.0",
+    "age-encryption": "0.3.1",
+    "micro-ordinals": "0.4.0",
+    "viem": "2.57.4"
+  },
+  "devDependencies": {
+    "jsdom": "29.1.1"
+  }
+}

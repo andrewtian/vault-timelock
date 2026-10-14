@@ -1,0 +1,23 @@
+{
+  "name": "@vault-timelock/api",
+  "version": "0.0.0",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "sh ../scripts/test-root.sh api"
+  },
+  "dependencies": {
+    "@scure/btc-signer": "2.4.1",
+    "@solana/web3.js": "1.99.0",
+    "@vault-timelock/core": "0.0.0",
+    "micro-ordinals": "0.4.0",
+    "socks-proxy-agent": "10.1.0",
+    "viem": "2.57.4",
+    "vt-broadcast": "file:../broadcast"
+  }
+}

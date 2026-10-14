@@ -1,0 +1,86 @@
+{
+  "phase": "RUNNING",
+  "armed": {
+    "armedAt": 1791504009000,
+    "releaseAt": 1791504024000,
+    "countdownSec": 15,
+    "schedule": {
+      "order": [
+        "eth"
+      ],
+      "offsetSec": {
+        "eth": 0
+      }
+    },
+    "caps": {
+      "eth": {
+        "nativeCap": "4000000000000000",
+        "usd": 10,
+        "priceAt": 1791504009000,
+        "overCap": false,
+        "planned": "0.004"
+      }
+    },
+    "sources": {}
+  },
+  "releaseAt": 1791504024000,
+  "chains": {
+    "eth": {
+      "phase": "RUNNING",
+      "reason": null,
+      "address": "0x8739Eb87B3d11f221Df63454F8D229a1A4F4049C",
+      "copy": 1,
+      "attempt": 2,
+      "copiesIncluded": 0,
+      "reassembled": [],
+      "spent": "25000300000000",
+      "txs": [
+        {
+          "copy": 1,
+          "part": 1,
+          "parts": 1,
+          "attempts": [
+            {
+              "txId": "0x38ea135c6be4f8441726b1634c4ca4e6d7844751b579ad0421de98c7ea5b4971",
+              "gen": 1,
+              "state": "superseded",
+              "eth": {
+                "nonce": 0,
+                "tip": "12000",
+                "maxFee": "2000012000",
+                "gas": "23400",
+                "to": "0x0000000000000000000000000000000000000000"
+              }
+            },
+            {
+              "txId": "0x4afd9351426f3c98387caad7868e74b37ab4fda24b42a2c5019158b83e17f246",
+              "gen": 1,
+              "state": "included",
+              "eth": {
+                "nonce": 0,
+                "tip": "13501",
+                "maxFee": "2000013501",
+                "gas": "23400",
+                "to": "0x0000000000000000000000000000000000000000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "0x4afd9351426f3c98387caad7868e74b37ab4fda24b42a2c5019158b83e17f246",
+          "block": "205",
+          "fee": "25000300000000",
+          "readback": null
+        }
+      ],
+      "openIntents": [],
+      "resume": {
+        "copy": 1,
+        "nextPart": 1
+      },
+      "stopRequested": false,
+      "clawback": null
+    }
+  },
+  "seq": 10,
+  "corrupt": null
+}

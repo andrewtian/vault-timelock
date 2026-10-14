@@ -1,0 +1,52 @@
+{
+  "railgun.proxy.eth": {
+    "address": "0xFA7093CDD9EE6932B4eb2c9e1cde7CE00B1FA4b9",
+    "source": "https://docs.railgun.org/wiki/learn/helpful-links",
+    "network": "mainnet"
+  },
+  "railgun.proxy.sepolia": {
+    "address": "0xeCFCf3b4eC647c4Ca6D49108b311b7a7C9543fea",
+    "source": "https://docs.railgun.org/wiki/learn/helpful-links",
+    "network": "testnet"
+  },
+  "railgun.relayadapt.eth": {
+    "address": "0xAc9f360Ae85469B27aEDdEaFC579Ef2d052aD405",
+    "source": "https://github.com/Railgun-Community/shared-models (src/models/network-config.ts, RelayAdaptContract[Ethereum]); the current RelayAdapt",
+    "network": "mainnet"
+  },
+  "railgun.relayadapt.sepolia": {
+    "address": "0x7e3d929EbD5bDC84d02Bd3205c777578f33A214D",
+    "source": "https://github.com/Railgun-Community/shared-models (src/models/network-config.ts, RelayAdaptContract[EthereumSepolia])",
+    "network": "testnet"
+  },
+  "solana.memo": {
+    "address": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+    "source": "https://spl.solana.com/memo",
+    "network": "any"
+  },
+  "drand.quicknet": {
+    "address": "52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971",
+    "source": "https://drand.love/developer/",
+    "network": "any"
+  },
+  "arbitrum.inbox.mainnet": {
+    "address": "0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f",
+    "source": "https://docs.arbitrum.io/chain-info",
+    "network": "mainnet"
+  },
+  "arbitrum.inbox.sepolia": {
+    "address": "0xaAe29B0366299461418F5324a79Afc425BE5ae21",
+    "source": "https://docs.arbitrum.io/chain-info",
+    "network": "testnet"
+  },
+  "base.l1StandardBridge.mainnet": {
+    "address": "0x3154Cf16ccdb4C6d922629664174b904d80F2C35",
+    "source": "https://docs.base.org/base-chain/network-information/base-contracts",
+    "network": "mainnet"
+  },
+  "base.l1StandardBridge.sepolia": {
+    "address": "0xfd0Bf71F60660E2f608ed56e1659C450eB113120",
+    "source": "https://docs.base.org/base-chain/network-information/base-contracts",
+    "network": "testnet"
+  }
+}

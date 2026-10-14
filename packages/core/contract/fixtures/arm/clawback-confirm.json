@@ -1,0 +1,636 @@
+{
+  "rules": [
+    "checkClawbackConfirm(state, chain, data, confirm?) → arm.amount or none (types.ts claw-back note, CC-2a)",
+    "need = value + worst-case fee (eth gas × maxFee, sol fee); room = nativeCap − spent − (a landed claw-back's value)",
+    "no confirm: need ≤ room; a confirm: exactly { amount: String(need) } (decimal base units, no other member), whether or not need fits"
+  ],
+  "cases": [
+    {
+      "name": "fits: value + gas × maxFee = what is left of the cap (999,900)",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "789900",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "guard": null
+    },
+    {
+      "name": "one wei over, no typed amount",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "789901",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "over, the exact amount typed (value + gas × maxFee)",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "789901",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "confirm": {
+        "amount": "999901"
+      },
+      "guard": null
+    },
+    {
+      "name": "over, a typed amount one wei short",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "789901",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "confirm": {
+        "amount": "999900"
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "fits, but a typed amount that is not value + fee",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "789900",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "confirm": {
+        "amount": "789900"
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "fits, the exact amount typed anyway",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "789900",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "confirm": {
+        "amount": "999900"
+      },
+      "guard": null
+    },
+    {
+      "name": "typed amount with an extra member",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "789901",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "confirm": {
+        "amount": "999901",
+        "chain": "eth"
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "typed amount not in decimal base units",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "789901",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "confirm": {
+        "amount": "999901.0"
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "typed amount as a number",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "789901",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "confirm": {
+        "amount": 999901
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "sol: value + fee fits",
+      "chain": "sol",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "5dUNPiQApYPnK8QGTkLnefD2PJX4FeRYhfJYQEAcEVuAp2uaU6p2uQWG1zwtVUaSebjHfpLaTvSSQLc89LgKdnMV",
+        "to": "G147qVmzynHL3EjQ8tvBGDms7u6FDCWbFfFmzNMZmg1x",
+        "value": "994900",
+        "rawSha256": "484726113d7588d27bb024b6832c45262ba0131b7c4fe8f579bae1763e17cdb9",
+        "sol": {
+          "blockhash": "ANCM75JFse7ARUS1jJH54REAYGQAqQk8RbwNV6Egaejw",
+          "lastValidBlockHeight": 9,
+          "cuPrice": 0,
+          "cuLimit": 30000,
+          "rung": null,
+          "fee": "5000"
+        }
+      },
+      "guard": null
+    },
+    {
+      "name": "sol: one lamport over",
+      "chain": "sol",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "5dUNPiQApYPnK8QGTkLnefD2PJX4FeRYhfJYQEAcEVuAp2uaU6p2uQWG1zwtVUaSebjHfpLaTvSSQLc89LgKdnMV",
+        "to": "G147qVmzynHL3EjQ8tvBGDms7u6FDCWbFfFmzNMZmg1x",
+        "value": "994901",
+        "rawSha256": "484726113d7588d27bb024b6832c45262ba0131b7c4fe8f579bae1763e17cdb9",
+        "sol": {
+          "blockhash": "ANCM75JFse7ARUS1jJH54REAYGQAqQk8RbwNV6Egaejw",
+          "lastValidBlockHeight": 9,
+          "cuPrice": 0,
+          "cuLimit": 30000,
+          "rung": null,
+          "fee": "5000"
+        }
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "sol: over, the exact amount typed",
+      "chain": "sol",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "5dUNPiQApYPnK8QGTkLnefD2PJX4FeRYhfJYQEAcEVuAp2uaU6p2uQWG1zwtVUaSebjHfpLaTvSSQLc89LgKdnMV",
+        "to": "G147qVmzynHL3EjQ8tvBGDms7u6FDCWbFfFmzNMZmg1x",
+        "value": "994901",
+        "rawSha256": "484726113d7588d27bb024b6832c45262ba0131b7c4fe8f579bae1763e17cdb9",
+        "sol": {
+          "blockhash": "ANCM75JFse7ARUS1jJH54REAYGQAqQk8RbwNV6Egaejw",
+          "lastValidBlockHeight": 9,
+          "cuPrice": 0,
+          "cuLimit": 30000,
+          "rung": null,
+          "fee": "5000"
+        }
+      },
+      "confirm": {
+        "amount": "999901"
+      },
+      "guard": null
+    },
+    {
+      "name": "a malformed spend",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "1e3",
+            "clawback": null
+          },
+          "sol": {
+            "spent": "1e3",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "1",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "no armed cap",
+      "chain": "eth",
+      "state": {
+        "armed": null,
+        "chains": {
+          "eth": {
+            "spent": "0",
+            "clawback": null
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "1",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "guard": "arm.amount"
+    },
+    {
+      "name": "a landed claw-back's value counts against the cap",
+      "chain": "eth",
+      "state": {
+        "armed": {
+          "caps": {
+            "eth": {
+              "nativeCap": "1000000"
+            },
+            "sol": {
+              "nativeCap": "1000000"
+            }
+          }
+        },
+        "chains": {
+          "eth": {
+            "spent": "100",
+            "clawback": {
+              "txId": "0xc087b883fa44d24d0fbc8a1539f2729a01c3e035998abbb2bb667c374280dbe6",
+              "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+              "value": "500000",
+              "ok": true,
+              "landed": true
+            }
+          },
+          "sol": {
+            "spent": "100",
+            "clawback": {
+              "txId": "0xc087b883fa44d24d0fbc8a1539f2729a01c3e035998abbb2bb667c374280dbe6",
+              "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+              "value": "500000",
+              "ok": true,
+              "landed": true
+            }
+          }
+        }
+      },
+      "data": {
+        "txId": "0x7cfbf3aebde79e88ec7d512096dd892f4c90707fb084c5b02d47241bcb47eb94",
+        "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6",
+        "value": "289901",
+        "rawSha256": "d8ff64cb2e66f412b1f56658518a8a0af10465648a3336189907fab5f31e6c21",
+        "eth": {
+          "nonce": 1,
+          "tip": "1",
+          "maxFee": "10",
+          "gas": "21000",
+          "to": "0x54fe0FE5d347410E7AfDc3428aD92A2F2A7F7Bf6"
+        }
+      },
+      "guard": "arm.amount"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+SEALED (synthetic test package, not a real vault)
+format: vt-sealed/1
+drand: quicknet 52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971
+round: 23456789
+unlock: 2027-10-09T00:00:00Z
+check: https://api.drand.sh/52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971/public/23456789
+payload: payload.tar.gz.age sha256=6c55ae7af25ccc8a2bff5146c48d67329ebdb2cd098c0bf14feaa880ed5665a0
+bytes: 123456
+To open: fetch the round from the URL above after the unlock time, then follow the open steps.

@@ -1,0 +1,369 @@
+{
+  "exit-code-refusal": [
+    "test/offline/scaffold.test.ts"
+  ],
+  "cli.max-bytes": [
+    "test/offline/cli.test.ts"
+  ],
+  "cli.inspector": [
+    "test/offline/cli.test.ts"
+  ],
+  "wrapper.sigusr1": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "sealed.write-full-only": [
+    "test/offline/cli.test.ts"
+  ],
+  "sealed.exists-differs": [
+    "test/offline/cli.test.ts"
+  ],
+  "config.scheme": [
+    "test/offline/config.test.ts"
+  ],
+  "config.url-key": [
+    "test/offline/config.test.ts"
+  ],
+  "config.onion-order": [
+    "test/offline/config.test.ts"
+  ],
+  "config.local-scope": [
+    "test/offline/config.test.ts"
+  ],
+  "config.bitcoind-auth": [
+    "test/offline/config.test.ts"
+  ],
+  "config.profile-invalid": [
+    "test/offline/config.test.ts"
+  ],
+  "config.override-key": [
+    "test/offline/config.test.ts"
+  ],
+  "config.env-key": [
+    "test/offline/config.test.ts",
+    "test/offline/gate.test.ts"
+  ],
+  "config.endpoints-shape": [
+    "test/offline/config.test.ts"
+  ],
+  "config.endpoints-list": [
+    "test/offline/config.test.ts"
+  ],
+  "config.local-loopback": [
+    "test/offline/config.test.ts"
+  ],
+  "config.anchors-shape": [
+    "test/offline/config.test.ts"
+  ],
+  "config.anchors-entry": [
+    "test/offline/config.test.ts"
+  ],
+  "config.anchor-format": [
+    "test/offline/config.test.ts"
+  ],
+  "config.endpoint-missing": [
+    "test/offline/config.test.ts"
+  ],
+  "config.anchor-missing": [
+    "test/offline/config.test.ts"
+  ],
+  "config.anchor-network": [
+    "test/offline/config.test.ts"
+  ],
+  "config.flag-format": [
+    "test/offline/config.test.ts"
+  ],
+  "config.flag-duplicate": [
+    "test/offline/config.test.ts"
+  ],
+  "config.override-format": [
+    "test/offline/config.test.ts"
+  ],
+  "config.override-duplicate": [
+    "test/offline/config.test.ts"
+  ],
+  "config.profile-conflict": [
+    "test/offline/config.test.ts"
+  ],
+  "network.override-mainnet": [
+    "test/offline/config.test.ts"
+  ],
+  "config.timing-format": [
+    "test/offline/config.test.ts"
+  ],
+  "config.load": [
+    "test/offline/config.test.ts"
+  ],
+  "config.override-empty": [
+    "test/offline/config.test.ts"
+  ],
+  "release.mainnet-locked": [
+    "test/offline/send-lock.test.ts",
+    "test/offline/send-lock-flip.test.ts"
+  ],
+  "config.identity-mismatch": [
+    "test/offline/send-lock.test.ts",
+    "test/offline/send-lock-flip.test.ts"
+  ],
+  "config.identity-unknown": [
+    "test/offline/send-lock.test.ts"
+  ],
+  "config.mainnet-host": [
+    "test/offline/send-lock.test.ts"
+  ],
+  "net.role": [
+    "test/offline/net.test.ts"
+  ],
+  "net.ctx": [
+    "test/offline/net.test.ts"
+  ],
+  "net.tick-format": [
+    "test/offline/net.test.ts"
+  ],
+  "net.scheme": [
+    "test/offline/net.test.ts"
+  ],
+  "net.request": [
+    "test/offline/net.test.ts"
+  ],
+  "net.redirect": [
+    "test/offline/net.test.ts"
+  ],
+  "net.body-too-large": [
+    "test/offline/net.test.ts"
+  ],
+  "net.timeout": [
+    "test/offline/net.test.ts"
+  ],
+  "tor.unreachable": [
+    "test/offline/net.test.ts",
+    "test/offline/gate.test.ts"
+  ],
+  "net.failed": [
+    "test/offline/net.test.ts"
+  ],
+  "net.json": [
+    "test/offline/net.test.ts"
+  ],
+  "net.rpc-status": [
+    "test/offline/net.test.ts"
+  ],
+  "net.rpc-malformed": [
+    "test/offline/net.test.ts"
+  ],
+  "net.tick-mixes-sides": [
+    "test/offline/net.test.ts"
+  ],
+  "net.tick-stale": [
+    "test/offline/net.test.ts"
+  ],
+  "net.gate-required": [
+    "test/offline/net.test.ts"
+  ],
+  "net.jitter": [
+    "test/offline/net.test.ts"
+  ],
+  "net.poisoned": [
+    "test/offline/net.test.ts"
+  ],
+  "net.send-permit": [
+    "test/offline/net-send-permit.test.ts",
+    "test/offline/send-lock-flip.test.ts"
+  ],
+  "tor.check-malformed": [
+    "test/offline/gate.test.ts"
+  ],
+  "tor.not-tor": [
+    "test/offline/gate.test.ts"
+  ],
+  "tor.socks-noauth": [
+    "test/offline/gate.test.ts"
+  ],
+  "confine.not-sandboxed": [
+    "test/offline/confine.test.ts",
+    "test/offline/wrapper.test.ts"
+  ],
+  "confine.loopback-open": [
+    "test/offline/confine.test.ts"
+  ],
+  "net.transport-test-only": [
+    "test/offline/net.test.ts"
+  ],
+  "wrapper.no-sandbox": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "wrapper.env": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "wrapper.port": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "wrapper.flag": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "wrapper.flag-duplicate": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "wrapper.profile-conflict": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "wrapper.profile-invalid": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "wrapper.override-empty": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "wrapper.override-name": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "wrapper.env-read": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "wrapper.local-endpoints": [
+    "test/offline/wrapper.test.ts"
+  ],
+  "store.perms": [
+    "test/offline/lifecycle/paths.test.ts",
+    "test/offline/lifecycle/store.test.ts"
+  ],
+  "paths.ar-id": [
+    "test/offline/lifecycle/paths.test.ts"
+  ],
+  "store.kind": [
+    "test/offline/lifecycle/store.test.ts"
+  ],
+  "store.id": [
+    "test/offline/lifecycle/store.test.ts"
+  ],
+  "store.corrupt": [
+    "test/offline/lifecycle/store.test.ts"
+  ],
+  "store.lock-timeout": [
+    "test/offline/lifecycle/store.test.ts"
+  ],
+  "store.value": [
+    "test/offline/lifecycle/store.test.ts"
+  ],
+  "policy.cooling-draw": [
+    "test/offline/lifecycle/policy.test.ts"
+  ],
+  "policy.amount-needed": [
+    "test/offline/lifecycle/policy.test.ts"
+  ],
+  "policy.amount-tiny": [
+    "test/offline/lifecycle/policy.test.ts"
+  ],
+  "policy.amount-exhausted": [
+    "test/offline/lifecycle/policy.test.ts"
+  ],
+  "policy.deposit-input": [
+    "test/offline/lifecycle/policy.test.ts"
+  ],
+  "policy.draw-missing": [
+    "test/offline/lifecycle/policy.test.ts"
+  ],
+  "store.lock-lost": [
+    "test/offline/lifecycle/store.test.ts"
+  ],
+  "store.lock-corrupt": [
+    "test/offline/lifecycle/store.test.ts"
+  ],
+  "store.fair-gap": [
+    "test/offline/lifecycle/store.test.ts"
+  ],
+  "keystore.wordlist-hash": [
+    "test/offline/lifecycle/passphrase.test.ts"
+  ],
+  "passphrase.no-tty": [
+    "test/offline/lifecycle/passphrase.test.ts"
+  ],
+  "passphrase.aborted": [
+    "test/offline/lifecycle/passphrase.test.ts"
+  ],
+  "passphrase.mismatch": [
+    "test/offline/lifecycle/passphrase.test.ts"
+  ],
+  "passphrase.weak": [
+    "test/offline/lifecycle/passphrase.test.ts"
+  ],
+  "config.profile-required": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.key-id": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.profile": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.master-pub": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.pub-format": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.workfactor": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.exists": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.kind-mismatch": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.kind-unsupported": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.no-overwrite": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.unlock": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.master-mismatch": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.no-key": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.key-file": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "keystore.pub-mismatch": [
+    "test/offline/lifecycle/keystore.test.ts"
+  ],
+  "trigger.input": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "trigger.transition": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "trigger.store-missing": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "trigger.uncleared": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "trigger.cleared": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "trigger.clear-typed": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "trigger.hash-mismatch": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "trigger.exists": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "trigger.not-terminal": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "trigger.reset-latch": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "trigger.continuing": [
+    "test/offline/lifecycle/triggers.test.ts"
+  ],
+  "config.network-name": [
+    "test/offline/config.test.ts"
+  ]
+}

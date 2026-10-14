@@ -1,0 +1,85 @@
+{
+  "phase": "RUNNING",
+  "armed": {
+    "armedAt": 1791504009000,
+    "releaseAt": 1791504024000,
+    "countdownSec": 15,
+    "schedule": {
+      "order": [
+        "sol"
+      ],
+      "offsetSec": {
+        "sol": 0
+      }
+    },
+    "caps": {
+      "sol": {
+        "nativeCap": "70000000",
+        "usd": 10,
+        "priceAt": 1791504009000,
+        "overCap": false,
+        "planned": "0.07"
+      }
+    },
+    "sources": {}
+  },
+  "releaseAt": 1791504024000,
+  "chains": {
+    "sol": {
+      "phase": "RUNNING",
+      "reason": null,
+      "address": "9xx7qC7uwTAeaSo7T5Gk9canYBosFh1pMQaDmQEa83Tb",
+      "copy": 1,
+      "attempt": 2,
+      "copiesIncluded": 1,
+      "reassembled": [],
+      "spent": "5000",
+      "txs": [
+        {
+          "copy": 1,
+          "part": 1,
+          "parts": 1,
+          "attempts": [
+            {
+              "txId": "25z5g7N1hf1YjzHTzrR9HWYoK8aSomLn1thorje7yKLW8iVwmfjLFPRrfnZau6tRojaVrdKPxRvyi7Y47LNcKQY8",
+              "gen": 1,
+              "state": "included",
+              "sol": {
+                "blockhash": "D5Z7sd8ReDAy8wKkgJj95uvRaCp7NdWyE2MyHnAbNVnu",
+                "lastValidBlockHeight": 1000,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            },
+            {
+              "txId": "4wJu2zJrobWtJ5HikZ4gbVhjFXdcwKx9s29LKKRk6jzoHkQz2mswZFDH4pnPVfd55fCJq7jdW67tS9XV7vPFxTzM",
+              "gen": 1,
+              "state": "superseded",
+              "sol": {
+                "blockhash": "8eaKzkoJKzGAMX6LPSc3VKDs42NVH1ra2Ad6Vry3ZuZK",
+                "lastValidBlockHeight": 1200,
+                "cuPrice": 0,
+                "cuLimit": 30000,
+                "rung": null,
+                "fee": "5000"
+              }
+            }
+          ],
+          "state": "included",
+          "landedId": "25z5g7N1hf1YjzHTzrR9HWYoK8aSomLn1thorje7yKLW8iVwmfjLFPRrfnZau6tRojaVrdKPxRvyi7Y47LNcKQY8",
+          "block": "3400",
+          "fee": "5000",
+          "readback": true
+        }
+      ],
+      "openIntents": [],
+      "resume": null,
+      "stopRequested": false,
+      "clawback": null
+    }
+  },
+  "seq": 11,
+  "corrupt": null
+}
