@@ -209,7 +209,7 @@ export const GUARDS = {
   trigger: ['uncleared'],
   config: ['identity-mismatch', 'identity-unknown', 'mainnet-host'],
   net: ['send-permit'],
-  web: ['backup-network', 'backup-redo'],
+  web: ['backup-network', 'backup-redo', 'decrypt-chain', 'decrypt-identity-cap', 'decrypt-round-echo', 'decrypt-secrets-dropped', 'decrypt-wipe', 'decrypt-file-cap', 'decrypt-live', 'decrypt-input-id', 'decrypt-drop-default'],   // decrypt-*: the page's Decrypt tab (lane W, page-only)
   provenance: ['incomplete', 'paged', 'no-inbound', 'not-railgun', 'nonce', 'unaccounted'],
   note: ['empty', 'utf8', 'replacement', 'control', 'bidi', 'invisible', 'whitespace', 'nfc', 'too-long'],
   envelope: ['ar-id', 'unlock', 'too-long'],

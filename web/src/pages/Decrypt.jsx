@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label.jsx'
 import { Textarea } from '@/components/ui/textarea.jsx'
 import { download, revokeAll } from '@/keys/download.js'
 import SecretInput from '@/keys/SecretInput.jsx'
-import { PASTE_LIMIT, escapeName, extractFile, inputOfFile, listFiles, readInput, relaySignatureFetcher, runDecrypt, wipeResult } from '@/lib/decrypt.js'
+import { DECRYPT_LIMITS, PASTE_LIMIT, escapeName, extractFile, identityText, inputOfFile, listFiles, readInput, relaySignatureFetcher, runDecrypt, wipeResult } from '@/lib/decrypt.js'
 import { relayDrandClient } from '@/lib/open.js'
 
 const KIND = {
@@ -22,7 +22,7 @@ const KIND = {
   timelocked: 'time-locked (tlock / drand)',
   sealed: 'SEALED.txt package',
 }
-const WRONG_LAYOUT = { 'two-layer': 'two-layer (time-locked key + vault)', vault: 'vault', secret: 'secret', payload: 'payload' }
+const LAYOUT_LABEL = { 'two-layer': 'two-layer (time-locked key + vault)', vault: 'vault', secret: 'secret', payload: 'payload' }
 
 export default function Decrypt({ client: injected = null }) {
   const client = useMemo(() => injected || relayDrandClient(), [injected])
@@ -34,12 +34,25 @@ export default function Decrypt({ client: injected = null }) {
   const input = file ? file.input : pasted.trim() === '' ? null : pasted
   const parsed = useMemo(() => (input === null ? null : readInput(input, file ? undefined : { input: PASTE_LIMIT })), [input, file])
 
+  const seq = useRef(0)
   const load = async (f) => {
     if (!f) return
     setFileMsg('')
-    try { setFile({ name: f.name, input: inputOfFile(new Uint8Array(await f.arrayBuffer())) }); setPasted('') } catch { setFileMsg(`${escapeName(f.name)} could not be read. Nothing was loaded.`) }
+    if (f.size > DECRYPT_LIMITS.input) { setFileMsg(`${escapeName(f.name)} is over the ${DECRYPT_LIMITS.input / (1024 * 1024)} MiB limit (decrypt.size). Nothing was read.`); return }   // @guard:web.decrypt-file-cap
+    try {
+      const bytes = new Uint8Array(await f.arrayBuffer())
+      seq.current += 1   // @guard:web.decrypt-input-id
+      setFile({ id: seq.current, name: f.name, input: inputOfFile(bytes) }); setPasted('')
+    } catch { setFileMsg(`${escapeName(f.name)} could not be read. Nothing was loaded.`) }
   }
   const reset = () => { setPasted(''); setFile(null); setFileMsg('') }
+  // A file dropped anywhere else on the page must not be opened by the browser (a dropped key would be shown in clear): while this tab is
+  // mounted, the window's default for dragover / drop is cancelled; the drop zone above handles its own drops.
+  useEffect(() => {
+    const stop = (e) => { e.preventDefault() }   // @guard:web.decrypt-drop-default
+    window.addEventListener('dragover', stop); window.addEventListener('drop', stop)
+    return () => { window.removeEventListener('dragover', stop); window.removeEventListener('drop', stop) }
+  }, [])
   const onDrop = (e) => { e.preventDefault(); setDragging(false); load(e.dataTransfer?.files?.[0]) }
 
   return (
@@ -67,7 +80,7 @@ export default function Decrypt({ client: injected = null }) {
           This cannot be decrypted here — <b>{parsed.guard}</b>: {parsed.message}. Nothing was fetched.
         </p>
       )}
-      {parsed?.ok && <DecryptPanel key={file ? `f:${file.name}:${file.input.length}` : pasted} input={input} detected={parsed.detected} client={client} />}
+      {parsed?.ok && <DecryptPanel key={file ? `f:${file.id}` : pasted} input={input} detected={parsed.detected} client={client} />}
     </section>
   )
 }
@@ -91,7 +104,8 @@ function DecryptPanel({ input, detected, client }) {
     wipeResult(held.current)   // @guard:web.decrypt-wipe
     held.current = null; revokeAll(urls.current)
   }, [])
-  useEffect(() => drop, [drop])
+  const live = useRef(true)
+  useEffect(() => { live.current = true; return () => { live.current = false; drop() } }, [drop])
 
   const { kind } = detected
   const needsPass = kind === 'passphrase'
@@ -103,7 +117,7 @@ function DecryptPanel({ input, detected, client }) {
   const pickIdentity = async (f) => {
     if (!f) return
     setIdMsg('')
-    if (f.size > 64 * 1024) { setIdMsg(`${escapeName(f.name)} is too big to be an identity file. Nothing was loaded.`); return }   // @guard:web.decrypt-identity-cap
+    if (f.size > DECRYPT_LIMITS.secret) { setIdMsg(`${escapeName(f.name)} is too big to be an identity file. Nothing was loaded.`); return }   // @guard:web.decrypt-identity-cap
     try { setIdentity(await f.text()); setIdentityName(f.name) } catch { setIdMsg(`${escapeName(f.name)} could not be read. Nothing was loaded.`) }
   }
 
@@ -112,11 +126,13 @@ function DecryptPanel({ input, detected, client }) {
     await new Promise((r) => setTimeout(r, 0))          // let the "Decrypting…" state paint before scrypt blocks the thread
     const how = { fetchRoundSignature: fetcher }
     if (needsPass) how.passphrase = passphrase
-    if ((needsIdentity || recoveryOk) && identity !== '') how.identity = identity
+    if ((needsIdentity || recoveryOk) && identity !== '') how.identity = identityText(identity)
     const out = await runDecrypt(input, how).catch((e) => ({ ok: false, guard: 'error', message: String(e?.message || e) }))
-    if (!out.ok) { setErr({ guard: out.guard, message: out.message }); setPhase('idle'); return }
+    if (!out.ok) { if (!live.current) return; setErr({ guard: out.guard, message: out.message }); setPhase('idle'); return }
     held.current = out.result
-    const listing = out.result.archive ? await listFiles(out.result.archive) : null
+    let listing = null
+    try { listing = out.result.archive ? await listFiles(out.result.archive) : null } catch (e) { listing = { error: `${String(e?.message || e)}` } }
+    if (!live.current) { wipeResult(out.result); held.current = null; return }   // @guard:web.decrypt-live
     setView({ result: out.result, listing })
     setPassphrase(''); setIdentity(''); setIdentityName('')   // @guard:web.decrypt-secrets-dropped
     setPhase('done')
@@ -125,7 +141,8 @@ function DecryptPanel({ input, detected, client }) {
 
   // One extracted file → download → wipe the page's copy (the Blob has its own).
   const saveOne = async (archive, e) => {
-    const bytes = await extractFile(archive, e.orig)
+    let bytes
+    try { bytes = await extractFile(archive, e.orig) } catch { return }   // the bytes were cleared meanwhile: nothing to save
     try { download(bytes, e.name, urls.current) } finally { bytes.fill(0) }
   }
 
@@ -136,7 +153,7 @@ function DecryptPanel({ input, detected, client }) {
         <dt className="text-muted-foreground">Form</dt><dd data-testid="decrypt-form">{detected.form}</dd>
         {detected.opensAt && <><dt className="text-muted-foreground">Opens at</dt><dd data-testid="decrypt-opens">{detected.opensAt} <span className="text-xs text-muted-foreground">(drand round {detected.round})</span></dd></>}
         {kind === 'sealed' && <>
-          <dt className="text-muted-foreground">Package</dt><dd data-testid="decrypt-layout">{WRONG_LAYOUT[detected.layout]}, {detected.contents === 'key-only' ? `key only (the archive is at ar://${detected.arId})` : 'full'}</dd>
+          <dt className="text-muted-foreground">Package</dt><dd data-testid="decrypt-layout">{LAYOUT_LABEL[detected.layout]}, {detected.contents === 'key-only' ? `key only (the archive is at ar://${detected.arId})` : 'full'}</dd>
           <dt className="text-muted-foreground">Blocks</dt><dd data-testid="decrypt-blocks" className="font-mono text-xs">{detected.blocks.map((b) => `${escapeName(b.name)} (${b.size} B)`).join(', ')}</dd>
         </>}
       </dl>
@@ -167,7 +184,7 @@ function DecryptPanel({ input, detected, client }) {
       )}
 
       <Button type="button" data-testid="decrypt-run" disabled={!ready} onClick={run}>{phase === 'working' ? 'Decrypting…' : timeLock && !(identity !== '' && recoveryOk) ? 'Fetch the round and decrypt' : 'Decrypt'}</Button>
-      {err && <p data-testid="decrypt-error" role="alert" className="rounded-md border border-red-600 bg-red-50 p-2 text-sm text-red-900"><b>{err.guard}</b>: {err.message}</p>}
+      {err && <p data-testid="decrypt-error" role="alert" className="rounded-md border border-red-600 bg-red-50 p-2 text-sm text-red-900"><b>{err.guard}</b>: {escapeName(err.message)}</p>}
       {view && <Result view={view} urls={urls} saveOne={saveOne} onClear={clear} />}
     </div>
   )
@@ -202,7 +219,7 @@ function Result({ view, urls, saveOne, onClear }) {
         <div className="space-y-1" data-testid="decrypt-archive">
           {listing?.error ? (
             <p data-testid="decrypt-archive-error" className="text-xs text-amber-900">
-              This is not a safe archive that can be listed here ({listing.error}). {archiveFile ? 'The decrypted file as a whole can still be saved.' : ''}
+              This archive is not safe: it holds entries that write outside a folder or link elsewhere, or is damaged ({escapeName(listing.error)}). Do not unpack it with tar. {archiveFile ? 'The decrypted file as a whole can still be saved for inspection.' : ''}
             </p>
           ) : null}
           {listing?.error ? (

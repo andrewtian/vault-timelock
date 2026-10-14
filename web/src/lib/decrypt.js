@@ -3,12 +3,12 @@
 // signature fetcher, and (c) lists an archive for display. Plaintext, passphrases and identities live in the caller's memory only:
 // nothing here stores, logs or sends them.
 import './polyfills.js'
-import { PASTE_LIMIT, decryptAge, detectInput, listArchive, extractOne } from '@vault-timelock/core/decrypt'
+import { DECRYPT_LIMITS, PASTE_LIMIT, decryptAge, detectInput, listArchive, extractOne } from '@vault-timelock/core/decrypt'
 import { isRefusal } from '@vault-timelock/core/contracts'
 import { QUICKNET } from './core.js'
 import { DrandError, escapeName, finalizeNames, relayDrandClient } from './open.js'
 
-export { PASTE_LIMIT, isRefusal }
+export { DECRYPT_LIMITS, PASTE_LIMIT, isRefusal }
 
 const AGE_BINARY_MAGIC = new TextEncoder().encode('age-encryption.org/v1\n')
 const startsWith = (b, magic) => b.length >= magic.length && magic.every((x, i) => b[i] === x)
@@ -67,3 +67,7 @@ export { escapeName }
 
 // Overwrite the bytes the page owns (the decrypted files) with zeros. Safe to call twice.
 export function wipeResult(result) { if (result) for (const f of result.files) f.bytes.fill(0) }
+
+// A single-line field loses the line breaks of a pasted age-keygen file ("# created… # public key… AGE-SECRET-KEY-1…"), which would make
+// the whole value one comment line. Put every key on its own line again before core reads it.
+export const identityText = (t) => t.replace(/(AGE-SECRET-KEY-)/g, '\n$1')

@@ -11,7 +11,19 @@
   "web.decrypt-chain": [
     "test/decrypt.test.jsx"
   ],
+  "web.decrypt-drop-default": [
+    "test/decrypt.test.jsx"
+  ],
+  "web.decrypt-file-cap": [
+    "test/decrypt.test.jsx"
+  ],
   "web.decrypt-identity-cap": [
+    "test/decrypt.test.jsx"
+  ],
+  "web.decrypt-input-id": [
+    "test/decrypt.test.jsx"
+  ],
+  "web.decrypt-live": [
     "test/decrypt.test.jsx"
   ],
   "web.decrypt-round-echo": [

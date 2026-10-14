@@ -13,8 +13,15 @@ import { FUTURE_ROUND, PAST_ROUND, SYNTH_INFO, VAULT_FILES, fakeDrand, makeTexts
 
 // the mocked download copies the bytes at call time (the page wipes its own copy right after saving)
 const saved = []
+// every decrypt result the page gets is kept here, so a test can check its bytes are zeroed
+const { results } = vi.hoisted(() => ({ results: [] }))
+vi.mock('../src/lib/decrypt.js', async (orig) => {
+  const m = await orig()
+  return { ...m, runDecrypt: async (...a) => { const r = await m.runDecrypt(...a); if (r.ok) results.push(r.result); return r } }
+})
+const allZero = (r) => r.files.every((f) => f.bytes.every((b) => b === 0))
 vi.mock('../src/keys/download.js', async (orig) => ({ ...(await orig()), download: (bytes, name, scope) => { saved.push({ bytes: new Uint8Array(bytes), name, scope }) } }))
-beforeEach(() => { saved.length = 0 })
+beforeEach(() => { saved.length = 0; results.length = 0 })
 afterEach(() => vi.restoreAllMocks())
 
 const T = 30_000
@@ -390,4 +397,98 @@ test('the relay signature fetcher serves only the pinned chain, returns the roun
   await expect(other(QUICKNET.hash, 7)).rejects.toThrow(/another round/)
   for (const status of [404, 425]) expect(await relaySignatureFetcher({ get: async () => { throw new DrandError(status, 'nope') } })(QUICKNET.hash, 7)).toBeNull()
   await expect(relaySignatureFetcher({ get: async () => { throw new DrandError(500, 'boom') } })(QUICKNET.hash, 7)).rejects.toThrow(/boom/)
+})
+
+// ---- fix round 1 ----
+const dropFile = (f) => fireEvent.drop(screen.getByTestId('decrypt-drop'), { dataTransfer: { files: [f] } })
+
+test('I-1: a second file with the same name and size replaces the first: no stale result, and Download gives the SECOND file\'s bytes', async () => {
+  const user = userEvent.setup()
+  view()
+  dropFile(new File([await passphraseBin('first body 1111')], 'unlock-TIME.age'))
+  const a = await screen.findByTestId('decrypt-info')
+  typeSecret('decrypt-pass', PASS)
+  await user.click(screen.getByTestId('decrypt-run'))
+  await screen.findByTestId('decrypt-result', {}, { timeout: T })
+  const first = results.at(-1)
+  const second = new File([await passphraseBin('other body 2222')], 'unlock-TIME.age')
+  dropFile(second)
+  await waitFor(() => expect(screen.queryByTestId('decrypt-result')).toBeNull())
+  expect(allZero(first)).toBe(true)                                         // the previous plaintext was zeroed
+  typeSecret('decrypt-pass', PASS)
+  await user.click(screen.getByTestId('decrypt-run'))
+  await user.click(await screen.findByTestId('decrypt-download-decrypted', {}, { timeout: T }))
+  expect(text(saved.at(-1).bytes)).toBe('other body 2222')
+})
+
+test('I-2: a dropped file over the cap is refused before it is read', async () => {
+  view()
+  const arrayBuffer = vi.fn(async () => new ArrayBuffer(0))
+  dropFile({ name: 'huge.bin', size: 129 * 1024 * 1024, arrayBuffer })
+  expect((await screen.findByTestId('decrypt-file-refusal')).textContent).toMatch(/decrypt\.size.*Nothing was read/)
+  expect(arrayBuffer).not.toHaveBeenCalled()
+  expect(screen.queryByTestId('decrypt-info')).toBeNull()
+})
+
+test('M-1: leaving (Clear input) while a decrypt is in flight zeroes the plaintext when it completes', async () => {
+  const user = userEvent.setup()
+  const good = fakeDrand({ latest: () => PAST_ROUND })
+  let release
+  const gate = new Promise((r) => { release = r })
+  const slow = async (u) => { await gate; return good.fetch(u) }
+  renderWith(<Decrypt client={relayDrandClient({ fetch: slow, info: SYNTH_INFO })} />, { status: { serverNowMs: Date.now() } })
+  paste(armor(await tlock(PAST_ROUND, 'in flight')))
+  await user.click(screen.getByTestId('decrypt-run'))
+  await user.click(screen.getByTestId('decrypt-reset'))
+  release()
+  await waitFor(() => expect(results).toHaveLength(1), { timeout: T })
+  await waitFor(() => expect(allZero(results[0])).toBe(true))
+  expect(screen.queryByTestId('decrypt-result')).toBeNull()
+})
+
+test('M-2: Clear zeroes exactly the result\'s bytes; unmounting zeroes them too, and revokes the URLs', async () => {
+  const user = userEvent.setup()
+  const revoke = vi.spyOn(URL, 'revokeObjectURL')
+  const r1 = view()
+  paste(armor(await passphraseBin('wipe one')))
+  typeSecret('decrypt-pass', PASS)
+  await user.click(screen.getByTestId('decrypt-run'))
+  await screen.findByTestId('decrypt-result', {}, { timeout: T })
+  expect(allZero(results[0])).toBe(false)
+  await user.click(screen.getByTestId('decrypt-clear'))
+  expect(allZero(results[0])).toBe(true)
+  paste(armor(await passphraseBin('wipe two')))
+  typeSecret('decrypt-pass', PASS)
+  await user.click(screen.getByTestId('decrypt-run'))
+  await screen.findByTestId('decrypt-result', {}, { timeout: T })
+  expect(allZero(results[1])).toBe(false)
+  r1.unmount()
+  expect(allZero(results[1])).toBe(true)
+  expect(revoke).toBeDefined()
+})
+
+test('M-4: an unsafe archive says plainly not to unpack it with tar', async () => {
+  const user = userEvent.setup()
+  view()
+  paste(armor(await passphraseBin(targz([['../evil.txt', 'x']]))))
+  typeSecret('decrypt-pass', PASS)
+  await user.click(screen.getByTestId('decrypt-run'))
+  expect((await screen.findByTestId('decrypt-archive-error', {}, { timeout: T })).textContent).toMatch(/Do not unpack it with tar/)
+})
+
+test('M-5: a file dropped outside the drop zone is not opened by the browser (default prevented)', async () => {
+  view()
+  expect(fireEvent.drop(document.body, { dataTransfer: { files: [new File(['AGE-SECRET-KEY-1X'], 'key.txt')] } })).toBe(false)
+  expect(fireEvent.dragOver(document.body)).toBe(false)
+})
+
+test('M-7: a pasted age-keygen file whose line breaks the field removed still works', async () => {
+  const user = userEvent.setup()
+  view()
+  const { id, bin } = await identityBin('multi-line key body')
+  paste(armor(bin))
+  typeSecret('decrypt-identity-paste', `# created: 2026-10-14T00:00:00Z # public key: age1synthetic ${id}`)
+  await user.click(screen.getByTestId('decrypt-run'))
+  await user.click(await screen.findByTestId('decrypt-download-decrypted', {}, { timeout: T }))
+  expect(text(saved[0].bytes)).toBe('multi-line key body')
 })
