@@ -261,8 +261,9 @@ cannot be moved.
 
 ## Reassembling parts by hand
 
-A message longer than one transaction goes out as `vt-parts/1` parts: each part's text starts with a header
-`[i/N #8hex]` (part 1 also carries `sha256=<64 hex>`); the reader accepts parts only from the publishing address,
+A message longer than one transaction goes out as `vt-parts/1` parts: each part's text starts with a header line
+`[k/N <h8>]`, where `<h8>` is the first 8 lowercase hex characters of the sha256 of the full text (part 1 is
+`[1/N <h8> sha256=<64 hex>]`; the header holds no `#`); the reader accepts parts only from the publishing address,
 strips exactly the header line, joins the chunks by index and checks the sha256. You do not need vt for this: any node
 and `python3` do it.
 
