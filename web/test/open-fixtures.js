@@ -20,7 +20,7 @@ export const beaconFor = (round) => {
   return { round, randomness: createHash('sha256').update(Buffer.from(signature, 'hex')).digest('hex'), signature }
 }
 const encClient = { options: { disableBeaconVerification: true, noCache: true }, chain: () => ({ baseUrl: '', info: async () => SYNTH_INFO }), latest: async () => { throw new Error('unused') }, get: async () => { throw new Error('unused') } }
-const tlock = async (round, bytes) => dearmor(await timelockEncrypt(round, Buffer.from(bytes), encClient))
+export const tlock = async (round, bytes) => dearmor(await timelockEncrypt(round, Buffer.from(bytes), encClient))
 
 export const roundAtMs = (ms) => Math.ceil((ms / 1000 - QUICKNET.genesis_time) / QUICKNET.period) + 1
 export const PAST_ROUND = 1_000_000      // 2023-09: long published

@@ -1,5 +1,26 @@
 {
-  "job.clawback-precompile": ["test/claw-back.test.jsx"],
-  "web.backup-network": ["test/key-lane.test.jsx"],
-  "web.backup-redo": ["test/key-lane.test.jsx"]
+  "job.clawback-precompile": [
+    "test/claw-back.test.jsx"
+  ],
+  "web.backup-network": [
+    "test/key-lane.test.jsx"
+  ],
+  "web.backup-redo": [
+    "test/key-lane.test.jsx"
+  ],
+  "web.decrypt-chain": [
+    "test/decrypt.test.jsx"
+  ],
+  "web.decrypt-identity-cap": [
+    "test/decrypt.test.jsx"
+  ],
+  "web.decrypt-round-echo": [
+    "test/decrypt.test.jsx"
+  ],
+  "web.decrypt-secrets-dropped": [
+    "test/decrypt.test.jsx"
+  ],
+  "web.decrypt-wipe": [
+    "test/decrypt.test.jsx"
+  ]
 }
