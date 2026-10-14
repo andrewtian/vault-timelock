@@ -504,6 +504,9 @@ order, and only an encrypted `index` says which block is which path (so one file
 The text shows the file count and each block's size; `--pad` rounds each block up to a size bucket
 (1, 2, 4 … 128 KiB, then multiples of 128 KiB). The time lock, the KEY path, the manifests, STRUCTURE.txt
 and `open` (`--plaintext` too) work as for the default seal, which stays format `/1`, unchanged.
+For now the rest of vt reads format `/1` only: `vt job create`, the page's Open and Decrypt tabs and `vt decrypt`
+refuse a `/2` text on its format line. Open a `--list` package with `1password-timelock.sh open` or the steps printed
+in its `SEALED.txt`.
 
 Both carry `--self-test`. Run it first; it is the only thing that distinguishes *locked* from
 *broken*.
