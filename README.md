@@ -38,8 +38,8 @@ overview is below; each step has its own sequence diagram under it. They were tr
 against the code.
 
 In the diagrams, **vt broker** is the small unsandboxed process that owns your terminal. Every `vt job …` command runs
-sandboxed behind it, shown as **vt executor**. Only `vt job run` and `vt job clawback` hold a key. The page's
-**Run here** is the other executor. The diagrams follow the terminal path from `docs/E2E.md` §0.1.
+sandboxed behind it, shown as **vt, sandboxed**: a client for `job create`, `arm` and `receipt`, and the executor for
+`job run` and `job clawback`, the only two that hold a key. The page's **Run here** is the other executor. The diagrams follow the terminal path from `docs/E2E.md` §0.1.
 
 ```mermaid
 flowchart TB
@@ -86,7 +86,7 @@ flowchart TB
     sig --> plain
   end
   sealed --> job
-  claw ~~~ copy
+  check --->|"public, permanent copies"| copy
 ```
 
 <details>
@@ -159,7 +159,7 @@ sequenceDiagram
     actor You
     participant P as page
     participant B as vt broker
-    participant X as vt executor<br/>(sandboxed)
+    participant X as vt, sandboxed<br/>(client, then executor)
     participant A as jobs API
     participant R as relay
     participant N as Ethereum node<br/>(anvil on local)
@@ -211,7 +211,7 @@ sequenceDiagram
     actor You
     participant P as page
     participant B as vt broker
-    participant X as vt executor<br/>(sandboxed)
+    participant X as vt, sandboxed<br/>(client, then executor)
     participant A as jobs API
     participant R as relay
     participant N as Solana node<br/>(local validator)
@@ -267,7 +267,7 @@ sequenceDiagram
     actor You
     participant P as page
     participant B as vt broker
-    participant X as vt executor<br/>(sandboxed)
+    participant X as vt, sandboxed<br/>(client, then executor)
     participant A as jobs API
     participant R as relay
     participant N as bitcoind<br/>(regtest)
