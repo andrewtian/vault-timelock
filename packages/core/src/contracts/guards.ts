@@ -165,6 +165,12 @@
 //     stop request is pending is refused job.state, until the operator resumes again.
 //   The API, core, CLI and page of this build ship together: an older API lifts a FINAL stop; an older core journals stops without a
 //   code, which this build reads as FINAL.
+// vt decrypt (lane E, design 2026-10-14-vt-decrypt) adds the `decrypt` family (core src/decrypt: `vt decrypt` and the page's Decrypt tab
+//   share it): kind (the input needs a secret that was not given, or its recipients are none this build opens), passphrase (the
+//   passphrase does not open it), identity (the identity text is not age identities, or none opens it), too-early (the drand round is
+//   not reached: "opens at <UTC>"), format (not age / SEALED.txt, an unknown SEALED format, a block differing from its [file] line,
+//   damaged ciphertext, a signature that does not open the time lock, an unsafe / duplicate archive entry or a path not in it), size
+//   (over a bound: input, secret text, scrypt work factor, archive). CLI and page refusals, never an API reply: the family default (500).
 export const GUARDS = {
   job: ['format', 'unknown-key', 'network-field', 'network', 'name', 'address', 'budget', 'tip-cap', 'cu-cap', 'mode',
     'publish-mode', 'publish-mode-unavailable', 'fee-strategy', 'clawback', 'field-chain', 'message-source',
@@ -215,6 +221,7 @@ export const GUARDS = {
   payload: ['empty', 'control', 'bidi', 'nfc', 'header', 'sealed-missing', 'sealed-end', 'sealed-non-ascii', 'unlock-mismatch', 'contents',
     'armor', 'not-age', 'block-mismatch', 'no-blocks', 'too-long', 'invisible', 'sealed-duplicate', 'note-structure', 'trailing-blank',
     'unlock-line', 'round-mismatch', 'sealed-line', 'sealed-structure', 'layout', 'stanza', 'sealed-text', 'invalid'],
+  decrypt: ['kind', 'passphrase', 'identity', 'too-early', 'format', 'size'],
 } as const
 
 type Families = typeof GUARDS
