@@ -30,6 +30,330 @@ a jobs API, and a page server.
 | `test/integration` | end-to-end runs against a local stack |
 | `docs/` | `vt.md` (operator guide), `E2E.md` (workflow), `CRYPTO.md` (the construction) |
 
+## How it works
+
+Three phases: **seal** on your Mac, **publish** the sealed text with `vt`, and **open** it after the round. The
+overview is below; each step has its own sequence diagram under it. They were traced from a run on the local network
+(a synthetic three-line secret sealed for 30 minutes, then published on each local chain and opened) and checked
+against the code.
+
+In the diagrams, **vt broker** is the small unsandboxed process that owns your terminal. Every `vt job …` command runs
+sandboxed behind it, shown as **vt executor**. Only `vt job run` and `vt job clawback` hold a key. The page's
+**Run here** is the other executor. The diagrams follow the terminal path from `docs/E2E.md` §0.1.
+
+```mermaid
+flowchart TB
+  subgraph seal["1 · Seal, on your Mac"]
+    direction TB
+    src["a file, stdin, or a 1Password vault"]
+    sealer["timelock-key.sh or 1password-timelock.sh"]
+    sdrand(["drand, only through Tor"])
+    tlock["tle: tlock to a future drand quicknet round<br/>(a vault: age for the payload, its key tlocked)"]
+    pkg["package directory (0700): .age files, round, chain-info.json, README.txt"]
+    sealed["SEALED.txt<br/>the ciphertext as text + the commands that open it"]
+    src --> sealer --> tlock --> pkg --> sealed
+    sealer -.-|"pinned chain info,<br/>then the HTTP 425 check"| sdrand
+  end
+  subgraph pub["2 · Publish with vt"]
+    direction TB
+    keys["the page: one lane key per chain, its age backup saved and verified"]
+    job["vt job create --message-file SEALED.txt<br/>you confirm its sha256 and type publish"]
+    fund["you fund each lane address"]
+    run["vt job run: the sandboxed executor loads the backup<br/>with your passphrase via the broker"]
+    arm["arm: a cap per lane, a countdown"]
+    exec["the executor signs one part at a time"]
+    relay["relay: the only stack process that talks to chains and drand"]
+    eth[("Ethereum<br/>value-0 data txs")]
+    sol[("Solana<br/>Memo v2 txs")]
+    btc[("Bitcoin inscription<br/>local regtest only")]
+    check["every part read back,<br/>each copy reassembled ✓"]
+    claw["claw-back of what is left (not BTC),<br/>receipt vt-receipt/1"]
+    keys --> job --> fund --> run --> arm --> exec -->|"ticketed signed bytes"| relay
+    relay --> eth & sol & btc
+    eth & sol & btc --> check --> claw
+  end
+  subgraph open["3 · Open, after the round"]
+    direction TB
+    copy["anyone: SEALED.txt, rebuilt<br/>from a public chain copy"]
+    hand["by hand: tle + age<br/>(the steps in SEALED.txt)"]
+    tools["the sealers' open"]
+    page["the page: Open or Decrypt tab"]
+    sig(["drand round signature, through Tor"])
+    plain["the plaintext"]
+    copy --> hand & tools & page
+    hand & tools --> sig
+    page -->|"via the relay"| sig
+    sig --> plain
+  end
+  sealed --> job
+  claw ~~~ copy
+```
+
+<details>
+<summary><b>Seal</b>: <code>timelock-key.sh seal</code> (<code>1password-timelock.sh</code> adds an age layer)</summary>
+
+- Every drand request goes through Tor (`socks5h`, `127.0.0.1:9050`); if Tor does not answer, the sealer refuses
+  (`--clearnet` is the only opt-out). The chain info drand returns must equal the pinned quicknet info exactly, and
+  `tle` encrypts with those pinned bytes, served to it on loopback.
+- The round is the one at *now + duration + a random offset* (by default up to min(24 h, duration/10), never
+  printed), so the round does not date the seal. No plaintext file is written: `tar` streams straight into `tle`.
+- The seal must be shown to be shut before it succeeds: `tle --decrypt` says "too early" and drand answers HTTP 425 for
+  the round. Only then are `README.txt` and `SEALED.txt` written and the source file unlinked (a directory is kept).
+- Example: the three-line secret gave `secret.tar.gz.age` of 10,599 B and a `SEALED.txt` of 18,237 B: the format line
+  `vault-timelock-sealed/1`, the unlock time and round, the drand parameters, `tle` v1.2.0, the numbered open steps
+  and each `.age` file as an armored block with its size and sha256.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor You
+    participant TK as timelock-key.sh
+    participant Tle as tle
+    participant Pkg as package dir (0700)
+    participant VTB as vt-broadcast
+    participant Tor
+    participant D as drand quicknet
+    You->>TK: seal secret.txt 30m
+    TK->>TK: check the source:<br/>regular files, no symlink
+    TK->>Tor: SOCKS5 greeting (no answer: refuse)
+    TK->>Tor: GET chain info (socks5h)
+    Tor->>D: GET /quicknet-hash/info
+    D-->>TK: chain info, must equal the pinned quicknet exactly
+    TK->>TK: round R = the round at<br/>now + 30m + random offset
+    TK->>Pkg: mkdir 0700,<br/>chain-info.json (pinned bytes)
+    TK->>Tle: tar stream into<br/>tle --encrypt --round R<br/>(chain info from loopback)
+    Tle->>Pkg: secret.tar.gz.age<br/>(age, one tlock stanza)
+    TK->>Pkg: round
+    TK->>Tle: negative control:<br/>tle --decrypt the new file
+    Tle->>D: round R signature? (through Tor)
+    Tle-->>TK: too early
+    TK->>D: GET /public/R (curl through Tor)
+    D-->>TK: HTTP 425 Too Early: the seal is shown shut
+    TK->>Pkg: README.txt
+    TK->>VTB: seal-text PKG --write
+    VTB->>Pkg: SEALED.txt
+    TK->>TK: unlink the source<br/>after an identity re-check
+    TK-->>You: unlock UTC, round R,<br/>SEALED.txt bytes + sha256,<br/>verified shut
+    Note over TK,VTB: 1password-timelock.sh works the same way: the vault<br/>goes into vault.tar.gz.age under a fresh age key,<br/>and tle seals that key as unlock-TIME.age
+```
+
+</details>
+
+<details>
+<summary><b>Ethereum</b>: value-0 data transactions</summary>
+
+- Each part is one EIP-1559 transaction with value 0 (the code refuses any other value), sent to the null address by
+  default. Its calldata is `data:,` + the part header + the chunk, at most 98,304 B, so a typical `SEALED.txt` is one
+  transaction: the 18,237 B example went out as one tx of 18,243 B calldata. Longer texts are split into `vt-parts/1`
+  parts (`[k/N h8]`, part 1 also carries the text's sha256).
+- Gas is the fork's calldata formula (21,000 + 40 per byte before Amsterdam). The node's estimate must agree with it.
+- The executor journals each intent and gets a send ticket before the bytes leave. The relay forwards only bytes that
+  match the ticket: payload, recipient, fees. A part is read back (input, recipient, value 0) before the next is
+  signed. A mismatch on readback or reassembly stops the lane.
+- Claw-back is a plain transfer with no data (21,000 gas to an existing account): value + fee = the lane's balance.
+  Above what is left of the armed cap, you type the exact amount.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor You
+    participant P as page
+    participant B as vt broker
+    participant X as vt executor<br/>(sandboxed)
+    participant A as jobs API
+    participant R as relay
+    participant N as Ethereum node<br/>(anvil on local)
+    You->>P: New ETH lane key<br/>(in the tab's memory)
+    P-->>You: vt-eth-key-UTC.age<br/>(age, your passphrase),<br/>re-selected and verified
+    You->>B: vt job create job.json<br/>--message-file SEALED.txt,<br/>type publish
+    X->>A: PUT /messages/sha256,<br/>POST /jobs (the lane's<br/>key address)
+    You->>N: fund the lane address (local: vt localnet fund eth)
+    You->>B: vt job run id --backup-eth file,<br/>passphrase typed at the broker
+    B->>X: passphrase over a pipe,<br/>key decrypted in memory
+    X->>A: lease, key-loaded,<br/>funds: eth READY
+    You->>B: vt job arm id<br/>(cap, countdown)
+    X->>A: POST /jobs/id/arm
+    Note over X,N: countdown by the API's clock, then a fresh simulation
+    loop each part k of N (one for most texts)
+        X->>A: intent: tx id, raw sha256,<br/>gas, fees (journaled first)
+        A-->>X: send ticket bound to<br/>exactly those signed bytes
+        X->>R: eth_sendRawTransaction<br/>+ x-vt-send-ticket
+        R->>N: only if payload, recipient<br/>and fees match the ticket
+        X->>R: receipt, eth_getTransactionByHash<br/>(reads, via the node)
+        X->>A: included, readback ok<br/>(input = payload,<br/>to 0x0, value 0)
+    end
+    X->>X: reassemble: strip data:,<br/>and headers, sha256 =<br/>the job's digest
+    X->>A: reassembled ✓,<br/>copies-done
+    You->>B: vt job clawback id --chain eth<br/>--to your address, passphrase
+    X->>A: clawback-intent,<br/>then its send ticket
+    X->>R: plain transfer, 21,000 gas,<br/>no data, + ticket
+    R->>N: forwarded, then read back
+    X->>A: clawback-included<br/>(CLAWED_BACK, job DONE)
+    You->>B: vt job receipt id --json<br/>(vt-receipt/1: tx ids, fees,<br/>readback, no keys, no text)
+```
+
+</details>
+
+<details>
+<summary><b>Solana</b>: Memo v2 transactions</summary>
+
+- Each part is one legacy transaction with one signer (the lane key pays the fee): `setComputeUnitLimit`
+  (+ `setComputeUnitPrice` only when priced) and one Memo v2 instruction with no accounts. A signed tx fits in 1,232 B,
+  so a memo carries at most 1,010 B.
+- Parts are `vt-parts/1`: `[1/N h8 sha256=…]` on part 1, `[k/N h8]` after. The 18,237 B example became 19 memo
+  transactions (18 × 1,010 B + 443 B), 5,000 lamports each.
+- Parts go one at a time: part k+1 is signed only after part k is confirmed and its memo bytes read back equal.
+- Claw-back is one System transfer of the balance minus its fee, so the lane ends at 0.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor You
+    participant P as page
+    participant B as vt broker
+    participant X as vt executor<br/>(sandboxed)
+    participant A as jobs API
+    participant R as relay
+    participant N as Solana node<br/>(local validator)
+    You->>P: New SOL lane key<br/>(in the tab's memory)
+    P-->>You: vt-sol-key-UTC.age<br/>(age, your passphrase),<br/>re-selected and verified
+    You->>B: vt job create job.json<br/>--message-file SEALED.txt,<br/>type publish
+    X->>A: PUT /messages/sha256,<br/>POST /jobs (the lane's<br/>key address)
+    You->>N: fund the lane address (local: vt localnet fund sol)
+    You->>B: vt job run id --backup-sol file,<br/>passphrase typed at the broker
+    B->>X: passphrase over a pipe,<br/>key decrypted in memory
+    X->>A: lease, key-loaded,<br/>funds: sol READY
+    You->>B: vt job arm id<br/>(cap, countdown)
+    X->>A: POST /jobs/id/arm
+    Note over X,N: the text split into vt-parts/1 memos of at most 1,010 B
+    loop each part k of N, one at a time
+        X->>R: blockhash, unsigned simulation,<br/>fee (reads, via the node)
+        X->>A: intent: tx id, raw sha256,<br/>fee (journaled first)
+        A-->>X: send ticket bound to<br/>exactly this transaction
+        X->>R: sendTransaction<br/>+ x-vt-send-ticket
+        R->>N: forwards only<br/>the ticketed bytes
+        X->>R: getTransaction (confirmed)
+        X->>A: included, readback ok<br/>(memo bytes = part bytes)
+    end
+    X->>X: reassemble: strip headers,<br/>join by k, sha256 =<br/>the job's digest
+    X->>A: reassembled ✓,<br/>copies-done
+    You->>B: vt job clawback id --chain sol<br/>--to your address, passphrase
+    X->>A: clawback-intent,<br/>then its send ticket
+    X->>R: System transfer of the<br/>balance minus the fee, + ticket
+    R->>N: forwarded, then read back<br/>(the lane at 0)
+    X->>A: clawback-included<br/>(CLAWED_BACK, job DONE)
+    You->>B: vt job receipt id --json<br/>(vt-receipt/1)
+```
+
+</details>
+
+<details>
+<summary><b>Bitcoin</b>: an ordinals inscription, local regtest only</summary>
+
+- **Local only for now:** a testnet or mainnet BTC job is refused, and there is **no claw-back**: what is left stays on
+  the lane key (keep its backup).
+- One copy is one inscription (`text/plain;charset=utf-8`, at most 100,000 B, the text verbatim), so two
+  transactions: a commit that pays a taproot address only the inscription script can spend, then a reveal that spends
+  it by that script and leaves 546 sat of postage on the lane's own taproot address. The reveal is built only after
+  the commit landed.
+- The fee rate is the node's estimate, never above the job's ceiling (1 to 500 sat/vB). The 18,237 B example: a
+  153 vB commit and a 4,724 vB reveal at 2 sat/vB, 10,300 sat in all.
+- One confirmation; `vt localnet` mines a block every 5 s. The job page links the inscription on your local `ord`,
+  which only observes: the executor reads `bitcoind` through the relay.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor You
+    participant P as page
+    participant B as vt broker
+    participant X as vt executor<br/>(sandboxed)
+    participant A as jobs API
+    participant R as relay
+    participant N as bitcoind<br/>(regtest)
+    You->>P: New BTC lane key<br/>(a p2wpkh address)
+    P-->>You: vt-btc-key-UTC.age<br/>(age, your passphrase),<br/>re-selected and verified
+    You->>B: vt job create job.json<br/>--message-file SEALED.txt,<br/>type publish
+    X->>A: PUT /messages/sha256,<br/>POST /jobs (btc.inscription,<br/>fee-rate ceiling)
+    You->>N: vt localnet fund btc address (0.01 BTC, then a block)
+    You->>B: vt job run id --chain btc<br/>--backup-btc file, passphrase
+    B->>X: passphrase over a pipe,<br/>key decrypted in memory
+    X->>A: lease, key-loaded,<br/>funds: btc READY
+    You->>B: vt job arm id (cap: the<br/>worst case per copy<br/>at the ceiling)
+    X->>A: POST /jobs/id/arm
+    Note over X,N: countdown, then testmempoolaccept of the real commit
+    loop the commit, then the reveal (2 txs per copy)
+        X->>A: intent (journaled first)
+        A-->>X: send ticket, every field<br/>from the stored message
+        X->>R: POST /relay/btc/send<br/>(raw hex) + x-vt-send-ticket
+        R->>N: sendrawtransaction,<br/>after checking the ticket,<br/>inputs, outputs and fee
+        X->>R: getrawtransaction,<br/>until 1 confirmation
+        X->>A: included, readback ok<br/>(commit output, reveal<br/>witness = the inscription)
+    end
+    X->>X: reassemble from the<br/>reveal's witness, sha256 =<br/>the job's digest
+    X->>A: reassembled ✓, copies-done<br/>(btc COPIES_DONE)
+    Note over You,N: no claw-back: vt job clawback --chain btc is refused before anything is read
+    You->>B: vt job receipt id --json<br/>(vt-receipt/1: both txs,<br/>block, fee, readback)
+```
+
+</details>
+
+<details>
+<summary><b>Open</b>: rebuild the text from a chain, then open it after the round</summary>
+
+- Anyone with a copy can rebuild `SEALED.txt`: the job page's "Reassemble by hand" command (`cast` or `curl`, plus
+  `python3`) takes parts only from the publishing address, strips each header line, joins the parts by index and checks
+  the sha256. A Bitcoin copy is the inscription's content, verbatim. The run's SOL and BTC copies were byte-identical
+  to the original.
+- Before the round all three ways refuse: `tle` says "too early", the sealers say "not yet — locked until" the UTC
+  time, and the page shows a countdown. Open asks only for drand's `public/latest`; Decrypt sends nothing at all.
+- After the round, the round's signature is public. `tle`, or tlock-js in the page's tab, decrypts with it; a vault's
+  data key then opens `vault.tar.gz.age` with `age`. The page never contacts drand itself: it goes through the relay's
+  `/relay/drand/…` route, which uses Tor, and the beacon is checked against the pinned quicknet key.
+- In the run, `tle` by hand, `timelock-key.sh open` and the page's decrypt code (over the same relay route) gave the
+  same file, with the original's sha256.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor You
+    participant N as chain node<br/>or ord
+    participant T as tle + age, or<br/>the sealer's open
+    participant P as page<br/>(Open or Decrypt)
+    participant R as relay
+    participant Tor
+    participant D as drand quicknet
+    You->>N: read a copy: ETH calldata,<br/>SOL memos, BTC inscription
+    You->>You: the reader: strip headers,<br/>join by k, check the sha256:<br/>SEALED.txt again
+    You->>You: cut each armored block (awk),<br/>check its size and sha256
+    Note over You,D: before the round
+    You->>T: tle --decrypt through Tor,<br/>or timelock-key.sh open
+    T->>Tor: GET /public/R
+    Tor->>D: GET /public/R
+    D-->>T: HTTP 425, not published yet
+    T-->>You: too early / not yet,<br/>locked until the unlock time
+    You->>P: paste SEALED.txt (Open tab)
+    P->>R: GET /relay/drand/hash/<br/>public/latest (nothing else)
+    R->>Tor: through Tor,<br/>after the IsTor check
+    Tor->>D: GET /public/latest
+    P-->>You: latest round below R:<br/>Not yet, a countdown
+    Note over You,D: after the round
+    You->>T: the same command again
+    T->>Tor: GET /public/R
+    Tor->>D: GET /public/R
+    D-->>T: round R signature (public)
+    T-->>You: secret.tar.gz, then tar -xzf<br/>into restored/ (a vault:<br/>the key, then age -d)
+    You->>P: Fetch the round and decrypt
+    P->>R: GET /relay/drand/hash/public/R
+    R->>Tor: through Tor
+    Tor->>D: GET /public/R
+    R-->>P: the beacon of round R
+    P->>P: beacon checked against the<br/>pinned quicknet key, tlock-js<br/>decrypts in the tab (memory only)
+    P-->>You: the files, with size<br/>and sha256, as downloads
+```
+
+</details>
+
 ## Requirements
 
 - **macOS.** The sandboxes use `sandbox-exec`, and the sealers rely on macOS `tar`/`libarchive` behaviour.
