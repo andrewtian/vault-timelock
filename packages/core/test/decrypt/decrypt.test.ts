@@ -159,7 +159,7 @@ test('timelocked: before the round it is decrypt.too-early "opens at <UTC>", and
 test('timelocked: drand not yet published (the fetcher answers null) is decrypt.too-early; no fetcher is decrypt.kind', async () => {
   const bin = await tlockBin(PAST_ROUND, 'synthetic\n')
   const f = fakeFetcher(() => false)
-  await refused(decryptAge(bin, { fetchRoundSignature: f.fetch }), 'decrypt.too-early', /opens at /)
+  await refused(decryptAge(bin, { fetchRoundSignature: f.fetch }), 'decrypt.too-early', /drand has not published round 1000000 yet \(relay\)/)
   assert.equal(f.calls.length, 1)
   await refused(decryptAge(bin, {}), 'decrypt.kind', /signature/)
   await refused(decryptAge(bin, { passphrase: PASSPHRASE, identity: 'AGE-SECRET-KEY-1QQQQ' }), 'decrypt.kind', /signature/)

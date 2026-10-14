@@ -5,12 +5,14 @@
 // Stateless: every call reads the archive anew and zeroes its own expanded copy; the returned bytes are copies.
 // A future SEALED v2 ("index + blocks") implements ArchiveSource itself; listArchive / extractOne / extractAll accept any source.
 import type { ArchiveEntry, ArchiveFile, ArchiveLimits, ArchiveSource } from './api.ts'
-import { ARCHIVE_LIMITS } from './api.ts'
 import { refuseFormat, refuseSize } from './refuse.ts'
-import { TarError, gunzip, isGzip, scanTar, showPath } from './tar.ts'
+import { TarError, checkedLimits, gunzip, isGzip, scanTar, showPath } from './tar.ts'
 import type { TarSlot } from './tar.ts'
 
-const limitsOf = (l: Partial<ArchiveLimits> | undefined): ArchiveLimits => ({ ...ARCHIVE_LIMITS, ...(l ?? {}) })
+// An invalid limit (NaN, negative, fractional, not a number) refuses decrypt.size; undefined = the default. Never "no cap".
+function limitsOf(l: Partial<ArchiveLimits> | undefined): ArchiveLimits {
+  try { return checkedLimits(l) } catch (e) { return failed('the archive', e) }
+}
 
 function failed(name: string, e: unknown): never {
   if (e instanceof TarError) {

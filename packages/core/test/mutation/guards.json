@@ -456,10 +456,12 @@
   "decrypt.format": [
     "test/decrypt/decrypt.test.ts",
     "test/decrypt/sealed.test.ts",
-    "test/decrypt/archive.test.ts"
+    "test/decrypt/archive.test.ts",
+    "test/decrypt/fix1.test.ts"
   ],
   "decrypt.size": [
     "test/decrypt/decrypt.test.ts",
-    "test/decrypt/archive.test.ts"
+    "test/decrypt/archive.test.ts",
+    "test/decrypt/fix1.test.ts"
   ]
 }

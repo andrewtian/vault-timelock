@@ -148,7 +148,7 @@ export async function roundSignature(round: number, how: DecryptHow, what: strin
   const fetch: FetchRoundSignature | undefined = how.fetchRoundSignature
   if (typeof fetch !== 'function') refuseKind(`${what} is time-locked (drand quicknet round ${round}): it needs the round's signature, through the relay`)
   const sig = await fetch(QUICKNET.hash, round)
-  if (sig === null) refuseTooEarly(round)
+  if (sig === null) refuseTooEarly(round, true)
   const hex = typeof sig === 'string' ? sig.trim().toLowerCase() : ''
   if (!SIG_HEX.test(hex)) refuseFormat(`the drand signature for round ${round} is not 48 bytes of hex`)
   const out = new Uint8Array(48)

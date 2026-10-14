@@ -14,9 +14,22 @@
 // (≈ 200 MiB in the tab); a bigger archive is refused with a clear message.
 // A name, a pax record or a GNU long-name block is at most `meta` bytes, a name at most `nameBytes`.
 import type { ArchiveLimits } from './api.ts'
-import { ARCHIVE_LIMITS } from './api.ts'
+import { ARCHIVE_DEPTH, ARCHIVE_LIMITS } from './api.ts'
 
-export const TAR_LIMITS: ArchiveLimits = ARCHIVE_LIMITS
+export const TAR_LIMITS: Required<ArchiveLimits> = Object.freeze({ ...ARCHIVE_LIMITS, depth: ARCHIVE_DEPTH })
+
+/** Every limit must be a non-negative safe integer; an absent (undefined) one is the default. Anything else (NaN, negative,
+ *  fractional, Infinity, a non-number) refuses TarError 'size': a limit that is not a number is never "no cap" (fail closed). */
+export function checkedLimits(l: Partial<ArchiveLimits> | undefined): Required<ArchiveLimits> {
+  const out: Record<string, number> = { ...TAR_LIMITS } as Record<string, number>
+  for (const k of Object.keys(out)) {
+    const v = (l as Record<string, unknown> | undefined)?.[k]
+    if (v === undefined) continue
+    if (typeof v !== 'number' || !Number.isSafeInteger(v) || v < 0) throw new TarError('size', `tar: the archive limit "${k}" is not a non-negative whole number`)
+    out[k] = v
+  }
+  return out as unknown as Required<ArchiveLimits>
+}
 
 /** A reader failure: `size` = a cap was hit, `format` = not a (safe) tar.gz. Messages never carry file contents. */
 export class TarError extends Error {
@@ -79,6 +92,7 @@ async function inflateMember(bytes: Uint8Array, cap: number): Promise<Uint8Array
 }
 
 export async function gunzip(bytes: Uint8Array, cap: number = TAR_LIMITS.bytes): Promise<Uint8Array> {
+  cap = checkedLimits({ bytes: cap }).bytes
   let z = 0
   while (z < bytes.length && bytes[bytes.length - 1 - z] === 0) z++
   const base = bytes.length - z
@@ -99,7 +113,33 @@ const safeName = (n: string): boolean => n !== '' && !n.startsWith('/') && !/[\\
 // character and where its body is in the tar.
 interface RawEntry { name: string; type: string; size: number; start: number; end: number }
 
-function* entries(tar: Uint8Array, limits: ArchiveLimits): Generator<RawEntry> {
+// pax records are `<len> <key>=<value>\n`, <len> in BYTES (the whole record, digits and newline included): parse bytes, not UTF-16 units
+function parsePax(body: Uint8Array, meta: number): Record<string, string> {
+  const rec: Record<string, string> = {}
+  for (let i = 0; i < body.length;) {
+    let sp = i
+    while (sp < body.length && body[sp] !== 0x20 && sp - i < 8) sp++
+    const digits = new TextDecoder().decode(body.subarray(i, sp))
+    const len = sp < body.length && body[sp] === 0x20 && /^[0-9]+$/.test(digits) ? Number(digits) : NaN
+    if (!Number.isInteger(len) || len < sp - i + 3 || i + len > body.length || len > meta || body[i + len - 1] !== 0x0a) throw new TarError('format', 'tar: a pax record is malformed or too long')
+    const r = dec.decode(body.subarray(sp + 1, i + len - 1)), eq = r.indexOf('=')
+    if (eq > 0) rec[r.slice(0, eq)] = r.slice(eq + 1)
+    i += len
+  }
+  return rec
+}
+
+// M-6 (strict only): system `tar` honours pax `size` / `linkpath` (and vendor keys) that this reader ignores, so an archive could list
+// as benign here and unpack differently there. Only keys that cannot change what is extracted are allowed; `path` is honoured (a
+// global `path` would rename every later entry, so it is refused there).
+const PAX_OK = new Set(['path', 'mtime', 'atime', 'ctime', 'comment', 'charset', 'uname', 'gname', 'uid', 'gid'])
+function strictPax(rec: Record<string, string>, global: boolean): void {
+  for (const k of Object.keys(rec)) {
+    if (!PAX_OK.has(k) || (global && k === 'path')) throw new TarError('format', `tar: a pax record "${showPath(k)}" would change what \`tar\` extracts; refused`)
+  }
+}
+
+function* entries(tar: Uint8Array, limits: ArchiveLimits, strict = false): Generator<RawEntry> {
   const meta = limits.meta ?? TAR_LIMITS.meta
   let pos = 0, longName: string | null = null, pax: Record<string, string> | null = null
   const zero = (a: number): boolean => { for (let i = 0; i < 512; i++) if (tar[a + i] !== 0) return false; return true }
@@ -121,19 +161,10 @@ function* entries(tar: Uint8Array, limits: ArchiveLimits): Generator<RawEntry> {
     const body = tar.subarray(start, end)
     if ((type === 'L' || type === 'x' || type === 'g') && size > meta) throw new TarError('format', `tar: a name or extended header is longer than ${meta} bytes; refused`)
     if (type === 'L') { longName = dec.decode(body).replace(/\0+$/, ''); continue }
-    if (type === 'x') {
-      pax = {}
-      // records are `<len> <key>=<value>\n`, <len> in BYTES (the whole record, digits and newline included): parse bytes, not UTF-16 units
-      for (let i = 0; i < body.length;) {
-        let sp = i
-        while (sp < body.length && body[sp] !== 0x20 && sp - i < 8) sp++
-        const digits = new TextDecoder().decode(body.subarray(i, sp))
-        const len = sp < body.length && body[sp] === 0x20 && /^[0-9]+$/.test(digits) ? Number(digits) : NaN
-        if (!Number.isInteger(len) || len < sp - i + 3 || i + len > body.length || len > meta || body[i + len - 1] !== 0x0a) throw new TarError('format', 'tar: a pax record is malformed or too long')
-        const rec = dec.decode(body.subarray(sp + 1, i + len - 1)), eq = rec.indexOf('=')
-        if (eq > 0) pax[rec.slice(0, eq)] = rec.slice(eq + 1)
-        i += len
-      }
+    if (type === 'x' || (type === 'g' && strict)) {
+      const rec = parsePax(body, meta)
+      if (strict) strictPax(rec, type === 'g')
+      if (type === 'x') pax = rec
       continue
     }
     if (type === 'g') continue
@@ -149,7 +180,8 @@ export interface TarFile { name: string; bytes: Uint8Array }
 export interface TarSkip { name: string; why: string }
 
 // The page's Open reader. -> { files: [{ name, bytes }], skipped: [{ name, why }] }; throws TarError when the bytes are not a tar archive.
-export function readTar(tar: Uint8Array, limits: ArchiveLimits = TAR_LIMITS): { files: TarFile[]; skipped: TarSkip[] } {
+export function readTar(tar: Uint8Array, lim: Partial<ArchiveLimits> = TAR_LIMITS): { files: TarFile[]; skipped: TarSkip[] } {
+  const limits = checkedLimits(lim)
   const nameBytes = limits.nameBytes ?? TAR_LIMITS.nameBytes
   const files: TarFile[] = [], skipped: TarSkip[] = []
   let total = 0
@@ -165,7 +197,8 @@ export function readTar(tar: Uint8Array, limits: ArchiveLimits = TAR_LIMITS): { 
   return { files, skipped }
 }
 
-export async function readTarGz(bytes: Uint8Array, limits: ArchiveLimits = TAR_LIMITS): Promise<{ files: TarFile[]; skipped: TarSkip[] }> {
+export async function readTarGz(bytes: Uint8Array, lim: Partial<ArchiveLimits> = TAR_LIMITS): Promise<{ files: TarFile[]; skipped: TarSkip[] }> {
+  const limits = checkedLimits(lim)
   const tar = await gunzip(bytes, limits.bytes)
   try { return readTar(tar, limits) } finally { tar.fill(0) }       // the joined tar copy is the reader's own; the files are copies
 }
@@ -180,31 +213,45 @@ const strictPath = (p: string): boolean => p !== '' && !p.startsWith('/') && !/[
 export interface TarSlot { path: string; size: number; start: number; end: number }
 
 /** STRICT scan of an uncompressed tar: every regular file, in archive order; throws TarError ('format' | 'size') for anything unsafe. */
-export function scanTar(tar: Uint8Array, limits: ArchiveLimits = TAR_LIMITS): TarSlot[] {
-  const nameBytes = limits.nameBytes ?? TAR_LIMITS.nameBytes
+export function scanTar(tar: Uint8Array, lim: Partial<ArchiveLimits> = TAR_LIMITS): TarSlot[] {
+  const limits = checkedLimits(lim)
+  const { nameBytes, depth } = limits
   const out: TarSlot[] = []
-  // every path seen is ONE thing: a file, or a directory (named by an entry, or implied by a file under it)
-  const seen = new Map<string, 'file' | 'dir'>()
+  // every path seen is ONE thing: a file, or a directory (named by an entry, or implied by a file under it). The key is
+  // `<parent node id>:<segment>`, so each entry costs O(its path bytes) (I-1: no per-prefix string rebuilding).
+  const seen = new Map<string, { id: number; kind: 'file' | 'dir' }>()
+  let nextId = 1
   const twice = (p: string): TarError => new TarError('format', `tar: the path "${showPath(p)}" appears more than once, or is both a file and a directory`)
   let total = 0
-  for (const { name, type, size, start, end } of entries(tar, limits)) {
+  for (const { name, type, size, start, end } of entries(tar, limits, true)) {
     if (enc.encode(name).length > nameBytes) throw new TarError('size', `tar: an entry path is longer than ${nameBytes} bytes`)
     if (!strictPath(name)) throw new TarError('format', `tar: unsafe entry path "${showPath(name)}" (absolute, empty, ".", "..", a backslash or a control character)`)
     const isDir = type === '5'
     if (!isDir && type !== '0' && type !== '7') throw new TarError('format', `tar: entry "${showPath(name)}" is ${type === '2' ? 'a symbolic link' : type === '1' ? 'a hard link' : `of type ${showPath(type)}`}, not a regular file or a directory`)
     const segs = name.split('/')
-    for (let i = 1; i < segs.length; i++) {
-      const parent = segs.slice(0, i).join('/')
-      if (seen.get(parent) === 'file') throw twice(parent)
-      seen.set(parent, 'dir')
+    if (segs.length > depth) throw new TarError('size', `tar: an entry path is nested more than ${depth} levels deep`)
+    let parent = 0
+    for (let i = 0; i < segs.length; i++) {
+      const last = i === segs.length - 1
+      const key = `${parent}:${segs[i]}`
+      const node = seen.get(key)
+      if (!last) {
+        if (node === undefined) { seen.set(key, { id: nextId, kind: 'dir' }); parent = nextId++ }
+        else { if (node.kind === 'file') throw twice(segs.slice(0, i + 1).join('/')); parent = node.id }
+        continue
+      }
+      if (isDir) {
+        if (node === undefined) seen.set(key, { id: nextId++, kind: 'dir' })
+        else if (node.kind === 'file') throw twice(name)
+      } else {
+        if (node !== undefined) throw twice(name)
+        seen.set(key, { id: nextId++, kind: 'file' })
+      }
     }
-    const before = seen.get(name)
-    if (isDir) { if (before === 'file') throw twice(name); seen.set(name, 'dir'); continue }
-    if (before !== undefined) throw twice(name)
-    seen.set(name, 'file')
+    if (isDir) continue
     total += size
-    if (total > limits.bytes) throw new TarError('size', `tar: the files add up to more than ${limits.bytes} bytes`)
-    if (out.length >= limits.entries) throw new TarError('size', `tar: the archive holds more than ${limits.entries} files`)
+    if (!(total <= limits.bytes)) throw new TarError('size', `tar: the files add up to more than ${limits.bytes} bytes`)
+    if (!(out.length < limits.entries)) throw new TarError('size', `tar: the archive holds more than ${limits.entries} files`)
     out.push({ path: name, size, start, end })
   }
   return out

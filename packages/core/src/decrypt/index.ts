@@ -8,9 +8,12 @@ import { ageInfo, classify, limitsOf, openAge } from './age.ts'
 import { sourceOf, tarGzSource as tarGz } from './archive.ts'
 import { decrypted, openSealed, readSealed } from './sealed.ts'
 import { isGzip } from './tar.ts'
+import { refuseFormat } from './refuse.ts'
 
 export type * from './api.ts'
-export { ARCHIVE_LIMITS, DECRYPT_LIMITS, PASTE_LIMIT, SEALED_FORMATS, SEALED_FORMAT_V1 } from './api.ts'
+/** Writes every control / format / line-separator character out as [U+XXXX] and cuts at 200 chars: use for ANY archive path shown to a user. */
+export { showPath } from './tar.ts'
+export { ARCHIVE_DEPTH, ARCHIVE_LIMITS, DECRYPT_LIMITS, PASTE_LIMIT, SEALED_FORMATS, SEALED_FORMAT_V1 } from './api.ts'
 
 /**
  * Read what the input is, without any secret and without decrypting: the kind (passphrase / identity / timelocked / sealed),
@@ -61,7 +64,14 @@ export function tarGzSource(name: string, bytes: Uint8Array, limits?: Partial<Ar
 
 /** [{path, size}] of every regular file (paths as stored; never contents). bytes = a .tar.gz, or any ArchiveSource. */
 export async function listArchive(archive: Uint8Array | ArchiveSource, limits?: Partial<ArchiveLimits>): Promise<ArchiveEntry[]> {
-  return [...await sourceOf(archive, limits).list()]
+  const raw: unknown = await sourceOf(archive, limits).list()
+  if (!Array.isArray(raw)) refuseFormat('the archive source did not list its files as an array')
+  // exactly { path, size } per entry, whatever else a foreign source put on its objects (a listing never carries contents)
+  return raw.map((e: unknown): ArchiveEntry => {
+    const { path, size } = (typeof e === 'object' && e !== null ? e : {}) as { path?: unknown; size?: unknown }
+    if (typeof path !== 'string' || typeof size !== 'number' || !Number.isSafeInteger(size) || size < 0) refuseFormat('the archive source listed an entry that is not { path, size }')
+    return { path, size }
+  })
 }
 
 /** The bytes of exactly the file at `path` (as listed). */

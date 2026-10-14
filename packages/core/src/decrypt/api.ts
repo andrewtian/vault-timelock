@@ -59,8 +59,13 @@ export interface ArchiveLimits {
   readonly meta: number
   /** Bytes (UTF-8) of one entry path. */
   readonly nameBytes: number
+  /** Path segments of one entry path (strict reader; real vault paths are at most 3 deep). Absent = ARCHIVE_DEPTH (32). */
+  readonly depth?: number
 }
 export const ARCHIVE_LIMITS: ArchiveLimits = Object.freeze({ bytes: 64 * 1024 * 1024, entries: 10_000, meta: 64 * 1024, nameBytes: 4096 })
+
+/** The default path depth cap of the strict reader (ARCHIVE_LIMITS itself is unchanged). */
+export const ARCHIVE_DEPTH = 32
 
 /**
  * The relay's drand route, supplied by the caller (CLI: through `vt up`'s relay; page: /relay/drand/…). Core never fetches.

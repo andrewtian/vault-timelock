@@ -139,3 +139,11 @@ export function fileLines(sealed: string): Map<string, { size: number; sha256: s
 
 export const sha256 = (b: Uint8Array | string): string => createHash('sha256').update(b).digest('hex')
 export const text = (b: Uint8Array): string => new TextDecoder().decode(b)
+
+/** pax extended header body with several `key=value` records (each length counts BYTES). */
+export const paxRecords = (rec: Record<string, string>): Buffer => Buffer.concat(Object.entries(rec).map(([k, v]) => {
+  const body = Buffer.from(` ${k}=${v}\n`)
+  let len = body.length + 1
+  while (String(len).length + body.length !== len) len = String(len).length + body.length
+  return Buffer.concat([Buffer.from(String(len)), body])
+}))

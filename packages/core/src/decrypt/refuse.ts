@@ -17,8 +17,8 @@ export function refuseIdentity(message: string): never {
 }
 
 /** The round is not reached yet: "opens at <UTC>". */
-export function refuseTooEarly(round: number): never {
-  refuse('decrypt.too-early', `too early: this time lock opens at ${unlockIso(round)} (drand quicknet round ${round})`) // @guard:decrypt.too-early
+export function refuseTooEarly(round: number, unpublished = false): never {
+  refuse('decrypt.too-early', unpublished ? `too early: drand has not published round ${round} yet (relay)` : `too early: this time lock opens at ${unlockIso(round)} (drand quicknet round ${round})`) // @guard:decrypt.too-early
 }
 
 export function refuseFormat(message: string): never {
