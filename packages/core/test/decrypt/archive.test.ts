@@ -83,7 +83,7 @@ test('duplicates and file/directory conflicts refuse the whole archive (decrypt.
     [['a/b', '1'], ['a', '2']],                     // a file under a, then a as a file
     [['a', '1'], ['a/', '', '5']],                  // a file, then a directory of the same path
     [['a/', '', '5'], ['a', '2']],                  // a directory, then a file of the same path
-    [['a', '1'], ['a/', '2']],                      // trailing slash on a regular file: the same path
+    // (a regular file named 'a/' is refused by its own rule, see fix1.test.ts N-2)
   ]
   for (const c of cases) {
     const a = targz(c)

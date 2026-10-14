@@ -45,7 +45,10 @@ const fatal = new TextDecoder('utf-8', { fatal: true })
 const dec = { decode: (b: Uint8Array): string => { try { return fatal.decode(b) } catch { throw new TarError('format', 'tar: a name or header field is not valid UTF-8') } } }
 const enc = new TextEncoder()
 const text = (b: Uint8Array, a: number, n: number): string => { let e = a; while (e < a + n && b[e] !== 0) e++; return dec.decode(b.subarray(a, e)) }
-const octal = (b: Uint8Array, a: number, n: number): number => {
+const octal = (b: Uint8Array, a: number, n: number, strict = false): number => {
+  // N-4 (strict): exactly what tar emits, octal digits then NUL / space padding; anything else (NBSP, newline, leading blanks) would
+  // make bsdtar refuse the archive or read it differently, so it is refused here
+  if (strict && !/^[0-7]*[\0 ]*$/.test(String.fromCharCode(...b.subarray(a, a + n)))) throw new TarError('format', 'tar: a size or checksum field has padding that tar does not write')
   const s = text(b, a, n).trim()
   if (s === '') return 0
   if (!/^[0-7]+$/.test(s)) throw new TarError('format', 'tar: a size or checksum field is not octal')
@@ -149,12 +152,16 @@ function* entries(tar: Uint8Array, limits: ArchiveLimits, strict = false): Gener
     if (zero(pos)) break
     let sum = 0
     for (let i = 0; i < 512; i++) sum += i >= 148 && i < 156 ? 32 : tar[pos + i]
-    if (sum !== octal(tar, pos + 148, 8)) throw new TarError('format', 'tar: a header checksum is wrong (not a tar archive, or damaged)')
+    if (sum !== octal(tar, pos + 148, 8, strict)) throw new TarError('format', 'tar: a header checksum is wrong (not a tar archive, or damaged)')
     const type = String.fromCharCode(tar[pos + 156] || 48)
-    const size = octal(tar, pos + 124, 12)
+    const size = octal(tar, pos + 124, 12, strict)
     const magic = text(tar, pos + 257, 5)
     let name = text(tar, pos, 100)
-    if (magic === 'ustar') { const pre = text(tar, pos + 345, 155); if (pre) name = `${pre}/${name}` }
+    if (magic === 'ustar') {
+      // N-1 (strict): the prefix is ustar-only; a GNU header ("ustar  ") keeps atime/ctime there, which tar does not read as a prefix
+      if (strict && tar[pos + 262] !== 0) { for (let i = 345; i < 500; i++) if (tar[pos + i] !== 0) throw new TarError('format', 'tar: a GNU-format header with data where ustar keeps its path prefix; refused') }
+      else { const pre = text(tar, pos + 345, 155); if (pre) name = `${pre}/${name}` }
+    } else if (strict) { for (let i = 345; i < 500; i++) if (tar[pos + i] !== 0) throw new TarError('format', 'tar: a header without ustar magic has data where ustar keeps its path prefix; refused') }
     const start = pos + 512, end = start + size
     if (end > tar.length) throw new TarError('format', 'tar: an entry runs past the end of the archive')
     pos = start + Math.ceil(size / 512) * 512
@@ -168,9 +175,16 @@ function* entries(tar: Uint8Array, limits: ArchiveLimits, strict = false): Gener
       continue
     }
     if (type === 'g') continue
+    if (strict) {
+      // N-2: tar skips no body for a directory / link / device, and reads a '/'-ended name as a directory
+      if (type !== '0' && type !== '7' && size !== 0) throw new TarError('format', `tar: an entry of type ${showPath(type)} has a nonzero size; refused`)
+      // N-3: a GNU long name and a pax path both name this entry; tar and this reader could pick different ones
+      if (longName !== null && pax?.path !== undefined) throw new TarError('format', 'tar: an entry is named twice (a GNU long name and a pax path); refused')
+    }
     if (longName !== null) name = longName
     if (pax?.path) name = pax.path
     longName = null; pax = null
+    if (strict && (type === '0' || type === '7') && name.endsWith('/')) throw new TarError('format', 'tar: a regular-file entry whose name ends in "/" (tar reads it as a directory); refused')
     name = name.replace(/\/+$/, '')
     yield { name, type, size, start, end }
   }
