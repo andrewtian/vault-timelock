@@ -46,6 +46,11 @@ export const SECTIONS: ReadonlyArray<readonly [string, readonly string[]]> = [
     'vt job run <id> [--chain eth|sol|btc] [--backup-eth F] [--backup-sol F] [--backup-btc F]   (a backup for each chain that runs)',
     'vt job clawback <id> --chain c --to <addr> [--backup-<c> F]   (the backup of that chain\'s key; eth and sol only: a btc claw-back is not available yet)',
   ]],
+  ['Decrypt (sandbox: the network\'s relay port only, for a time lock; reads only the files it is handed; vt\'s broker reads a paste, asks the passphrase and writes --out)', [
+    'vt decrypt [<file>|-] [--identity F] [--out <path|dir>] [--stdout] [--list] [--only <path>]   (age passphrase / identity / tlock files and SEALED.txt; no file or -: paste or pipe, 1 MiB at most)',
+    '  plaintext goes only where asked: --out (0600, never overwriting; a new directory for a SEALED.txt, checked against its MANIFEST.csv / ATTACHMENTS.csv) or --stdout;',
+    '  --list prints path + size of the archive\'s files (no contents); --only <path> one of them. A time lock needs vt up for that network (its relay fetches drand).',
+  ]],
   ['Sealing (prints the command, then runs 1password-timelock.sh / timelock-key.sh with the same arguments)', [
     'vt seal vault ...',
     'vt seal file ...',

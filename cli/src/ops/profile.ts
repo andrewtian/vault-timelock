@@ -12,16 +12,17 @@ import { resolveOut } from 'vt-broadcast/src/lifecycle/paths.ts'
 import { vtHome } from './paths.ts'
 import { realpathSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { commandProfile, handedIndices } from './sandbox.ts'
+import { commandProfile, pathIndices } from './sandbox.ts'
 import { scopeFor } from './scope.ts'
 import { realPathOf } from './stack.ts'
 
 // `profile.ts --args <argv...>`: the arguments bin/vt must run the sandboxed command with, as ONE line of single-quoted words for `eval set --`:
-// every file the command is handed (--backup-<chain>, --message-file, the job file) becomes its absolute real path, so the sandboxed process can
-// start in `/` and never needs to list the directories above it (follow-up 3).
+// every file the command is handed (--backup-<chain>, --message-file, the job file, vt decrypt's input and --identity) becomes its absolute real
+// path, so the sandboxed process can start in `/` and never needs to list the directories above it (follow-up 3); vt decrypt's --out too (it may
+// not exist yet: the real path of what exists of it, then the rest), because the broker that creates it runs in `/`.
 if (process.argv[2] === '--args') {
   const argv = process.argv.slice(3)
-  const idx = new Set(handedIndices(argv))
+  const idx = new Set(pathIndices(argv))
   const cwd = realpathSync(process.cwd())
   const q = (w: string): string => `'${w.replaceAll("'", "'\\''")}'`
   process.stdout.write(argv.map((a, i) => q(idx.has(i) ? realPathOf(resolve(cwd, a)) : a)).join(' '))

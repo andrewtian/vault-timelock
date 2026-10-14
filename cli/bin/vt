@@ -35,6 +35,7 @@
 #      · client commands (status, preflight, job ... except job run|clawback): loopbackProfile([page, relay, api]) of
 #        the network: those three loopback ports only, no file writes but /dev/null;
 #      · job run | job clawback (the executor, which holds a key in memory): loopbackProfile([relay, api]);
+#      · decrypt: loopbackProfile([relay]): the relay port only (a time lock), the handed files read-only, no writes (the broker writes --out);
 #      · NO sandboxed command has a terminal (/dev/tty and the pty devices are denied). The command runs as a child of the
 #        unsandboxed broker (src/ops/broker.ts), which owns the terminal, asks only the prompts that command's argv allows,
 #        and filters the child's output.
@@ -231,10 +232,10 @@ case ${1-} in
 esac
 
 # ── the command's sandbox ────────────────────────────────────────────────────────────────────────────────────────
-# Sandboxed: status, preflight, job, source (src/args.ts sandboxFor; test/args.test.ts pins the agreement). The profile
-# (client, or executor for job run|clawback) comes from src/ops/profile.ts.
+# Sandboxed: status, preflight, job, source, decrypt (src/args.ts sandboxFor; test/args.test.ts pins the agreement). The profile
+# (client, executor for job run|clawback, decrypt for vt decrypt) comes from src/ops/profile.ts.
 case ${1-} in
-  status|preflight|job|source) sandboxed=1 ;;
+  status|preflight|job|source|decrypt) sandboxed=1 ;;
   *) sandboxed=0 ;;
 esac
 # Echo window: a passphrase command (job run | job clawback) switches echo OFF here, at once, before the slow profile build and the broker start (about a second), after saving

@@ -13,6 +13,7 @@ import type { Network } from '@vault-timelock/core/contracts'
 import { NETWORKS, PORTS, assertNetwork, refuse } from '@vault-timelock/core/contracts'
 import { dirname, isAbsolute, normalize } from 'node:path'
 import { clientTty, networksFor, sandboxFor } from '../args.ts'
+import { decryptPositions } from '../decrypt-args.ts'
 
 // Every profile starts with this: nothing leaves the process except what a later rule allows.
 export const DENY_NETWORK = '(version 1)(allow default)(deny network-outbound)'
@@ -103,6 +104,10 @@ export function commandProfile(argv: readonly string[], network: string | undefi
   // install, the working directory and the files the command was handed; a missing or unsafe one refuses (vt.path) instead of silently
   // leaving the profile without its allow-list or its denies.
   const nets = networksFor(argv, network)
+  // vt decrypt: the relay port only (a time lock's drand signature), never the API or the page, and none of their tokens (below)
+  if (kind === 'decrypt') {
+    return loopbackProfile(nets.map((n) => PORTS[n].relay), { tty: false, noListen: true }) + readAllowList(home, nets, scope, out, false, false) + denyProtectedFiles(home, out, nets, scope.userHomes ?? scope.userHome) + hardening(scope, false) + denyTerminals()
+  }
   const ports = nets.flatMap((n) => kind === 'client'
     ? [PORTS[n].page, PORTS[n].relay, PORTS[n].api]
     : [PORTS[n].relay, PORTS[n].api])
@@ -158,9 +163,10 @@ export const DEV_READ: readonly string[] = ['/', '/private/var/select/sh', '/dev
 const FILE_FLAGS: ReadonlySet<string> = new Set(['--backup-eth', '--backup-sol', '--backup-btc', '--message-file'])
 const VALUE_FLAGS: ReadonlySet<string> = new Set(['--yes-publish-file', '--chain', '--chains', '--source', '--countdown', '--stagger', '--tx', '--to', '--from', '--tip-cap-gwei', '--cu-price-cap', '-n'])
 // The positions (in argv) of the files named on a command line: --backup-<chain> F, --message-file F, and the job file of
-// `job create|validate <file>`.
+// `job create|validate <file>`; vt decrypt's input file and --identity F (src/decrypt-args.ts decryptPositions).
 export function handedIndices(argv: readonly string[]): number[] {
   const out: number[] = []
+  if (argv[0] === 'decrypt') return decryptPositions(argv).handed
   if (argv[0] !== 'job') return out
   const wantsFile = argv[1] === 'create' || argv[1] === 'validate'
   let gotFile = false
@@ -173,6 +179,12 @@ export function handedIndices(argv: readonly string[]): number[] {
 }
 export function handedFiles(argv: readonly string[]): string[] {
   return handedIndices(argv).map((i) => argv[i])
+}
+// The positions bin/vt rewrites to absolute real paths (profile.ts --args): the handed files, and vt decrypt's --out (never handed to the
+// sandbox: the unsandboxed broker, which runs in `/`, creates it).
+export function pathIndices(argv: readonly string[]): number[] {
+  const out = argv[0] === 'decrypt' ? decryptPositions(argv).out : null
+  return [...handedIndices(argv), ...(out === null ? [] : [out])]
 }
 // Fail closed (follow-up 3, item 5): no allowed SUBPATH may be, or contain, a place that holds vt's secrets or the operator's state:
 // $HOME itself (or any ancestor), $HOME/.local, the default $OUT, the default state dir, ~/p, or the current $VT_HOME / $VAULT_TIMELOCK_DIR
@@ -188,14 +200,16 @@ export function assertAllowListSafe(subpaths: readonly string[], userHome: strin
 }
 export const ROOT_LINKS: readonly string[] = ['/tmp', '/var', '/etc']
 const ancestorsOf = (p: string): string[] => { const out: string[] = []; for (let d = dirname(p); ; d = dirname(d)) { out.push(d); if (d === '/' || dirname(d) === d) break } return out }
-export function readAllowList(home: string, nets: readonly string[], scope: ReadScope, out: string = '', tty: boolean = true): string {
+// tokens = false (vt decrypt): the networks' api.token and up.json are not in the list either: that command talks to the relay only.
+export function readAllowList(home: string, nets: readonly string[], scope: ReadScope, out: string = '', tty: boolean = true, tokens: boolean = true): string {
   assertProfilePath(home)
   if (out !== '') assertProfilePath(out)
   assertAllowListSafe([...SYSTEM_READ, ...scope.tree], scope.userHomes ?? scope.userHome, [home, ...(out === '' ? [] : [out])])
   for (const p of [...scope.tree, ...scope.treeFiles, ...scope.node, home]) assertProfilePath(p)
   for (const p of [...scope.handed, ...scope.stdio, scope.launcher]) assertProfileFile(p)
   const subs = [...SYSTEM_READ, ...scope.tree].map((p) => `(subpath "${p}")`)
-  const files = [...DEV_READ.filter((p) => tty || p !== '/dev/tty'), ...EXEC_SYSTEM, scope.launcher, ...scope.node, ...scope.treeFiles, ...nets.map((n) => `${home}/${n}/api.token`), ...nets.map((n) => `${home}/${n}/up.json`), ...scope.handed]
+  const states = tokens ? [...nets.map((n) => `${home}/${n}/api.token`), ...nets.map((n) => `${home}/${n}/up.json`)] : []
+  const files = [...DEV_READ.filter((p) => tty || p !== '/dev/tty'), ...EXEC_SYSTEM, scope.launcher, ...scope.node, ...scope.treeFiles, ...states, ...scope.handed]
   // metadata (stat, the realpath walk) only for what is allowed plus the directories ABOVE it; never a listing, never a content
   // + the macOS root symlinks (/tmp, /var, /etc -> /private/...): a VT_HOME given as /tmp/x is opened through the link, and stat-ing the link is a metadata read
   const above = [...new Set([...scope.tree, ...files, ...scope.stdio].flatMap(ancestorsOf)), ...ROOT_LINKS, ...scope.stdio]

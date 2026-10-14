@@ -9,3 +9,4 @@ test/run-real.test.ts
 test/run-btc-real.test.ts
 test/ticket-key-real.test.ts
 test/broker-real.test.ts
+test/decrypt-real.test.ts

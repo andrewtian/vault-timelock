@@ -5,7 +5,9 @@
 //             applies its own, or exec the sealer; macOS refuses nesting);
 //   client    status, preflight and every `job` subcommand except run/clawback: loopbackProfile([page, relay, api])
 //             (controller ruling (2) on C1); no file writes;
-//   executor  job run, job clawback (holds a key in memory): loopbackProfile([relay, api]).
+//   executor  job run, job clawback (holds a key in memory): loopbackProfile([relay, api]);
+//   decrypt   vt decrypt (design 2026-10-14-vt-decrypt): loopbackProfile([relay]) — the relay port only (a time lock's drand round), reads
+//             only the files it is handed (the input, --identity), no file writes (the broker writes --out), no api.token or up.json.
 // TTY-less round: no sandboxed command gets a terminal (the profile denies /dev/tty and every pty device); the unsandboxed broker
 // (src/ops/broker.ts) asks every typed confirmation (`publish`, `broadcast`, an over-cap amount, `resolve`, `resume`) and the
 // passphrase, and passes the answers over a pipe.
@@ -15,7 +17,7 @@
 import type { Network } from '@vault-timelock/core/contracts'
 import { NETWORKS, assertNetwork } from '@vault-timelock/core/contracts'
 
-export type Sandbox = 'none' | 'client' | 'executor'
+export type Sandbox = 'none' | 'client' | 'executor' | 'decrypt'
 
 // Every top-level command (spec §8). `job`'s subcommands decide between client and executor (sandboxFor).
 export const COMMANDS: Readonly<Record<string, Sandbox>> = {
@@ -23,6 +25,7 @@ export const COMMANDS: Readonly<Record<string, Sandbox>> = {
   seal: 'none', open: 'none',
   note: 'none', 'seal-text': 'none', 'tor-check': 'none', keystore: 'none', triggers: 'none',
   status: 'client', preflight: 'client', job: 'client', source: 'client',
+  decrypt: 'decrypt',
 }
 
 export function isCommand(cmd: string | undefined): cmd is string {

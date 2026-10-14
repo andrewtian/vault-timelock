@@ -26,6 +26,9 @@ export interface TtyIo {
   onGone?(fn: () => void, fd?: number): void   // broker channel only: fn runs once when the broker's answer pipe closes
   available(): boolean
   passphrase(chain?: Chain): Promise<string>
+  // vt decrypt (broker channel only): the ONE passphrase of an age scrypt input; the broker names the input and allows it only when ITS
+  // own reading of the input is scrypt
+  agePassphrase?(): Promise<string>
   word(prompt: string, kind?: WordKind): Promise<string | undefined>
   // Starts the raw-mode key reader; returns the function that stops it (and restores the terminal).
   keys(on: (k: Key) => void): () => void
@@ -107,6 +110,7 @@ export function brokerTty(env: Readonly<Record<string, string | undefined>> = pr
     onGone: (fn) => { gone.push(fn); start() },
     available: () => env.VT_TTY === '1',
     passphrase: async (chain) => { const m = await ask({ kind: 'passphrase', chain }); unwrap(m); if (typeof m.answer !== 'string') throw new Refusal('passphrase.aborted', 'passphrase entry aborted'); return m.answer },
+    agePassphrase: async () => { const m = await ask({ kind: 'age-passphrase' }); unwrap(m); if (typeof m.answer !== 'string') throw new Refusal('passphrase.aborted', 'passphrase entry aborted'); return m.answer },
     word: async (prompt, kind) => { if (kind === undefined) brokerRefusal('a typed word without its kind cannot be asked through the broker'); const m = await ask({ kind: 'word', word: kind, detail: prompt }); unwrap(m); return typeof m.answer === 'string' ? m.answer : undefined },
     keys: (on) => {
       start()

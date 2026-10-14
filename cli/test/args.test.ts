@@ -10,7 +10,7 @@
 // each one and these tests must fail.
 import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { COMMANDS, clientTty, sandboxFor } from '../src/args.ts'
@@ -182,13 +182,40 @@ test('job run | job clawback: the executor profile (relay, API, no terminal, no 
   }
 })
 
+// vt decrypt's broker decides before the child starts (where the plaintext goes, the input): a line it lets through to sandbox-exec
+const DECRYPT_LINE = (): string[] => { writeFileSync(dir('synthetic-input.txt'), '-----BEGIN AGE ENCRYPTED FILE-----\nc3ludGhldGlj\n-----END AGE ENCRYPTED FILE-----\n'); return ['decrypt', dir('synthetic-input.txt'), '--list'] }
+
 test('the sh dispatch agrees with src/args.ts for every command (a drift would fail closed in main.ts, but must not exist)', () => {
-  const lines = [...Object.keys(COMMANDS).map((c) => [c]), ...CLIENT, ...CLIENT_TTY_ARGS, ...EXECUTOR, ...UNSANDBOXED]
+  const lines = [...Object.keys(COMMANDS).map((c) => (c === 'decrypt' ? DECRYPT_LINE() : [c])), ...CLIENT, ...CLIENT_TTY_ARGS, ...EXECUTOR, ...UNSANDBOXED]
   for (const args of lines) {
     const t = traced(args)
     assert.equal(t.r.code, 0, `${args.join(' ')}: ${t.r.err}`)
     const want = sandboxFor(args) === 'none' ? [] : [commandProfile(args, undefined, VTH(), OUT0(), scopeFor(args, { HOME: HOME0, PATH: `${dir('fake')}:${dir('rec')}:${PATH0}` }))]
     assert.deepEqual(t.calls.map((c) => c.argv[1]), want, args.join(' '))
+  }
+})
+
+test('vt decrypt: its own profile — the network\'s RELAY port only (no page, no API), no token or up.json readable, the input and --identity handed read-only, --out made absolute but never handed', () => {
+  writeFileSync(dir('in.age.txt'), '-----BEGIN AGE ENCRYPTED FILE-----\nc3ludGhldGlj\n-----END AGE ENCRYPTED FILE-----\n')
+  writeFileSync(dir('id.txt'), '# synthetic, not an identity\n')
+  for (const n of ['local', 'testnet', 'mainnet'] as const) {
+    rmSync(LOG(), { force: true })
+    const args = ['decrypt', 'in.age.txt', '--identity', 'id.txt', '--out', `rel-out-${n}`]
+    const r = runW(['--network', n, ...args], { env: { PATH: FAKE_PATH(), HOME: HOME0 }, cwd: T })
+    const calls = readFileSync(LOG(), 'utf8').trim().split('\n').map((l) => JSON.parse(l) as { argv: string[] })
+    assert.equal(calls.length, 1, r.err)
+    const profile = calls[0].argv[1]
+    const relay = { local: 5181, testnet: 5191, mainnet: 5201 }[n]
+    assert.ok(profile.startsWith(`(version 1)(allow default)(deny network-outbound)(allow network-outbound (remote ip "localhost:${relay}"))(deny file-write*)(allow file-write* (literal "/dev/null"))(deny network-bind)(deny network-inbound)`), profile.slice(0, 300))
+    assert.equal((profile.match(/allow network-outbound/g) ?? []).length, 1, 'one port: the relay')
+    assert.ok(!profile.includes(`${VTH()}/${n}/api.token"`), 'its own network\'s api.token is not readable (the others\' are denied as for every command)')
+    assert.ok(!/\(literal "[^"]*\/up\.json"\)/.test(profile), 'no up.json')
+    assert.ok(profile.includes(`(literal "${join(T, 'in.age.txt')}")`) && profile.includes(`(literal "${join(T, 'id.txt')}")`), 'the two handed files')
+    assert.ok(!profile.includes(`rel-out-${n}`), '--out is never handed to the sandbox')
+    // the child's argv: the handed files AND --out are absolute real paths (the broker runs in /)
+    assert.deepEqual(calls[0].argv.slice(3), ['decrypt', join(T, 'in.age.txt'), '--identity', join(T, 'id.txt'), '--out', join(T, `rel-out-${n}`)])
+    assert.equal(profile, commandProfile(['decrypt', join(T, 'in.age.txt'), '--identity', join(T, 'id.txt'), '--out', join(T, `rel-out-${n}`)], n, VTH(), OUT0(), scopeFor(['decrypt', join(T, 'in.age.txt'), '--identity', join(T, 'id.txt')], { HOME: HOME0, PATH: FAKE_PATH() }, T)))
+    assert.equal(existsSync(join(T, `rel-out-${n}`)), false, 'the fake child sent nothing: nothing was written')
   }
 })
 

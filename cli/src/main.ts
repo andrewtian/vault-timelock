@@ -108,6 +108,11 @@ export async function main(argv: readonly string[], env: Env, seams: MainSeams =
       const { parsePreflightArgs, preflightCommand } = await import('./preflight.ts')
       return await preflightCommand({ network, env, json: parsePreflightArgs(rest).json })
     }
+    case 'decrypt': {
+      // Loaded only for `vt decrypt`: core's decrypt (age, tlock's IBE, the tar reader). Runs sandboxed under the broker (src/ops/broker.ts).
+      const { decryptMain } = await import('./decrypt.ts')
+      return await decryptMain(rest, { network, env })
+    }
     case 'status':
       return await status({ networks: networksFor(['status'], env.VT_NETWORK), explicit: (env.VT_NETWORK ?? '') !== '', json: parseStatusArgs(rest).json, env })
     case 'seal':
