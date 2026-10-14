@@ -177,7 +177,7 @@ test('CC-15 (M5): the pre-flip ids of PF-S, LN1 and PF-C are in the union with t
   }
   assert.equal(Object.keys(want).length, 20)
   for (const [id, status] of Object.entries(want)) { assert.ok(isGuardId(id), id); assert.equal(httpStatusFor(id), status, id) }
-  assert.equal(GUARD_IDS.length, 262 + 20 + 2 + 1 + 6 + 9 + 4, 'CC-14 had 262 ids; CC-15 adds exactly the 20 above; CC-16 the 2 of R79b (below); CC-17 vt.broker; vt decrypt the 6 decrypt.* and 9 page-only web.decrypt-* + lane C\'s 4 vt.*')
+  assert.equal(GUARD_IDS.length, 262 + 20 + 2 + 1 + 6 + 9 + 5, 'CC-14 had 262 ids; CC-15 adds exactly the 20 above; CC-16 the 2 of R79b (below); CC-17 vt.broker; vt decrypt the 6 decrypt.* and 9 page-only web.decrypt-* + lane C\'s 5 vt.*')
   assert.deepEqual(GUARD_IDS.filter((g) => g.startsWith('intent.')), ['intent.after-stop'])
   assert.deepEqual(GUARD_IDS.filter((g) => g.startsWith('localnet.')).length, 8)
   // decode reasons are tokens under relay.decode-mismatch, never guard ids of their own
@@ -194,13 +194,13 @@ test('R79b: the union adds exactly resume.final-stop (409, an exact entry: the r
 test('CC-17 (TTY-less round 2): vt.broker (the sandboxed command\'s refusal on the unsandboxed broker\'s behalf: no prompt channel, the broker went away) is in the union, 500 (a CLI refusal, no API status)', () => {
   assert.ok(isGuardId('vt.broker'))
   assert.equal(httpStatusFor('vt.broker'), 500)
-  assert.equal(GUARD_IDS.length, 282 + 2 + 1 + 6 + 9 + 4, 'CC-16 had 284 ids; CC-17 adds vt.broker (285); vt decrypt the 6 decrypt.* (291) and the 9 page-only web.decrypt-* (300) + lane C\'s 4 vt.*')
+  assert.equal(GUARD_IDS.length, 282 + 2 + 1 + 6 + 9 + 5, 'CC-16 had 284 ids; CC-17 adds vt.broker (285); vt decrypt the 6 decrypt.* (291) and the 9 page-only web.decrypt-* (300) + lane C\'s 5 vt.*')
 })
 
 test('CC-16 (M5c): the R79b ids of lanes E, S and C are in the union with their statuses; the union grew by exactly these since CC-15', () => {
   const want: Record<string, number> = { 'resume.final-stop': 409, 'job.resume-typed': 400 }
   for (const [id, status] of Object.entries(want)) { assert.ok(isGuardId(id), id); assert.equal(httpStatusFor(id), status, id) }
-  assert.equal(GUARD_IDS.length, 282 + Object.keys(want).length + 1 + 6 + 9 + 4, 'CC-15 had 282 ids; CC-16 adds exactly these 2 (+ CC-17 vt.broker, + the 6 decrypt.*) + lane C\'s 4 vt.*')
+  assert.equal(GUARD_IDS.length, 282 + Object.keys(want).length + 1 + 6 + 9 + 5, 'CC-15 had 282 ids; CC-16 adds exactly these 2 (+ CC-17 vt.broker, + the 6 decrypt.*) + lane C\'s 5 vt.*')
   for (const r of ['resume.typed', 'job.resume-final', 'stop.final']) assert.equal(isGuardId(r), false, r)
 })
 
@@ -208,14 +208,14 @@ test('vt decrypt (lane E): the decrypt family, exactly six ids, 500 (CLI and pag
   const ids = ['kind', 'passphrase', 'identity', 'too-early', 'format', 'size'].map((i) => `decrypt.${i}`)
   assert.deepEqual(GUARD_IDS.filter((g) => g.startsWith('decrypt.')), ids)
   for (const id of ids) { assert.ok(isGuardId(id), id); assert.equal(httpStatusFor(id), 500, id) }
-  assert.equal(GUARD_IDS.length, 285 + 6 + 9 + 4, 'CC-17 had 285 ids; vt decrypt adds exactly these 6 + lane C\'s 4 vt.*')
+  assert.equal(GUARD_IDS.length, 285 + 6 + 9 + 5, 'CC-17 had 285 ids; vt decrypt adds exactly these 6 + lane C\'s 5 vt.*')
   for (const r of ['decrypt.archive', 'decrypt.signature', 'decrypt.wrong']) assert.equal(isGuardId(r), false, r)
 })
 
-test('vt decrypt (lane C): the CLI adds exactly four vt.* ids, 500 (CLI refusals, no API status)', () => {
-  const ids = ['decrypt-output', 'out-exists', 'relay-down', 'manifest'].map((i) => `vt.${i}`)
+test('vt decrypt (lane C): the CLI adds exactly five vt.* ids (decrypt-input in its fix round 1), 500 (CLI refusals, no API status)', () => {
+  const ids = ['decrypt-output', 'out-exists', 'relay-down', 'manifest', 'decrypt-input'].map((i) => `vt.${i}`)
   for (const id of ids) { assert.ok(isGuardId(id), id); assert.equal(httpStatusFor(id), 500, id) }
-  assert.deepEqual(GUARD_IDS.filter((g) => g.startsWith('vt.')).slice(-4), ids)
-  assert.equal(GUARD_IDS.length, 291 + 9 + 4, 'lane E\'s union had 291 ids; the page adds 9 web.decrypt-*; lane C adds exactly these 4')
+  assert.deepEqual(GUARD_IDS.filter((g) => g.startsWith('vt.')).slice(-5), ids)
+  assert.equal(GUARD_IDS.length, 291 + 9 + 5, 'lane E\'s union had 291 ids; the page adds 9 web.decrypt-*; lane C adds exactly these 5')
   for (const r of ['vt.decrypt', 'vt.paste', 'vt.plaintext-tty']) assert.equal(isGuardId(r), false, r)
 })
