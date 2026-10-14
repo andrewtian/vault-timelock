@@ -171,6 +171,12 @@
 //   not reached: "opens at <UTC>"), format (not age / SEALED.txt, an unknown SEALED format, a block differing from its [file] line,
 //   damaged ciphertext, a signature that does not open the time lock, an unsafe / duplicate archive entry or a path not in it), size
 //   (over a bound: input, secret text, scrypt work factor, archive). CLI and page refusals, never an API reply: the family default (500).
+// vt decrypt (lane C, the CLI) adds four `vt` ids: decrypt-output (neither --out nor --stdout: the plaintext goes nowhere unasked, and never
+//   onto a terminal by accident), out-exists (--out exists or has no directory, or a file of the output would overwrite / merge with one
+//   already written, e.g. `A` / `a` or NFC / NFD names on APFS: never overwritten), relay-down (a time lock needs the network's relay, `vt up`,
+//   and it is not reachable or did not give the round's beacon), manifest (a full extraction whose files differ from the archive's
+//   MANIFEST.csv / ATTACHMENTS.csv: nothing is written). CLI refusals: the family default (500). The CLI's broker also raises decrypt.format
+//   and decrypt.size for a paste that is not age armor / a SEALED.txt or is over 1 MiB, before any prompt (no new id).
 export const GUARDS = {
   job: ['format', 'unknown-key', 'network-field', 'network', 'name', 'address', 'budget', 'tip-cap', 'cu-cap', 'mode',
     'publish-mode', 'publish-mode-unavailable', 'fee-strategy', 'clawback', 'field-chain', 'message-source',
@@ -202,7 +208,7 @@ export const GUARDS = {
   vt: ['env', 'flag', 'network-invalid', 'no-sandbox', 'port', 'path', 'dev-dirs-required', 'mainnet-dev-tree',
     'tty-required', 'sealer-stub-only', 'not-confined', 'backup-format', 'relay-ports', 'op-session', 'tor-socks', 'tor-required',
     'log-control', 'log-ip', 'message-path', 'publish-confirm', 'message-changed', 'message-hardlink', 'test-only',
-    'inspector', 'test-fault', 'message-workdir', 'read-allow', 'broker'],
+    'inspector', 'test-fault', 'message-workdir', 'read-allow', 'broker', 'decrypt-output', 'out-exists', 'relay-down', 'manifest'],
   localnet: ['network', 'port-taken', 'port-forbidden', 'tool-missing', 'ord-version', 'reset-path', 'fund-network', 'fund-address'],
   contract: ['network', 'fork-override'],
   fork: ['drift'],
