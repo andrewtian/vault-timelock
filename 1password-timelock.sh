@@ -1364,7 +1364,8 @@ v2_restore() {
     _rn=$((_rn + 1))
   done < "$WORK/v2.lines"
   rm -f "$WORK/v2.blk" "$WORK/v2.gz"
-  echo "$_rn"
+  # (fix round 2, N-1) verified, then listed (the index's lines, a last one without a newline counted)
+  echo "$_rn $(awk 'END { print NR }' "$WORK/v2.lines")"
 }
 # v2_layout DIR: (open) DIR/layout is exactly "layout: per-file", "padding: none|buckets", "index-gzip: <n>"; no
 # vault.tar.gz.age beside it; an index. Sets V2_PADDING and IGZ.
@@ -1398,7 +1399,8 @@ open_v2() {
   _xb=$(find "$1/restored" -mindepth 1 ! -type f ! -type d) && _xa=$(find "$1/restored" -exec ls -ld {} +) || { xv_remove "$1/restored"; die "★ restored/ could not be walked: refused, removed"; }
   _xa=$(printf '%s\n' "$_xa" | awk '$1 ~ /[@+]$/')
   [ -z "$_xb" ] && [ -z "$_xa" ] || { xv_remove "$1/restored"; die "★ on disk, restored/ holds something other than regular files and directories, or carries extended attributes or an ACL: refused, removed"; }
-  echo "  blocks     $(cat "$WORK/v2.out")/$(cat "$WORK/v2.out") block(s) opened with the data key (the index's every line); every file's bytes and SHA-256 match the index"
+  read -r _vr _vl < "$WORK/v2.out" && [ "$_vr" = "$_vl" ] || { xv_remove "$1/restored"; die "★ $_vr of $_vl block(s) of the index were restored: refused, restored/ removed"; }
+  echo "  blocks     $_vr/$_vl block(s) opened with the data key (verified / listed in the index); every file's bytes and SHA-256 match the index"
 }
 # seal_v2_roundtrip: (seal --list, before the data key and the plaintext go) the index and EVERY block decrypted from the
 # package with the real data key, cut, gunzipped, and every digest matched: the index's (v2_restore), and as v1's round
@@ -1429,7 +1431,7 @@ seal_v2_roundtrip() {
     h=; [ ! -f "$RT/x/files/$id/$fid" ] || { h=$(sha256_of "$RT/x/files/$id/$fid") || exit 1; }
     [ "$h" = "$sha" ] || rabad=$((rabad+1))
   done < "$WORK/s/ATTACHMENTS.csv"
-  _rb=$(cat "$RT/out")
+  read -r _rb _rl < "$RT/out" || _rb=; [ "$_rl" = "$NB" ] || _rb=
   obliterate "$RT"
   [ "$rtbad" -eq 0 ] && [ "$rabad" -eq 0 ] && [ "$_rb" = "$NB" ] || die "★ round-trip FAILED for $rtbad of $rtn item(s) and $rabad of $ran attachment(s) ($_rb of $NB blocks). Refusing to ship a package that does not reopen."
   echo "  unsealed   round-tripped $rtn/$rtn items and $ran/$ran attachments through the real ciphertext (the index and all $NB blocks, each its own age file), digests match"

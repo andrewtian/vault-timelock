@@ -9,7 +9,7 @@ import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSyn
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { gzipSync } from 'node:zlib'
-import { BLOCKS_OPEN, INDEX_CHECK, INDEX_GRAMMAR, INDEX_PATH, agePlaintextLength, padBucket } from '../../src/text/sealed-from.ts'
+import { BLOCKS_OPEN, INDEX_CHECK, INDEX_GRAMMAR, INDEX_PATH, MANIFEST_CHECK, agePlaintextLength, padBucket } from '../../src/text/sealed-from.ts'
 import { sealedFiles, checkPayload } from '../../src/text/payload.ts'
 import { Refusal } from '../../src/text/guard.ts'
 import { buildSealed } from './build-sealed.ts'
@@ -52,7 +52,8 @@ const cut = (n: string, b: Buffer) => `( awk -v n=${n} ${AWK} SEALED.txt && [ "$
 // fix round 1 (C-1): the whole index is checked against the exact grammar before any field is used
 const CHECK = `LC_ALL=C awk -F '\\t' -v P='^(items/[a-z0-9]+[.]json|files/[a-z0-9]+/[a-z0-9]+|MANIFEST[.]csv|ATTACHMENTS[.]csv)$' 'NR == FNR { if ($0 ~ /^\\[file b[0-9][0-9][0-9][0-9]+ bytes=[0-9]+ sha256=[0-9a-f]+\\]$/) { split($0, w, " "); h[w[2]] = 1 } next } { x++ } FNR == 1 { if ($0 != "vault-timelock-index/1") { print "BAD index.tsv line 1"; e = 1 } next } NF != 5 || $1 !~ /^b[0-9][0-9][0-9][0-9]+$/ || !($1 in h) || u[$1]++ || $2 !~ P || q[$2]++ || $3 !~ /^[0-9]+$/ || length($3) > 12 || $4 !~ /^[0-9a-f]+$/ || length($4) != 64 || $5 !~ /^[0-9]+$/ || length($5) > 12 { print "BAD index.tsv line " FNR; e = 1 } END { if (x < 2) { print "BAD index.tsv line " x + 1; e = 1 } exit e }' SEALED.txt index.tsv`
 const LOOP = `( ${CHECK} && mkdir restored && tail -n +2 index.tsv | while IFS="$(printf '\\t')" read -r b p n s g || [ -n "$b" ]; do awk -v n="$b" ${AWK} SEALED.txt && mkdir -p "restored/$p" && rmdir "restored/$p" && age -d -i identity.key "./$b" | head -c "$g" | gunzip > "restored/$p" && printf '%s  %s\\n' "$s" "restored/$p" | shasum -a 256 -c > /dev/null && echo "OK $p" || { echo "BAD $p"; exit 1; }; done )`
-const MF = `(cd restored && { tail -n +2 MANIFEST.csv | awk -F, '{ print $2 "  items/" $1 ".json" }'; [ ! -f ATTACHMENTS.csv ] || tail -n +2 ATTACHMENTS.csv | awk -F, '{ print $4 "  files/" $1 "/" $2 }'; } | shasum -a 256 -c)`
+// (fix round 2, R-1) format /2's step 4: shasum's whole output through LC_ALL=C tr, its status kept
+const MF = `(cd restored && { tail -n +2 MANIFEST.csv | awk -F, '{ print $2 "  items/" $1 ".json" }'; [ ! -f ATTACHMENTS.csv ] || tail -n +2 ATTACHMENTS.csv | awk -F, '{ print $4 "  files/" $1 "/" $2 }'; } | shasum -a 256 -c > ../manifests.out 2>&1; s=$?; LC_ALL=C tr -c '\\n\\040-\\176' '?' < ../manifests.out; exit $s)`
 const NOTES = [
   'notes:',
   "  - after unlock-after, ANYONE holding this text can open it: the round's signature is public and",
@@ -115,7 +116,8 @@ function golden(p: { files: Record<string, Buffer>; gz: number; blocks: string[]
     "     gunzip them into restored/<path> and check that file's SHA-256; it prints OK for every file",
     "     (one file only: put grep -F -- '<its path>' index.tsv in place of tail -n +2 index.tsv):",
     `     $ ${LOOP}`,
-    '  4. check every item and attachment against the manifests sealed inside; every line must end in OK:',
+    '  4. check every item and attachment against the manifests sealed inside; every line must end in OK (a byte',
+    "     outside printable ASCII in a manifest's names prints as ?):",
     `     $ ${MF}`,
     ...NOTES,
     ...(padding === 'buckets' ? [
@@ -454,4 +456,23 @@ test('agePlaintextLength agrees with age itself (0 B, 1 B, one full 64 KiB chunk
     assert.equal(agePlaintextLength(new Uint8Array(r.stdout)), n, String(n))
   }
   assert.equal(agePlaintextLength(new Uint8Array(Buffer.from('not age'))), null)
+})
+
+// ---- fix round 2 (R-1): step 4's shasum echoes the AUTHOR's manifest names: format /2 prints every byte outside printable
+//      ASCII as '?' and keeps the failure; format /1's step 4 text is unchanged (its goldens in sealed-from.test.ts) -------
+test('R-1: a MANIFEST.csv or ATTACHMENTS.csv name carrying control sequences never reaches the output raw (printed step 4); the check still fails', () => {
+  const v = vault()
+  const ESC = 'zz\x1b]0;pwned\x07\x1b[2J\x1b[31m\r\x9b'
+  v['MANIFEST.csv'] = Buffer.concat([v['MANIFEST.csv'], Buffer.from(`${ESC},${sha('x')},0,0,0\n`, 'latin1')])
+  v['ATTACHMENTS.csv'] = Buffer.concat([v['ATTACHMENTS.csv'], Buffer.from(`aaaa,${ESC},1,${sha('y')}\n`, 'latin1')])
+  const p = realV2('none', v, ORDER)
+  const r = literal(p.text(), p.key)
+  assert.ok(!r.ok, `step 4 passed a manifest naming missing files:\n${r.out}`)
+  for (const x of ORDER) assert.ok(r.out.split('\n').includes(`OK ${x}`), `steps 1-3 did not restore ${x}`)
+  assert.ok(/^[\n\x20-\x7e]*$/.test(r.out), 'a byte outside printable ASCII reached the output')
+  assert.ok(r.out.includes('items/zz?]0;pwned??[2J?[31m??.json') && r.out.includes('files/aaaa/zz?]0;pwned??[2J?[31m??'), r.out)
+  assert.ok(r.out.includes('items/aaaa.json: OK') && r.out.includes('files/aaaa/ffff: OK'), r.out)
+  // control: the format /1 check (unchanged) prints the same name raw: this test would fail with it
+  const raw = sh(r.dir, MANIFEST_CHECK)
+  assert.ok(!/^[\n\x20-\x7e]*$/.test(raw.stdout + raw.stderr), 'the format /1 step 4 no longer shows the raw bytes (the control tests nothing)')
 })

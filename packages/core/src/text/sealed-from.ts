@@ -223,6 +223,10 @@ export const CUT = `awk '/^\\[file [A-Za-z0-9][A-Za-z0-9._-]* bytes=[0-9]+ sha25
 export const CHECK = `sed -n 's/^\\[file \\([A-Za-z0-9][A-Za-z0-9._-]*\\) bytes=\\([0-9]*\\) sha256=\\([0-9a-f]*\\)\\]$/\\1 \\2 \\3/p' SEALED.txt | while read -r n b s; do [ "$(sed '1d;$d' "$n" | base64 -d | wc -c | tr -d ' ') $(sed '1d;$d' "$n" | base64 -d | shasum -a 256 | cut -c1-64)" = "$b $s" ] && echo "OK $n" || { echo "BAD $n"; exit 1; }; done`
 export const TOR = 'env -u NO_PROXY -u no_proxy HTTPS_PROXY=socks5h://127.0.0.1:9050 '
 export const MANIFEST_CHECK = `(cd restored && { tail -n +2 MANIFEST.csv | awk -F, '{ print $2 "  items/" $1 ".json" }'; [ ! -f ATTACHMENTS.csv ] || tail -n +2 ATTACHMENTS.csv | awk -F, '{ print $4 "  files/" $1 "/" $2 }'; } | shasum -a 256 -c)`
+// Format /2's step 4 (fix round 2, R-1): the same check, but MANIFEST.csv and ATTACHMENTS.csv are the AUTHOR's, and shasum
+// echoes their names: its whole output (stdout and stderr) goes through LC_ALL=C tr, every byte outside printable ASCII
+// and newline printed as '?', and its exit status is kept. Format /1's MANIFEST_CHECK is unchanged (its text is frozen).
+export const MANIFEST_CHECK_V2 = `(cd restored && { tail -n +2 MANIFEST.csv | awk -F, '{ print $2 "  items/" $1 ".json" }'; [ ! -f ATTACHMENTS.csv ] || tail -n +2 ATTACHMENTS.csv | awk -F, '{ print $4 "  files/" $1 "/" $2 }'; } | shasum -a 256 -c > ../manifests.out 2>&1; s=$?; LC_ALL=C tr -c '\\n\\040-\\176' '?' < ../manifests.out; exit $s)`
 // Format /2's literal commands (v2-format.md). Each runs in a subshell `( ... )`: its `exit 1` never closes the reader's own
 // shell. CUT_ONE: the awk program that writes the ONE armor block whose [file ...] line names `n` (the -v variable) to the
 // file `n` and stops there; a name only ever matches a [file ...] line's plain name, so nothing lands outside the
@@ -364,8 +368,9 @@ function perFileSteps(round: string, files: ReadonlyMap<string, Uint8Array>, pf:
     "     gunzip them into restored/<path> and check that file's SHA-256; it prints OK for every file",
     "     (one file only: put grep -F -- '<its path>' index.tsv in place of tail -n +2 index.tsv):",
     `     $ ${BLOCKS_OPEN}`,
-    '  4. check every item and attachment against the manifests sealed inside; every line must end in OK:',
-    `     $ ${MANIFEST_CHECK}`,
+    '  4. check every item and attachment against the manifests sealed inside; every line must end in OK (a byte',
+    "     outside printable ASCII in a manifest's names prints as ?):",
+    `     $ ${MANIFEST_CHECK_V2}`,
   ]
 }
 const perFileNotes = (pf: PerFile): string[] => pf.padding === 'buckets' ? [
