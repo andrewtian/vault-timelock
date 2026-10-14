@@ -72,6 +72,14 @@ review E-n / m-n": the two 2026-10-09 reviews of the tools' security statements 
 Inside `A`: `items/<pseudo>.json` (sanitised item JSON), `files/<pseudo item>/<pseudo file>`
 (attachment bytes), `MANIFEST.csv` and `ATTACHMENTS.csv` (pseudonyms, digests, counts).
 
+**`seal --list` (lane B, 2026-10-14; `SEALED.txt` format `vault-timelock-sealed/2`, `layout: per-file`)** replaces
+`vault.tar.gz.age` with one age file per file `A` would hold, all to the same data key `I_D`: `b0001` … `bN` (age v1, one
+`X25519` stanza each; plaintext `gzip -n -9` of the file, zero-padded up to a size bucket with `--pad`; numbered by a
+uniform random permutation), `index` (the same; plaintext `vault-timelock-index/1`, one line per block: block, path,
+bytes, SHA-256, gzip bytes) and `layout` (`per-file`, the padding, the index's gzip length; public). The paths and digests
+are only inside the encrypted index; the text shows the file count and each block's size. `unlock-TIME.age`,
+`unlock-KEY.age`, `round`, `chain-info.json`, `MANIFEST.csv`, STRUCTURE.txt (bound to `index`) are as above.
+
 **`timelock-key.sh`** writes one layer: `secret.tar.gz.age` (a path) or `payload.age` + `encoding`
 (`raw`, stdin), each an age v1 file with one `tlock` stanza, plus `round`, `chain-info.json`,
 `README.txt`, `SEALED.txt` and optionally `ARMOR`.

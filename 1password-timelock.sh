@@ -6,6 +6,7 @@
 #
 #   sh tools/1password-timelock.sh seal <vault-name> [DURATION] [--recovery-recipient age1...] [--armor]
 #        [--clearnet] [--jitter DURATION] [--keep-item-metadata] [--keep-item-ids] [--allow-short-operator-strings]
+#        [--list [--pad]]   # --list: every captured file its own age block (SEALED.txt format /2); --pad: size buckets
 #   sh tools/1password-timelock.sh open <package-dir> [--clearnet]  # after the round: the TIME path
 #   sh tools/1password-timelock.sh open <package-dir> --identity recovery.key   # the KEY path
 #   sh tools/1password-timelock.sh open <package-dir> [...] --plaintext [--force]   # after the unlock time only:
@@ -646,10 +647,11 @@ bin_sha256() {
     sha256_of "$WORK/st/armor.bin"
   else sha256_of "$1"; fi
 }
-# structure_text DIR ARCHIVE OUT: the shape of DIR/items + DIR/files, bound to ARCHIVE, into OUT. DIR
-# may be untrusted (a restored/ tree): every name is checked before use and nothing of it is printed.
+# structure_text DIR ARCHIVE OUT [NAME]: the shape of DIR/items + DIR/files, bound to ARCHIVE, into OUT. DIR
+# may be untrusted (a restored/ tree): every name is checked before use and nothing of it is printed. NAME (lane B):
+# vault.tar.gz.age (the default) or index (a seal --list package: it binds to the index, which lists every block).
 structure_text() {
-  _sd=$1; _sa=$2; _so=$3; _sw="$WORK/st"
+  _sd=$1; _sa=$2; _so=$3; _sn=${4:-vault.tar.gz.age}; _sw="$WORK/st"
   rm -rf "$_sw"; mkdir -m 700 "$_sw" || die "★ structure: could not create its scratch dir"
   [ -d "$_sd/items" ] && [ ! -L "$_sd/items" ] || die "★ structure: there is no items/ directory to describe"
   : > "$_sw/ids"
@@ -671,12 +673,19 @@ structure_text() {
     sed 's|^\./||' "$_sw/present.raw" > "$_sw/present" || die "★ structure: files/ could not be listed"
   fi
   _bh=$(bin_sha256 "$_sa") || exit 1
+  if [ "$_sn" = index ]; then
+    _swh='what-this-is: the layout of what the per-file blocks hold. No titles, labels, values, URLs, tags,'
+    _sbi="binds-to: index sha256=$_bh   (valid for this seal only: the index lists every block)"
+  else
+    _swh='what-this-is: the layout of what vault.tar.gz.age holds. No titles, labels, values, URLs, tags,'
+    _sbi="binds-to: vault.tar.gz.age sha256=$_bh   (valid for this archive only)"
+  fi
   printf '%s\n' '== vault-timelock structure: shape only, every value removed (LOCAL ONLY, never published) ==' \
     'format: vault-timelock-structure/1' \
-    'what-this-is: the layout of what vault.tar.gz.age holds. No titles, labels, values, URLs, tags,' \
+    "$_swh" \
     '  file names, sizes or lengths. <set>/<empty> says only whether a value exists. Item and file ids' \
     "  are the archive's own (items/<id>.json, files/<id>/<file>); MANIFEST.csv maps item ids to 1Password's." \
-    "binds-to: vault.tar.gz.age sha256=$_bh   (valid for this archive only)" > "$_so" || die "★ structure: could not write it"
+    "$_sbi" > "$_so" || die "★ structure: could not write it"
   jq -n -r --rawfile pres "$_sw/present" "$STRUCT_JQ" "$@" >> "$_so" 2>/dev/null \
     || die "★ structure: an item could not be read as JSON (jq's message is not shown: it can quote a value)"
 }
@@ -713,7 +722,7 @@ audit_structure() {
 # structure_prepare: (seal, in a subshell) build STRUCTURE.txt from $WORK/s, check it, audit it, and
 # copy it into the package, mode 600. Any failure exits the subshell with its reason on stderr.
 structure_prepare() {
-  structure_text "$WORK/s" "$PKG/vault.tar.gz.age" "$WORK/STRUCTURE.txt"
+  structure_text "$WORK/s" "$PKG/$ARCH" "$WORK/STRUCTURE.txt" "$ARCH"
   structure_counts_ok "$WORK/STRUCTURE.txt" "$WORK/s/MANIFEST.csv" || die "★ STRUCTURE.txt does not match MANIFEST.csv (per item: fields, sections, files): REFUSING to write it. Counts only; no value is printed."   # @mut:struct-count
   audit_structure "$WORK/STRUCTURE.txt"   # @mut:struct-audit
   { ( umask 077 && cp "$WORK/STRUCTURE.txt" "$PKG/STRUCTURE.txt" ) && chmod 600 "$PKG/STRUCTURE.txt"; } \
@@ -736,13 +745,13 @@ structure_check() {
   if [ ! -e "$1/STRUCTURE.txt" ] && [ ! -L "$1/STRUCTURE.txt" ]; then STRUCT_STATE=absent; echo "  structure  no STRUCTURE.txt beside the package: not compared"; return 0; fi
   if [ -L "$1/STRUCTURE.txt" ] || [ ! -f "$1/STRUCTURE.txt" ]; then echo "  ⚠ structure: STRUCTURE.txt is not a regular file: not compared"; return 0; fi
   set +e
-  ( set -e; structure_text "$1/restored" "$1/vault.tar.gz.age" "$WORK/STRUCTURE.txt" ) > /dev/null 2> "$WORK/structure.err"
+  ( set -e; structure_text "$1/restored" "$1/$ARCH" "$WORK/STRUCTURE.txt" "$ARCH" ) > /dev/null 2> "$WORK/structure.err"
   _cst=$?
   set -e
   if [ "$_cst" != 0 ]; then echo "  ⚠ structure: restored/ could not be described ($(tr '\n' ' ' < "$WORK/structure.err" | sed 's/ $//')): STRUCTURE.txt not compared"; return 0; fi
   if cmp -s "$WORK/STRUCTURE.txt" "$1/STRUCTURE.txt"; then   # @mut:open-structure
     STRUCT_STATE=ok
-    echo "  structure ✓ STRUCTURE.txt matches restored/ (items and files) and binds to this vault.tar.gz.age"
+    echo "  structure ✓ STRUCTURE.txt matches restored/ (items and files) and binds to this $ARCH"
   else
     _cl=$(first_diff_line "$WORK/STRUCTURE.txt" "$1/STRUCTURE.txt") || _cl='?'
     echo "  ⚠ structure: STRUCTURE.txt differs from the structure of restored/ at line $_cl (its content is not shown). The items and attachments are verified by their digests above; STRUCTURE.txt is only a local description."
@@ -779,6 +788,7 @@ structure_check() {
 #        == vault-timelock plaintext: every entry, decrypted (LOCAL ONLY — contains secrets) ==
 #        format: vault-timelock-plaintext/1
 #        source: SEALED.txt sha256=<hex>   archive: vault.tar.gz.age sha256=<hex>   structure: ✓|not present
+#          (lane B: a seal --list package's "archive: index sha256=<hex>", the index's digest; the body is the same)
 #        opened-after: <SEALED.txt's unlock-after>   (drand round R)
 #        escapes: (the rule below, verbatim)
 #        delete: (read it, then delete it and restored/ promptly)
@@ -1083,13 +1093,13 @@ function body(dir) {
 // write: the whole file into a NEW temp file (O_EXCL, O_NOFOLLOW, 0600, no ACL), fsync, then link (no
 // --force) or rename (--force) into place; prints "<bytes> <lines> <sha256> <tm>" (tm: yes|no, the Time
 // Machine exclusion). The temp file is removed on any failure; a temp NAME already taken exits 4.
-function write(dir, outp, tmp, force, sealed, archive, struct, iso, round) {
+function write(dir, outp, tmp, force, sealed, archive, struct, iso, round, aname) {
   if (!/^[0-9a-f]{64}$/.test(sealed) || !/^[0-9a-f]{64}$/.test(archive) || !(struct === "✓" || struct === "not present") || !(force === "0" || force === "1") ||
-      !/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/.test(iso) || !/^[1-9][0-9]{0,15}$/.test(round)) bad("the header values are malformed")
+      !/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/.test(iso) || !/^[1-9][0-9]{0,15}$/.test(round) || !(aname === "vault.tar.gz.age" || aname === "index")) bad("the header values are malformed")
   const text = Buffer.from([
     "== vault-timelock plaintext: every entry, decrypted (LOCAL ONLY — contains secrets) ==",
     "format: vault-timelock-plaintext/1",
-    "source: SEALED.txt sha256=" + sealed + "   archive: vault.tar.gz.age sha256=" + archive + "   structure: " + struct,
+    "source: SEALED.txt sha256=" + sealed + "   archive: " + aname + " sha256=" + archive + "   structure: " + struct,
     "opened-after: " + iso + "   (drand round " + round + ")",
     "escapes: a row with \"\\\" in column 1 is escaped (\\\\ = one backslash, \\xNN = one byte of UTF-8); every other row is verbatim; (empty) = an empty value",
     "delete: this file and restored/ hold every secret: read them, then delete both promptly (Spotlight may index them, and backups may copy them, while they exist)",
@@ -1134,8 +1144,8 @@ function write(dir, outp, tmp, force, sealed, archive, struct, iso, round) {
 }
 try {
   if (a[0] === "body" && a.length === 2) process.stdout.write(body(a[1]))
-  else if (a[0] === "write" && a.length === 10) write(...a.slice(1))
-  else bad("usage: body <dir> | write <dir> <out> <tmp> <force> <sealed> <archive> <structure> <iso> <round>")
+  else if (a[0] === "write" && a.length === 11) write(...a.slice(1))
+  else bad("usage: body <dir> | write <dir> <out> <tmp> <force> <sealed> <archive> <structure> <iso> <round> <archive-name>")
 } catch (e) {
   process.stderr.write(e instanceof Bad || e instanceof Taken ? e.message : "restored/ could not be read, or the file could not be written (not printed)")
   process.exitCode = e instanceof Taken ? 4 : 3
@@ -1185,23 +1195,28 @@ plaintext_gate() {
   done < "$WORK/pt.ls"
   LC_ALL=C sort -o "$WORK/pt.rs" "$WORK/pt.rs"
   cmp -s "$WORK/pt.mf" "$WORK/pt.rs" || die "★ --plaintext: restored/items does not hold exactly the items the manifest lists and open verified ($(wc -l < "$WORK/pt.rs" | tr -d ' ') on disk, $(wc -l < "$WORK/pt.mf" | tr -d ' ') verified). $_pg"
-  # SEALED.txt (the copy read before decrypting) describes THIS archive
+  # SEALED.txt (the copy read before decrypting) describes THIS archive (lane B: a per-file package's SEALED.txt is format
+  # /2, layout per-file, and its [file index ...] line carries this index's SHA-256)
   _ps=$(sed -n 's/^\[file vault\.tar\.gz\.age bytes=[0-9]* sha256=\([0-9a-f]\{64\}\)\]$/\1/p' "$WORK/SEALED.txt")
+  if [ "$ARCH" = index ]; then
+    _ps=$(sed -n 's/^\[file index bytes=[0-9]* sha256=\([0-9a-f]\{64\}\) gzip=[0-9]*\]$/\1/p' "$WORK/SEALED.txt")
+    grep -qx 'format: vault-timelock-sealed/2' "$WORK/SEALED.txt" && grep -qx 'layout: per-file' "$WORK/SEALED.txt" || _ps=
+  fi
   mkdir -p -m 700 "$WORK/st"
-  _pb=$(bin_sha256 "$1/vault.tar.gz.age") || exit 1
-  [ -n "$_ps" ] && [ "$_ps" = "$_pb" ] || die "★ --plaintext: SEALED.txt does not carry this vault.tar.gz.age's SHA-256 (it describes another package). $_pg"
+  _pb=$(bin_sha256 "$1/$ARCH") || exit 1
+  [ -n "$_ps" ] && [ "$_ps" = "$_pb" ] || die "★ --plaintext: SEALED.txt does not carry this $ARCH's SHA-256 (it describes another package). $_pg"
 }
 # plaintext_write DIR: restored/ excluded from Time Machine (best effort), then PLAIN_JS writes the file
 # (see the banner); prints the path, bytes, lines, SHA-256 and the warnings
 plaintext_write() {
   PT_OUT="$1/SEALED-plaintext.txt"
   _pse=$(sha256_of "$WORK/SEALED.txt") || exit 1
-  _par=$(bin_sha256 "$1/vault.tar.gz.age") || exit 1
+  _par=$(bin_sha256 "$1/$ARCH") || exit 1
   if [ "$STRUCT_STATE" = ok ]; then _pst='✓'; else _pst='not present'; fi
   if tmutil addexclusion "$1/restored" >/dev/null 2>&1; then _ptr=yes; else _ptr=no; fi   # (SP review m7; no -p)
   PT_TMP="$1/.SEALED-plaintext.txt.$$.tmp"   # from here the traps remove it if this open is interrupted
   set +e
-  env -i PATH="$PATH" node -e "$PLAIN_JS" write "$1/restored" "$PT_OUT" "$PT_TMP" "$PT_FORCE" "$_pse" "$_par" "$_pst" "$PT_ISO" "$PT_ROUND" > "$WORK/pt.out" 2> "$WORK/pt.err"
+  env -i PATH="$PATH" node -e "$PLAIN_JS" write "$1/restored" "$PT_OUT" "$PT_TMP" "$PT_FORCE" "$_pse" "$_par" "$_pst" "$PT_ISO" "$PT_ROUND" "$ARCH" > "$WORK/pt.out" 2> "$WORK/pt.err"
   _pw=$?
   set -e
   [ "$_pw" != 4 ] || PT_TMP=   # the temp NAME was taken by something this open did not create: never remove it
@@ -1215,6 +1230,346 @@ plaintext_write() {
   echo "  ★ Time Machine exclusion (tmutil addexclusion): SEALED-plaintext.txt $_ptf, restored/ $_ptr. Spotlight may index both while they exist: read the file, then delete both promptly"
 }
 
+# ── ★ seal --list: EVERY CAPTURED FILE ITS OWN AGE BLOCK (SEALED.txt format /2, layout per-file; lane B 2026-10-14;
+#    the contract: .superpowers/sdd/2026-10-14-vt-decrypt/v2-format.md) ──────────────────────────────────────────────
+#    The capture, the completeness proofs, the sanitiser, the payload audit, the one-time X25519 identity and its TIME and
+#    KEY wraps are v1's. Instead of ONE vault.tar.gz.age, each file v1 tars (items/<id>.json, files/<id>/<fid>, MANIFEST.csv,
+#    ATTACHMENTS.csv) is gzip -n -9'd, zero-padded up to its size bucket with --pad (pad_bucket), and age-encrypted to the
+#    identity's recipient as its own block b0001, b0002, ... (zero-padded to max(4, digits of N)), the numbers a random
+#    permutation (8 bytes of /dev/urandom per file, sorted): a block number says nothing about a path. Which block is which
+#    file is ONLY in the index, a vault-timelock-index/1 text (one TAB-separated line per block: block, path, bytes,
+#    sha256, gzip bytes), audited like STRUCTURE.txt (S and P in all of it) before anything is encrypted, then gzipped,
+#    padded and encrypted the same way as `index`. The package's `layout` file says per-file, the padding and where the
+#    index's gzip stream ends (SEALED.txt prints it as gzip=): readers cut every decrypted block at its gzip length before
+#    gunzip. The round trip decrypts the index and EVERY block from the package, cuts, gunzips and matches every digest
+#    (the index's, the manifest's, ATTACHMENTS.csv's) before the plaintext work copy is removed. Without --list nothing
+#    here runs: the default seal is format /1, unchanged.
+#    TL_ORDER_SOURCE (self-test seam, like TL_JITTER_SOURCE) replaces /dev/urandom for the block order.
+#    The lines marked "@mut:" are disabled one at a time by the self-test's mutation arms.
+TAB=$(printf '\t')
+V2_INDEX_HEADER=vault-timelock-index/1
+# a sealed file's path: what v1's tar holds, and nothing else (ids are pseudonyms, or 1Password's own with --keep-item-ids)
+V2_PATH='^(items/[a-z0-9]+[.]json|files/[a-z0-9]+/[a-z0-9]+|MANIFEST[.]csv|ATTACHMENTS[.]csv)$'
+# pad_bucket N: --pad's bucket for a gzip stream of N bytes: 1, 2, 4, 8, 16, 32, 64, 128 KiB, then multiples of 128 KiB
+pad_bucket() {
+  if [ "$1" -gt 131072 ]; then echo $(( ($1 + 131071) / 131072 * 131072 )); return 0; fi
+  _pk=1024; while [ "$_pk" -lt "$1" ]; do _pk=$((_pk * 2)); done; echo "$_pk"
+}
+# v2_pad FILE GZIP-BYTES: with --pad, zero bytes after the gzip stream up to its bucket
+v2_pad() {
+  [ "$PAD" = 1 ] || return 0
+  _pz=$(( $(pad_bucket "$2") - $2 ))
+  [ "$_pz" = 0 ] || head -c "$_pz" /dev/zero >> "$1" || die "could not pad a block"   # @mut:v2-pad
+}
+# v2_unpad IN GZIP-BYTES PADDING OUT: OUT = the gzip stream of a decrypted block or index; fails unless IN is exactly
+# GZIP-BYTES long (padding none), or exactly its bucket with nothing but zero bytes after the stream (padding buckets)
+v2_unpad() {
+  _us=$(wc -c < "$1" | tr -d ' ') || return 1
+  if [ "$3" = buckets ]; then [ "$_us" = "$(pad_bucket "$2")" ] || return 1; else [ "$_us" = "$2" ] || return 1; fi
+  head -c "$2" "$1" > "$4" || return 1
+  [ "$(tail -c +$(( $2 + 1 )) "$1" | tr -d '\000' | wc -c | tr -d ' ')" = 0 ]
+}
+# audit_index FILE: pii_audit's own pattern files over the index (floors re-checked): S and P are BOTH searched in all of
+# it, since nothing in the index is the user's. Any hit refuses, counts and category names only, before encryption.
+audit_index() {
+  _A="$WORK/audit"
+  [ -f "$_A/S.tsv" ] && [ -f "$_A/P.tsv" ] || die "★ PII/ID audit: the payload audit's patterns are missing: REFUSING to seal the index unaudited"
+  audit_floors
+  _hits=0; _cats=
+  for c in $(cut -f1 "$_A/S.tsv" "$_A/P.tsv" | LC_ALL=C sort -u); do
+    for t in S P; do
+      _np1=$(audit_pats "$c" "$t")
+      [ "$_np1" -gt 0 ] || continue
+      _n=$(audit_count "$_A/index.c" "$1") || exit 1
+      if [ "$_n" -gt 0 ]; then _hits=$(( _hits + _n )); _cats="${_cats:+$_cats, }$c"; fi
+    done
+  done
+  [ "$_hits" = 0 ] || die "★ PII/ID audit: $_hits hit(s) (categories: $_cats) in the index (block, path, bytes, sha256, gzip bytes) — REFUSING. Counts and category names only; no value is printed. Nothing was encrypted; the plaintext work dir is removed."   # @mut:v2-audit
+  echo "  audit      the index: 0 operator identifiers, 0 1Password identifiers (the payload audit's patterns)"
+}
+# seal_v2_prepare: (seal --list, after pii_audit, before anything is encrypted) every file of $WORK/s gzipped (and padded)
+# into $WORK/v2/gz/<block>, in a random block order; the index written, audited, gzipped (and padded). Sets NB and IGZ.
+seal_v2_prepare() {
+  _V="$WORK/v2"; mkdir -m 700 "$_V" "$_V/gz" || die "could not create the per-file work dir"
+  ( cd "$WORK/s" && find items files -type f ) > "$_V/paths.raw" || die "★ --list: the capture could not be listed"
+  { LC_ALL=C sort "$_V/paths.raw" && echo MANIFEST.csv && echo ATTACHMENTS.csv; } > "$_V/paths" || die "★ --list: the capture could not be listed"
+  _bp=$(grep -cvE "$V2_PATH" "$_V/paths" || true)
+  [ "$_bp" = 0 ] || die "★ --list: $_bp captured path(s) are not items/<id>.json, files/<id>/<file>, MANIFEST.csv or ATTACHMENTS.csv: REFUSING (not printed)"
+  NB=$(wc -l < "$_V/paths" | tr -d ' ')
+  [ "$NB" -eq $(( CAPTURED + NATT + 2 )) ] || die "★ --list: $NB file(s) to seal, but $CAPTURED item(s), $NATT attachment(s) and 2 manifests were captured: REFUSING"
+  # the block order: 8 random bytes per file, sorted (a uniform permutation; never printed)
+  od -An -tx1 -N $(( 8 * NB + 8 )) < "${TL_ORDER_SOURCE:-/dev/urandom}" | tr -d ' \n' | fold -w 16 | head -n "$NB" > "$_V/keys"
+  [ "$(wc -l < "$_V/keys" | tr -d ' ')" = "$NB" ] && ! grep -qv '^[0-9a-f]\{16\}$' "$_V/keys" || die "★ --list: could not draw the block order"
+  paste -d ' ' "$_V/keys" "$_V/paths" | LC_ALL=C sort | cut -d ' ' -f 2- > "$_V/order"   # @mut:v2-order
+  _w=${#NB}; [ "$_w" -ge 4 ] || _w=4
+  printf '%s\n' "$V2_INDEX_HEADER" > "$_V/index.tsv"
+  _k=0
+  while IFS= read -r _p; do
+    _k=$((_k + 1)); _b=$(printf "b%0${_w}d" "$_k")
+    _n=$(wc -c < "$WORK/s/$_p" | tr -d ' ') && _h=$(sha256_of "$WORK/s/$_p") || exit 1
+    gzip -n -9 -c "$WORK/s/$_p" > "$_V/gz/$_b" || die "★ gzip FAILED on a block: refusing"   # @mut:v2-gzip
+    _g=$(wc -c < "$_V/gz/$_b" | tr -d ' ')
+    v2_pad "$_V/gz/$_b" "$_g"
+    printf '%s\t%s\t%s\t%s\t%s\n' "$_b" "$_p" "$_n" "$_h" "$_g" >> "$_V/index.tsv"
+  done < "$_V/order"
+  [ "$_k" = "$NB" ] || die "★ --list: $_k block(s) prepared for $NB file(s): REFUSING"
+  audit_index "$_V/index.tsv"   # @mut:v2-audit-call
+  gzip -n -9 -c "$_V/index.tsv" > "$_V/index.gz" || die "★ gzip FAILED on the index: refusing"
+  IGZ=$(wc -c < "$_V/index.gz" | tr -d ' ')
+  v2_pad "$_V/index.gz" "$IGZ"
+  echo "  blocks     $NB file(s) as $NB block(s) + the index: each gzip -n -9'd$( [ "$PAD" = 0 ] || echo ', zero-padded to its size bucket (--pad)'), numbered in a random order$( [ -z "${TL_ORDER_SOURCE:-}" ] || echo ' (drawn from TL_ORDER_SOURCE: self-test)')"
+}
+# seal_v2_encrypt: every prepared block, then the index, age-encrypted to the data key's recipient into the package; the
+# layout file last
+seal_v2_encrypt() {
+  tail -n +2 "$WORK/v2/index.tsv" > "$WORK/v2/lines"
+  while IFS="$TAB" read -r _b _p _n _h _g; do
+    age -r "$DATA_RECIP" $ARMOR_FLAG -o "$PKG/$_b" "$WORK/v2/gz/$_b" || die "block encryption failed ($_b)"   # @mut:v2-armor
+    [ -s "$PKG/$_b" ] || die "sealed block $_b is empty — refusing"
+  done < "$WORK/v2/lines"
+  age -r "$DATA_RECIP" $ARMOR_FLAG -o "$PKG/index" "$WORK/v2/index.gz" || die "index encryption failed"   # @mut:v2-armor-index
+  [ -s "$PKG/index" ] || die "sealed index is empty — refusing"
+  printf 'layout: per-file\npadding: %s\nindex-gzip: %s\n' "$V2_PADDING" "$IGZ" > "$PKG/layout" || die "could not write the layout file"
+}
+# v2_restore INDEX PKG KEY DEST PADDING: every block INDEX lists, decrypted from PKG with KEY into DEST/<path> (DEST: a
+#   new directory the caller made). Refuses (die, block names only, never a path or a value) unless INDEX is a
+#   vault-timelock-index/1 text whose every line is <bN> TAB <a sealed path> TAB <bytes> TAB <sha256> TAB <gzip bytes>, no
+#   block and no path twice; the b-files in PKG are EXACTLY its blocks (none missing, none extra); and every block opens
+#   with KEY, is its gzip stream (+ zero padding to its bucket with PADDING buckets), gunzips, and gives exactly the
+#   bytes and SHA-256 of its line. Prints the number of blocks. Scratch in $WORK. The caller runs it in a subshell
+#   (umask 077: files 600, directories 700) and removes DEST when it refuses.
+v2_restore() {
+  _ri=$1; _rp=$2; _rk=$3; _rd=$4; _rpad=$5
+  [ "$(head -n 1 "$_ri")" = "$V2_INDEX_HEADER" ] || die "★ the index is not a $V2_INDEX_HEADER text"
+  tail -n +2 "$_ri" > "$WORK/v2.lines" && [ -s "$WORK/v2.lines" ] || die "★ the index lists no block"
+  LC_ALL=C awk -F '\t' -v re="$V2_PATH" 'NF != 5 || $1 !~ /^b[0-9]+$/ || $2 !~ re || $3 !~ /^(0|[1-9][0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?)$/ || $4 !~ /^[0-9a-f]+$/ || length($4) != 64 || $5 !~ /^[1-9][0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?$/ || b[$1]++ || p[$2]++ { bad = 1 } END { exit bad }' "$WORK/v2.lines" \
+    || die "★ the index has a malformed or repeated line (not printed)"   # @mut:v2-index
+  cut -f1 "$WORK/v2.lines" | LC_ALL=C sort > "$WORK/v2.want"
+  find "$_rp" -mindepth 1 -maxdepth 1 -name 'b[0-9]*' > "$WORK/v2.found" || die "★ the package dir could not be listed"
+  sed 's|.*/||' "$WORK/v2.found" | LC_ALL=C sort > "$WORK/v2.have"
+  cmp -s "$WORK/v2.want" "$WORK/v2.have" || die "★ the package's blocks are not exactly the index's: $(wc -l < "$WORK/v2.want" | tr -d ' ') listed, $(wc -l < "$WORK/v2.have" | tr -d ' ') present (a block is missing, or one is not the index's)"   # @mut:v2-blockset
+  _rn=0
+  while IFS="$TAB" read -r _b _p _n _h _g; do
+    [ -f "$_rp/$_b" ] && [ ! -L "$_rp/$_b" ] || die "★ block $_b is not a regular file"
+    age -d -i "$_rk" -o "$WORK/v2.blk" "$_rp/$_b" 2>/dev/null || die "★ block $_b did not open with the data key: damaged or tampered"
+    v2_unpad "$WORK/v2.blk" "$_g" "$_rpad" "$WORK/v2.gz" || die "★ block $_b is not its gzip stream of $_g bytes$( [ "$_rpad" = none ] || echo ' + zero padding to its bucket')"
+    mkdir -p "$_rd/$(dirname "$_p")" || die "★ block $_b: its directory could not be created"
+    gzip -dc "$WORK/v2.gz" > "$_rd/$_p" 2>/dev/null || die "★ block $_b does not gunzip"
+    _rh=$(sha256_of "$_rd/$_p") || exit 1
+    [ "$(wc -c < "$_rd/$_p" | tr -d ' ') $_rh" = "$_n $_h" ] || die "★ block $_b: its file does not match the index (bytes or SHA-256): damaged, tampered or swapped"   # @mut:v2-digest
+    _rn=$((_rn + 1))
+  done < "$WORK/v2.lines"
+  rm -f "$WORK/v2.blk" "$WORK/v2.gz"
+  echo "$_rn"
+}
+# v2_layout DIR: (open) DIR/layout is exactly "layout: per-file", "padding: none|buckets", "index-gzip: <n>"; no
+# vault.tar.gz.age beside it; an index. Sets V2_PADDING and IGZ.
+v2_layout() {
+  [ -f "$1/layout" ] && [ ! -L "$1/layout" ] || die "★ $1/layout is not a regular file: refusing"
+  _lp=$(sed -n '2s/^padding: \([a-z]*\)$/\1/p' "$1/layout"); _lg=$(sed -n '3s/^index-gzip: \([1-9][0-9]*\)$/\1/p' "$1/layout")
+  case $_lp in none|buckets) ;; *) _lp= ;; esac
+  [ -n "$_lp" ] && [ -n "$_lg" ] && [ ${#_lg} -le 15 ] && printf 'layout: per-file\npadding: %s\nindex-gzip: %s\n' "$_lp" "$_lg" | cmp -s - "$1/layout" \
+    || die "★ $1/layout is not exactly 'layout: per-file', 'padding: none|buckets', 'index-gzip: <n>': refusing"
+  [ ! -e "$1/vault.tar.gz.age" ] && [ ! -L "$1/vault.tar.gz.age" ] || die "★ $1 holds both a per-file layout and vault.tar.gz.age: refusing an ambiguous package"
+  [ -f "$1/index" ] && [ ! -L "$1/index" ] || die "no index (a regular file) in $1: a per-file package cannot be opened without it"
+  V2_PADDING=$_lp; IGZ=$_lg
+}
+# open_v2 DIR: (open, after identity.key) the index opened, cut at its gzip length, gunzipped; restored/ created NEW (as
+# v1: never an existing path) and every block decrypted into it by v2_restore; any refusal removes restored/ (it may hold
+# what the blocks before decrypted to); then the on-disk check v1's extraction gets: regular files and directories only,
+# no xattr, no ACL.
+open_v2() {
+  age -d -i "$WORK/identity.key" -o "$WORK/index.bin" "$1/index" 2>/dev/null || die "★ the data key did not open the index: damaged or tampered (or the package is inconsistent)"
+  v2_unpad "$WORK/index.bin" "$IGZ" "$V2_PADDING" "$WORK/index.gz" || die "★ the index is not its gzip stream of $IGZ bytes$( [ "$V2_PADDING" = none ] || echo ' + zero padding to its bucket') (the layout file says so): refusing"
+  gzip -dc "$WORK/index.gz" > "$WORK/index.tsv" 2>/dev/null || die "★ the index does not gunzip: refusing"
+  mkdir -m 700 "$1/restored" || die "★ $1/restored already exists (a directory, a file or a symlink): move it away first. open writes plaintext only into a NEW restored/ it creates itself."
+  set +e
+  ( set -e; umask 077; v2_restore "$WORK/index.tsv" "$1" "$WORK/identity.key" "$1/restored" "$V2_PADDING" ) > "$WORK/v2.out" 2> "$WORK/v2.err"
+  _vo=$?
+  set -e
+  if [ "$_vo" != 0 ]; then
+    xv_remove "$1/restored"
+    die "$(head -c 400 "$WORK/v2.err" | tr '\n' ' ')$( [ -s "$WORK/v2.err" ] || echo "★ the blocks could not be restored (exit $_vo)") — refused; restored/ removed (it held what the blocks before decrypted to)."
+  fi
+  _xb=$(find "$1/restored" -mindepth 1 ! -type f ! -type d) && _xa=$(find "$1/restored" -exec ls -ld {} +) || { xv_remove "$1/restored"; die "★ restored/ could not be walked: refused, removed"; }
+  _xa=$(printf '%s\n' "$_xa" | awk '$1 ~ /[@+]$/')
+  [ -z "$_xb" ] && [ -z "$_xa" ] || { xv_remove "$1/restored"; die "★ on disk, restored/ holds something other than regular files and directories, or carries extended attributes or an ACL: refused, removed"; }
+  echo "  blocks     $(cat "$WORK/v2.out")/$(cat "$WORK/v2.out") block(s) opened with the data key (the index's every line); every file's bytes and SHA-256 match the index"
+}
+# seal_v2_roundtrip: (seal --list, before the data key and the plaintext go) the index and EVERY block decrypted from the
+# package with the real data key, cut, gunzipped, and every digest matched: the index's (v2_restore), and as v1's round
+# trip, every item against MANIFEST.csv, every attachment against ATTACHMENTS.csv, both CSVs byte-identical
+seal_v2_roundtrip() {
+  RT="$WORK/rt"; mkdir -m 700 "$RT" "$RT/x"
+  age -d -i "$WORK/identity.key" -o "$RT/index.bin" "$PKG/index" || die "★ the sealed index did NOT open with its own data key"
+  v2_unpad "$RT/index.bin" "$IGZ" "$V2_PADDING" "$RT/index.gz" && gzip -dc "$RT/index.gz" > "$RT/index.tsv" 2>/dev/null \
+    && cmp -s "$RT/index.tsv" "$WORK/v2/index.tsv" || die "★ round-trip FAILED: the sealed index does not come back as the index written. Refusing to ship a package that does not reopen."
+  set +e
+  ( set -e; umask 077; v2_restore "$RT/index.tsv" "$PKG" "$WORK/identity.key" "$RT/x" "$V2_PADDING" ) > "$RT/out" 2> "$RT/err"
+  _vo=$?
+  set -e
+  [ "$_vo" = 0 ] || die "★ round-trip FAILED: $(head -c 400 "$RT/err" | tr '\n' ' ')Refusing to ship a package that does not reopen."   # @mut:v2-rt
+  rtbad=0; rtn=0
+  while IFS=, read -r id sha _f _s _l; do
+    [ "$id" = "item_id" ] && continue
+    rtn=$((rtn+1))
+    if [ ! -f "$RT/x/items/$id.json" ]; then rtbad=$((rtbad+1)); continue; fi
+    h=$(sha256_of "$RT/x/items/$id.json") || exit 1
+    [ "$h" = "$sha" ] || rtbad=$((rtbad+1))
+  done < "$WORK/s/MANIFEST.csv"
+  rabad=0; ran=0
+  cmp -s "$RT/x/ATTACHMENTS.csv" "$WORK/s/ATTACHMENTS.csv" && cmp -s "$RT/x/MANIFEST.csv" "$WORK/s/MANIFEST.csv" || rabad=1
+  while IFS=, read -r id fid _b sha; do
+    [ "$id" = "item_id" ] && continue
+    ran=$((ran+1))
+    h=; [ ! -f "$RT/x/files/$id/$fid" ] || { h=$(sha256_of "$RT/x/files/$id/$fid") || exit 1; }
+    [ "$h" = "$sha" ] || rabad=$((rabad+1))
+  done < "$WORK/s/ATTACHMENTS.csv"
+  _rb=$(cat "$RT/out")
+  obliterate "$RT"
+  [ "$rtbad" -eq 0 ] && [ "$rabad" -eq 0 ] && [ "$_rb" = "$NB" ] || die "★ round-trip FAILED for $rtbad of $rtn item(s) and $rabad of $ran attachment(s) ($_rb of $NB blocks). Refusing to ship a package that does not reopen."
+  echo "  unsealed   round-tripped $rtn/$rtn items and $ran/$ran attachments through the real ciphertext (the index and all $NB blocks, each its own age file), digests match"
+}
+# readme_v2: (seal --list) README.txt of a per-file package: v1's sections, its files and steps for the blocks and the
+# index (uses the seal's variables; the format /1 README is the heredoc in cmd_seal, unchanged)
+readme_v2() {
+  _lb=$(cd "$PKG" && ls -d b[0-9]* | LC_ALL=C sort | tail -n 1)
+  _v2s=; [ -n "$STRUCT_ERR" ] || _v2s="  STRUCTURE.txt      the vault's shape with every value removed: categories, field
+                     types, set/empty, counts and the archive's own ids, bound to
+                     the index by SHA-256. Never publish this file.
+"
+  if [ "$V2_PADDING" = buckets ]; then _v2p="gzip-compressed, zero-padded up to a size bucket (--pad: 1, 2, 4 ...
+                     128 KiB, then a multiple of 128 KiB),"
+  else _v2p="gzip-compressed (no padding: its size is the compressed file's),"; fi
+  cat > "$PKG/README.txt" <<EOF
+================================================================================
+ 1PASSWORD VAULT "$VAULT" — SEALED UNTIL $WHEN
+================================================================================
+Sealed $(date -u +%Y-%m-%dT%H:%M:%SZ) · $DECLARED items · drand round $ROUND
+Unlocks $WHEN (UTC), when drand publishes round $ROUND. Requested: $REQ.
+Layout: per-file (seal --list; SEALED.txt format vault-timelock-sealed/2): every
+file of the vault is its own age block, so one file can be opened alone.
+
+  b0001 ... $_lb   $NB blocks: each file of the vault (an item's JSON, an attachment,
+                     MANIFEST.csv, ATTACHMENTS.csv) on its own, $_v2p
+                     then age-encrypted to a one-time X25519 key; numbered in a
+                     random order
+  index              which block is which file (block, path, bytes, SHA-256, gzip
+                     bytes), gzip-compressed, padded the same way, age-encrypted to
+                     the same key
+  layout             per-file, the padding, and where the index's gzip stream ends
+  unlock-TIME.age    that key's age identity, tlock-encrypted to drand round $ROUND
+${KEYLINE}  SEALED.txt         the self-contained text to publish: unlock-TIME.age, the index
+                     and every block as text, the drand parameters and the literal
+                     commands that open them
+  MANIFEST.csv       item ids + SHA-256 of each item's sealed JSON + field/section/
+                     file counts + 1Password's own item id. No values, but the digests
+                     are unsalted: anyone holding a candidate item can confirm it.
+                     Never publish this file.
+${_v2s}${BLANKLINE}  chain-info.json    drand quicknet's parameters, as pinned at sealing
+  round              $ROUND
+  README.txt         this file (it names the vault: never publish it)
+  local only         $LOCALS: never published
+                     SEALED-plaintext.txt: local only, created by open --plaintext after
+                     the unlock time (every entry decrypted, in plain text, mode 600);
+                     never publish it; delete it and restored/ promptly (Spotlight may
+                     index them, and backups may copy them, while they exist)
+  ASCII armor        $ARMORED
+  drand contacted    $VIA
+
+ 1. WHAT KEEPS IT SHUT UNTIL $WHEN -- AND WHAT THAT ASSUMES
+    Every block and the index are age-encrypted to one one-time key; that key is
+    encrypted to drand round $ROUND (tlock: identity-based encryption on BLS12-381).
+    The decryption key for the TIME path is drand quicknet's threshold BLS signature
+    for round $ROUND, which the network is designed to publish at $WHEN. It can exist
+    earlier if: (a) t or more quicknet key shares are combined -- by colluding
+    operators, or by whoever steals or compels them; shares from before a reshare
+    count -- which yields the signature at any time, without trace; (b) BLS12-381's
+    pairing assumptions fail -- a large quantum computer would break them, and every
+    copy kept or published now stays exposed until then; (c) recovery.key is used, if
+    unlock-KEY.age exists (section 2). Short of these, fewer than t shares cannot
+    produce the signature. Public until then: how many files ($NB) and each block's
+    size$( [ "$V2_PADDING" = buckets ] && echo ' (rounded up to its bucket)' || echo ' (each compressed file, to the byte)'); never a path, a name or a digest.
+
+ 2. HOW TO OPEN IT — TWO PATHS, either one is enough
+    The blocks are encrypted to one fresh age key. That key is sealed twice, so
+    recovering it EITHER way opens everything.
+
+    PATH A -- TIME. Works once drand has published round $ROUND (due $WHEN), with no
+    key and no secret:
+        go install github.com/drand/tlock/cmd/tle@v1.2.0
+        sh 1password-timelock.sh open .
+        sh 1password-timelock.sh open . --plaintext   (also writes SEALED-plaintext.txt)
+      or by hand (through Tor, as at sealing): SEALED.txt's steps 1-4. Step 1 is
+        env -u NO_PROXY -u no_proxy HTTPS_PROXY=socks5h://127.0.0.1:9050 tle --decrypt --output=identity.key unlock-TIME.age
+      then identity.key opens the index (age -d -i identity.key), cut at its gzip
+      length and gunzipped, and every block the same way, each cut at its own gzip
+      length (the index's last column) and gunzipped into restored/<path>.
+
+    PATH B -- KEY. Works at ANY time, including today, if unlock-KEY.age is present:
+        sh 1password-timelock.sh open . --identity recovery.key
+      or by hand:
+        age -d -i recovery.key -o identity.key unlock-KEY.age
+      then SEALED.txt's steps 2-4 with that identity.key.
+
+    ★★ WHAT PATH B COSTS, STATED PLAINLY: a recovery key DEFEATS THE TIMELOCK. Anyone
+    holding recovery.key can open this today. The timelock then binds only people who do
+    NOT hold it. That is the right trade if your worry is "drand disappears and this is
+    lost forever"; it is the wrong trade if your worry is "somebody opens this early".
+    Sealing without --recovery-recipient produces no unlock-KEY.age and leaves TIME as
+    the only way in.
+
+ 3. HOW TO VERIFY IT IS COMPLETE, once open (open does this itself; by hand, here,
+    after restored/ exists):
+        tail -n +2 MANIFEST.csv | while IFS=, read -r id h _; do
+          [ "\$(shasum -a 256 "restored/items/\$id.json" 2>/dev/null | cut -d' ' -f1)" = "\$h" ] \\
+            || echo "MISSING OR MISMATCH \$id"
+        done
+    It must print nothing, and MANIFEST.csv must have $DECLARED rows. Attachments: each
+    row of restored/ATTACHMENTS.csv (item,file,bytes,sha256) must match the file
+    restored/files/<item>/<file>; SEALED.txt's last step checks both with shasum -c.
+    The ids inside the blocks are this seal's pseudonyms; MANIFEST.csv's last column
+    (op_item_id, here only) maps each one to 1Password's own item id.
+
+ 4. IF THE TOOLING IS GONE
+    SEALED.txt, beside this file, is self-contained: it carries unlock-TIME.age, the
+    index and every block as text and the literal commands to open them.
+    unlock-TIME.age is a standard age file with one tlock stanza; its plaintext is the
+    age identity (AGE-SECRET-KEY-1...) that opens the index and every block, age files
+    with one X25519 stanza each. For unlock-TIME.age you need the drand signature for
+    round $ROUND on chain $CHAIN:
+        curl --noproxy '' --proxy socks5h://127.0.0.1:9050 https://api.drand.sh/$CHAIN/public/$ROUND
+    (through Tor, as at sealing). Scheme: bls-unchained-g1-rfc9380. Public key:
+    chain-info.json, beside this file. Mirrors: api2.drand.sh, api3.drand.sh.
+
+ 5. IF DRAND IS GONE
+    Then this is not openable, and that was the risk accepted. A timelock stops early
+    opening (under the assumptions in section 1); it does not stop PERMANENT loss. Store
+    a Shamir split with trustees as a second, human path -- the two fail in opposite
+    directions.
+
+ 6. WHAT THE CAPTURE DID AND DID NOT GUARANTEE
+    Items were read with \`op item get --reveal\`, because op CONCEALS sensitive fields
+    by default and an export without it restores nothing. Archived items were included.
+    Every attachment was fetched (op read / op document get), checked against the size
+    the item reports, and is sealed as its own block with its digest (ATTACHMENTS.csv).
+    Inside the seal, each item keeps every value, title, label, URL, tag and file, but
+    not the account metadata around it (vault id and name, who last edited it and
+    when, versions, content paths, op:// references) unless --keep-item-metadata was
+    given, and 1Password's ids are replaced by this seal's pseudonyms unless
+    --keep-item-ids was given. Every block is gzip -n (no name, no time) and the
+    time-locked key is one line, with no creation time.
+    NOT captured: vault-level settings, sharing/ACLs, item history (prior versions), and
+    anything a Business policy blocked from export.
+================================================================================
+EOF
+}
+# unrelated_check FILE: an UNRELATED key must be told "no identity matched" by FILE (claims review F-14; see the seal)
+unrelated_check() {
+  if _ui=$(age -d -i "$WORK/unrelated.key" -o /dev/null "$1" 2>&1); then die "★ REFUSING: the payload decrypted with an UNRELATED identity. Nothing is protecting it."; fi   # @mut:no-identity
+  case $_ui in *"no identity matched"*) ;; *) die "★ REFUSING: the payload is not an age file encrypted to a recipient (an unrelated key got: $_ui)" ;; esac   # @mut:no-identity-reason
+}
+
 cmd_seal() {
   # the vault name comes first: an option there would become the vault's name and reach Tor, drand and op
   # (SP review m4); --plaintext anywhere gets its own reason (Task SP)
@@ -1223,7 +1578,7 @@ cmd_seal() {
   shift
   # Options may come before or after the one DURATION. Anything not starting with -- is the
   # duration, so `-1d` reaches the grammar and is refused there, with the grammar in the message.
-  DUR=10; HAVE_DUR=0; RECOVERY=""; ARMOR_FLAG=""; KEEP_META=0; KEEP_IDS=0; JIT_ARG=""; ALLOW_SHORT=0
+  DUR=10; HAVE_DUR=0; RECOVERY=""; ARMOR_FLAG=""; KEEP_META=0; KEEP_IDS=0; JIT_ARG=""; ALLOW_SHORT=0; LIST=0; PAD=0
   while [ $# -gt 0 ]; do
     case "$1" in
       --recovery-recipient) RECOVERY=${2:?--recovery-recipient needs an age1... public key}; shift 2 ;;
@@ -1236,6 +1591,9 @@ cmd_seal() {
       --armor) ARMOR_FLAG=--armor; shift ;;
       --jitter) JIT_ARG=${2:?--jitter needs a DURATION (0 disables the random offset)}; shift 2 ;;   # Task S2 §6
       --clearnet) CLEARNET=1; shift ;;   # the ONLY way past Tor (R40); named in the banner
+      # lane B: each captured file its own age block (SEALED.txt format /2); --pad rounds each block up to a size bucket
+      --list) LIST=1; shift ;;
+      --pad) PAD=1; shift ;;
       # Task SP: the plaintext is written by `open`, after the unlock time; a seal never writes one
       --plaintext) die "plaintext exists only after the unlock time — use open --plaintext" ;;
       --*) die "unexpected option: $1" ;;
@@ -1243,6 +1601,7 @@ cmd_seal() {
          DUR=$1; HAVE_DUR=1; shift ;;
     esac
   done
+  [ "$PAD" = 0 ] || [ "$LIST" = 1 ] || die "--pad goes with --list only: it pads each per-file block up to a size bucket"
   SECS=$(duration_seconds "$DUR") || exit 1
   # the duration exactly as typed; a bare number is the only form that means years
   if [ "$HAVE_DUR" = 0 ]; then REQ="10 (years, the default)"
@@ -1255,6 +1614,11 @@ cmd_seal() {
   fi
   jitter_setup
   echo "  horizon    requested: $REQ = $SECS s$( [ "$JMAX" = 0 ] || echo " + a random 0..$JMAX s") from the moment of sealing"
+  # (lane B) ARCH: the file STRUCTURE.txt binds to and open's SEALED.txt checks name: the archive, or the per-file index
+  ARCH=vault.tar.gz.age; V2_PADDING=none
+  if [ "$LIST" = 1 ]; then ARCH=index; [ "$PAD" = 0 ] || V2_PADDING=buckets
+    echo "  layout     per-file (--list): every captured file its own age block, paths only in an encrypted index; SEALED.txt format /2$( [ "$PAD" = 0 ] || echo '; --pad: block sizes rounded up to buckets')"
+  fi
   need
   need_vtb
   command -v age >/dev/null 2>&1 || die "age is not installed — brew install age"
@@ -1599,11 +1963,14 @@ cmd_seal() {
     && find "$WORK/s" -mindepth 1 -exec env TZ=UTC0 touch -h -t 200001010000 {} + || die "could not normalise the work copies"   # @mut:normalize
   COPYFILE_DISABLE=1 tar $TAR_SCRUB -cf "$WORK/vault.tar" -C "$WORK/s" items files MANIFEST.csv ATTACHMENTS.csv || die "★ tar FAILED while archiving the capture: refusing"
   pii_audit
+  # --list (lane B): the per-file blocks and the index instead of ONE archive (the tar above was the audit's input only)
+  if [ "$LIST" = 1 ]; then seal_v2_prepare; seal_v2_encrypt; else
   gzip -n -9 -c "$WORK/vault.tar" > "$WORK/vault.tar.gz" || die "★ gzip FAILED: refusing"   # @mut:gzip
   _gz=$(wc -c < "$WORK/vault.tar.gz" | tr -d ' ')
   head -c $(( (10240 - _gz % 10240) % 10240 )) /dev/zero >> "$WORK/vault.tar.gz" || die "could not pad the archive"
   age -r "$DATA_RECIP" $ARMOR_FLAG -o "$PKG/vault.tar.gz.age" "$WORK/vault.tar.gz" || die "payload encryption failed"   # @mut:armor-payload
   [ -s "$PKG/vault.tar.gz.age" ] || die "sealed payload is empty — refusing"
+  fi
 
   # PATH A — TIME. The data key sealed to a drand round; opens itself when the round arrives.
   # With the PINNED chain info, served on loopback (info_serve: tle's own fetch is not trusted for
@@ -1627,6 +1994,8 @@ cmd_seal() {
   #    armor by content (measured 2026-10-09: age v1.3.1, tle v1.2.0), so no de-armoring step exists
   #    that could pass while the shipped bytes fail.
   #    It extracts INSIDE $WORK ($WORK/rt), so the traps that remove $WORK cover it (audit K20).
+  #    --list (lane B): the index and EVERY block, each decrypted, cut and gunzipped (seal_v2_roundtrip).
+  if [ "$LIST" = 1 ]; then seal_v2_roundtrip; else
   RT="$WORK/rt"; mkdir -m 700 "$RT"
   age -d -i "$WORK/identity.key" -o "$RT/rt.tar.gz" "$PKG/vault.tar.gz.age" \
     || die "★ the sealed payload did NOT open with its own data key"
@@ -1651,6 +2020,7 @@ cmd_seal() {
   obliterate "$RT"
   [ "$rtbad" -eq 0 ] && [ "$rabad" -eq 0 ] || die "★ round-trip FAILED for $rtbad of $rtn item(s) and $rabad of $ran attachment(s). Refusing to ship a package that does not reopen."   # @mut:rt-attachments
   echo "  unsealed   round-tripped $rtn/$rtn items and $ran/$ran attachments through the real ciphertext, digests match"
+  fi
 
   obliterate "$WORK/identity.key"
 
@@ -1704,8 +2074,9 @@ cmd_seal() {
   # to a recipient, not plaintext and not passphrase-encrypted. (`age -d` WITHOUT -i fails on any
   # input, plaintext included, so the old check here could never fire: claims review F-14.)
   age-keygen 2>/dev/null | grep '^AGE-SECRET-KEY-1' > "$WORK/unrelated.key" || die "age-keygen failed"
-  if _ui=$(age -d -i "$WORK/unrelated.key" -o /dev/null "$PKG/vault.tar.gz.age" 2>&1); then die "★ REFUSING: the payload decrypted with an UNRELATED identity. Nothing is protecting it."; fi   # @mut:no-identity
-  case $_ui in *"no identity matched"*) ;; *) die "★ REFUSING: the payload is not an age file encrypted to a recipient (an unrelated key got: $_ui)" ;; esac   # @mut:no-identity-reason
+  # (--list: the index and every block)
+  if [ "$LIST" = 1 ]; then for _uf in "$PKG/index" "$PKG"/b[0-9]*; do unrelated_check "$_uf"; done
+  else unrelated_check "$PKG/vault.tar.gz.age"; fi
 
   # the optional files, for the README's list (claims review F-4)
   KEYLINE=; BLANKLINE=; STRUCTLINE=; LOCALS="README.txt, MANIFEST.csv"
@@ -1721,6 +2092,8 @@ cmd_seal() {
 "; LOCALS="$LOCALS, STRUCTURE.txt"; }
   [ ! -f "$PKG/BLANK-AT-SEAL.txt" ] || LOCALS="$LOCALS, BLANK-AT-SEAL.txt"
   [ -z "$RECOVERY" ] || LOCALS="$LOCALS, unlock-KEY.age"
+  # --list (lane B): the per-file README (readme_v2); the format /1 one below is unchanged
+  if [ "$LIST" = 1 ]; then readme_v2; else
   cat > "$PKG/README.txt" <<EOF
 ================================================================================
  1PASSWORD VAULT "$VAULT" — SEALED UNTIL $WHEN
@@ -1830,6 +2203,7 @@ ${STRUCTLINE}${BLANKLINE}  chain-info.json    drand quicknet's parameters, as pi
     anything a Business policy blocked from export.
 ================================================================================
 EOF
+  fi
 
   PKG_PARTIAL=""   # complete: from here on a failure must not remove it
   obliterate "$WORK"; trap - EXIT HUP INT TERM
@@ -1839,7 +2213,8 @@ EOF
   write_sealed_txt   # ★ the last step: no SEALED.txt, no success (Task S2 §5)
   [ -z "$STRUCT_ERR" ] || die "★ this seal has NOT finished: STRUCTURE.txt was not written (see above). The package is kept at $PKG/."
   echo "  package    $PKG/"
-  echo "  size       $(wc -c < "$PKG/vault.tar.gz.age" | tr -d ' ') bytes"
+  if [ "$LIST" = 1 ]; then echo "  size       $(cat "$PKG/index" "$PKG"/b[0-9]* | wc -c | tr -d ' ') bytes in $(( NB + 1 )) age files (the index and $NB blocks; SEALED.txt format /2, padding: $V2_PADDING)"
+  else echo "  size       $(wc -c < "$PKG/vault.tar.gz.age" | tr -d ' ') bytes"; fi
   echo "  opens      $WHEN  (drand round $ROUND; requested: $REQ)"
   echo "  verified   does NOT open now (local round check; the drand relay answered HTTP 425 for round $ROUND$( [ "$CLEARNET" = 1 ] && echo ', directly (--clearnet)' || echo ' through Tor' ))"
   [ -z "$ARMOR_FLAG" ] || echo "  armor      every .age is ASCII-armored (PEM); marker file ARMOR"
@@ -1855,7 +2230,7 @@ cmd_open() {
   case ${1:-} in -*) die "open <package-dir> [options]: '$1' is an option, not a package: the package comes first" ;; esac   # @mut:pt-dash-open
   DIR=${1:?usage: open <package-dir> [--identity recovery.key] [--clearnet] [--plaintext [--force]]}
   shift
-  IDENT=""; PLAINTEXT=0; PT_FORCE=0; PT_TMP=; PT_ITEMS=0; STRUCT_STATE=unchecked
+  IDENT=""; PLAINTEXT=0; PT_FORCE=0; PT_TMP=; PT_ITEMS=0; STRUCT_STATE=unchecked; ARCH=vault.tar.gz.age
   while [ $# -gt 0 ]; do
     case "$1" in
       --identity) IDENT=${2:?--identity needs a path to your age secret key}; shift 2 ;;
@@ -1870,7 +2245,9 @@ cmd_open() {
   command -v shasum >/dev/null 2>&1 || die "shasum is missing: open verifies every digest with it"
   # a bare package name resolves against $OUT; an existing path always wins
   [ -d "$DIR" ] || [ ! -d "$OUT/$DIR" ] || DIR="$OUT/$DIR"
-  [ -f "$DIR/vault.tar.gz.age" ] || die "no vault.tar.gz.age in $DIR"
+  # a seal --list package (lane B): its layout file says per-file; its index and blocks replace vault.tar.gz.age
+  if [ -e "$DIR/layout" ] || [ -L "$DIR/layout" ]; then v2_layout "$DIR"; ARCH=index; fi
+  [ "$ARCH" = index ] || [ -f "$DIR/vault.tar.gz.age" ] || die "no vault.tar.gz.age in $DIR"
 
   _tmpd=${TMPDIR:-/tmp}   # an explicit template: a bare `mktemp -d` ignores $TMPDIR on macOS
   WORK=$(mktemp -d "${_tmpd%/}/1password-timelock.XXXXXXXX") || die "mktemp failed"; chmod 700 "$WORK"
@@ -1908,6 +2285,8 @@ cmd_open() {
     echo "  path       TIME (drand round $(round_of "$DIR"))"
   fi
 
+  # (lane B) a per-file package: the index, then every block, into a NEW restored/ (open_v2); a v1 one: the archive
+  if [ "$ARCH" = index ]; then open_v2 "$DIR"; else
   age -d -i "$WORK/identity.key" -o "$WORK/vault.tar.gz" "$DIR/vault.tar.gz.age" \
     || die "the data key did not open the payload — the package is inconsistent"
   # ★ The plaintext goes only into a NEW directory this run creates (commit security review of
@@ -1917,6 +2296,7 @@ cmd_open() {
   tar_entries_ok "$WORK/vault.tar.gz"   # the listing wall first, before restored/ exists
   mkdir -m 700 "$DIR/restored" || die "★ $DIR/restored already exists (a directory, a file or a symlink): move it away first. open writes plaintext only into a NEW restored/ it creates itself."   # @mut:restored-fresh
   extract_verified "$WORK/vault.tar.gz" "$DIR/restored"
+  fi
 
   # ★ VERIFY ON THE WAY OUT. An archive that extracts is not an archive that is COMPLETE, and
   #   ten years is long enough for bit-rot, a truncated copy, or a partial download.
@@ -3742,6 +4122,274 @@ lit_vault_ok() {
     || { echo "    the printed manifest check did not say OK for 3 items and 2 attachments:"; show "$1.out"; return 1; }
 }
 
+# ── lane B (2026-10-14): seal --list, SEALED.txt format /2 (each captured file its own age block; the contract is
+#    .superpowers/sdd/2026-10-14-vt-decrypt/v2-format.md). Offline (fake op, tle, curl; real age, gzip, awk), synthetic
+#    vault only. The default seal staying format /1 is arm_v1_unchanged (plus every format /1 arm above and below).
+# v2_index P: P's data key (KEY path, real age) into $T/v2.id; its index decrypted, cut at the layout's index-gzip,
+#   gunzipped, into $T/v2.tsv
+v2_index() {
+  age -d -i "$T/recovery.key" -o "$T/v2.id" "$1/unlock-KEY.age" && age -d -i "$T/v2.id" -o "$T/v2.ibin" "$1/index" || return 1
+  head -c "$(sed -n 's/^index-gzip: //p' "$1/layout")" "$T/v2.ibin" | gzip -dc > "$T/v2.tsv"
+}
+# v2_files P N PADDING: P holds exactly a format /2 file set for N blocks (with unlock-KEY.age; ARMOR when armored), no
+#   vault.tar.gz.age; its layout says PADDING; SEALED.txt is format /2, layout per-file, blocks: N, padding: PADDING, its
+#   [file] lines unlock-TIME.age, index (gzip= the layout's), b0001 ... bN in order, and it names no pseudonym of the vault
+v2_files() {
+  _bl=; _i=1; while [ "$_i" -le "$2" ]; do _bl="$_bl $(printf 'b%04d' "$_i")"; _i=$((_i + 1)); done
+  _w=$(printf '%s\n' MANIFEST.csv README.txt SEALED.txt STRUCTURE.txt chain-info.json index layout round unlock-KEY.age unlock-TIME.age $_bl | LC_ALL=C sort | tr '\n' ' ')
+  _h=$(ls -A "$1" | grep -vx ARMOR | LC_ALL=C sort | tr '\n' ' ')
+  [ "$_h" = "$_w" ] || { echo "    the package's files are not a format /2 set for $2 blocks:"; echo "      have: $_h"; echo "      want: $_w"; return 1; }
+  _g=$(sed -n 's/^index-gzip: //p' "$1/layout")
+  printf 'layout: per-file\npadding: %s\nindex-gzip: %s\n' "$3" "$_g" | cmp -s - "$1/layout" || { echo "    layout is not exactly per-file / padding $3 / index-gzip:"; show "$1/layout"; return 1; }
+  [ "$(sed -n 2,3p "$1/SEALED.txt" | tr '\n' ' ')" = 'format: vault-timelock-sealed/2 layout: per-file ' ] && grep -qx "blocks: $2" "$1/SEALED.txt" && grep -qx "padding: $3" "$1/SEALED.txt" \
+    || { echo "    SEALED.txt does not say format /2, layout per-file, blocks: $2, padding: $3"; return 1; }
+  _f=$(sed -n 's/^\[file \([^ ]*\) bytes=[0-9]* sha256=[0-9a-f]\{64\}\( gzip=[0-9]*\)\{0,1\}\]$/\1/p' "$1/SEALED.txt" | tr '\n' ' ')
+  [ "$_f" = "unlock-TIME.age index$_bl " ] && grep -qx "\[file index bytes=[0-9]* sha256=[0-9a-f]\{64\} gzip=$_g\]" "$1/SEALED.txt" \
+    || { echo "    SEALED.txt's [file] lines are not unlock-TIME.age, index (gzip=$_g), b0001 ... in order: $_f"; return 1; }
+  # paths only inside the encrypted index: no item pseudonym (the local manifest's first column) in SEALED.txt
+  for _p in $(tail -n +2 "$1/MANIFEST.csv" | cut -d, -f1); do ! grep -q "$_p" "$1/SEALED.txt" || { echo "    an item id is in SEALED.txt"; return 1; }; done
+  ! grep -qE '(items|files)/[0-9a-f]{32}' "$1/SEALED.txt" || { echo "    a vault path is in SEALED.txt"; return 1; }
+}
+# v2_lit DIR TEXT FIRST LAST: TEXT alone in the new, empty DIR as SEALED.txt, its printed steps FIRST..LAST run exactly as
+#   printed (lit_run), with the fake tle that opens (the fake drand: no network) first on PATH
+v2_lit() { lit_init "$1" "$2" && ( export PATH="$T/fakebin:$PATH" FAKE_TLE_DECRYPT=open; lit_run "$1" "$3" "$4" ); }
+# v2_lit_ok DIR N: the printed steps said OK for unlock-TIME.age, the index, index.tsv and N files, and the manifest check
+#   OK for 3 items and 2 attachments
+v2_lit_ok() {
+  grep -qx 'OK unlock-TIME.age' "$1.out" && grep -qx 'OK index' "$1.out" && grep -qx 'OK index.tsv' "$1.out" \
+    && [ "$(grep -cE '^OK (items/[0-9a-f]{32}[.]json|files/[0-9a-f]{32}/[0-9a-f]{32}|MANIFEST[.]csv|ATTACHMENTS[.]csv)$' "$1.out")" = "$2" ] && ! grep -q '^BAD' "$1.out" \
+    || { echo "    the printed steps did not say OK for unlock-TIME.age, the index, index.tsv and $2 files:"; show "$1.out"; return 1; }
+  lit_vault_ok "$1"
+}
+# a --list seal (3 items, 2 attachments: 7 blocks; padding none): the format /2 file set and SEALED.txt; the seal says
+# what it did (the index audited, 7 blocks, the round trip through the index and every block); README says per-file;
+# STRUCTURE.txt binds to the index; the index decrypts (KEY path) to 7 lines of sealed paths; open (KEY path) restores
+# and verifies all of it, through the index
+arm_v2_seal() {
+  arm_dir v2s
+  offline sh "$1" seal V2s 10 --list --recovery-recipient "$RECIP" || { echo "    the --list seal failed:"; show "$T/out.log"; return 1; }
+  P=$(pkg_in V2s); v2_files "$P" 7 none || return 1
+  grep -q '^  audit      the index: 0 operator identifiers, 0 1Password identifiers' "$T/out.log" && grep -q '^  blocks     7 file(s) as 7 block(s) + the index' "$T/out.log" \
+    && grep -q '^  unsealed   round-tripped 3/3 items and 2/2 attachments through the real ciphertext (the index and all 7 blocks' "$T/out.log" \
+    || { echo "    the seal does not report the index audit, the 7 blocks and the per-block round trip:"; show "$T/out.log"; return 1; }
+  grep -q '^Layout: per-file (seal --list; SEALED.txt format vault-timelock-sealed/2)' "$P/README.txt" && grep -q '^  b0001 ... b0007   7 blocks' "$P/README.txt" \
+    && ! grep -q 'vault.tar.gz.age   the vault' "$P/README.txt" || { echo "    README.txt does not describe a per-file package"; return 1; }
+  _ix=$(sed -n 's/^\[file index bytes=[0-9]* sha256=\([0-9a-f]\{64\}\) gzip=[0-9]*\]$/\1/p' "$P/SEALED.txt")
+  grep -qx "binds-to: index sha256=$_ix   (valid for this seal only: the index lists every block)" "$P/STRUCTURE.txt" && ! grep -q ZZCANARY "$P/STRUCTURE.txt" \
+    || { echo "    STRUCTURE.txt does not bind to the index digest SEALED.txt carries"; return 1; }
+  v2_index "$P" || { echo "    the index did not decrypt (KEY path)"; return 1; }
+  [ "$(head -n 1 "$T/v2.tsv")" = vault-timelock-index/1 ] && [ "$(tail -n +2 "$T/v2.tsv" | grep -cE "^b000[1-7]${TAB}(items/[0-9a-f]{32}[.]json|files/[0-9a-f]{32}/[0-9a-f]{32}|MANIFEST[.]csv|ATTACHMENTS[.]csv)${TAB}[0-9]+${TAB}[0-9a-f]{64}${TAB}[0-9]+\$")" = 7 ] \
+    || { echo "    the index is not vault-timelock-index/1 with 7 lines of block, sealed path, bytes, sha256, gzip bytes"; return 1; }
+  offline sh "$1" open "$P" --identity "$T/recovery.key" || { echo "    open (KEY path) failed:"; show "$T/out.log"; return 1; }
+  grep -q '^  blocks     7/7 block(s) opened with the data key' "$T/out.log" && grep -q '3/3 items match' "$T/out.log" && grep -q '2/2 attachments match' "$T/out.log" \
+    && grep -q '^  structure ✓ STRUCTURE.txt matches restored/ (items and files) and binds to this index$' "$T/out.log" \
+    || { echo "    open did not restore and verify 7 blocks, 3 items, 2 attachments, structure ✓:"; show "$T/out.log"; return 1; }
+  [ "$(find "$P/restored" -type f | wc -l | tr -d ' ')" = 7 ] && [ -z "$(find "$P/restored" -type f ! -perm 600)" ] || { echo "    restored/ does not hold the 7 files, mode 600"; return 1; }
+}
+# the printed steps of a format /2 SEALED.txt, run EXACTLY as printed (awk, sed, base64, shasum, age, head, gunzip; tle is
+# the fake drand that opens) in an empty directory holding only the text: padding none, --pad, and --pad --armor all
+# recover the vault (every file OK, the manifests' shasum -c OK); step 1's tle line is format /1's, byte for byte
+arm_v2_literal() {
+  for v in none pad armor; do
+    arm_dir "v2lit-$v"
+    case $v in none) _fl= ;; pad) _fl=--pad ;; armor) _fl='--pad --armor' ;; esac
+    offline sh "$1" seal V2l 10 --list $_fl --recovery-recipient "$RECIP" || { echo "    the --list $_fl seal failed:"; show "$T/out.log"; return 1; }
+    v2_lit "$T/v2lit-$v" "$(pkg_in V2l)/SEALED.txt" 1 4 > "$T/v2lit.log" 2>&1 || { echo "    ($v) the printed steps failed:"; show "$T/v2lit.log"; return 1; }
+    v2_lit_ok "$T/v2lit-$v" 7 || return 1
+    [ "$(literal_steps "$T/v2lit-$v/SEALED.txt" 1 1 | tail -n 1)" = 'env -u NO_PROXY -u no_proxy HTTPS_PROXY=socks5h://127.0.0.1:9050 tle --decrypt --output=identity.key unlock-TIME.age' ] \
+      || { echo "    step 1's tle line is not format /1's"; return 1; }
+  done
+  cp "$(pkg_in V2l)/SEALED.txt" "$T/v2lit-padded.txt"   # (a --pad text for the altered-step controls)
+}
+# --pad: every block and the index decrypt (KEY path) to exactly their bucket, zero bytes after the gzip stream; without
+# --pad, to exactly the gzip stream; every gzip header carries no name and MTIME 0; pad-bucket gives the documented table
+arm_v2_pad() {
+  for kv in 1=1024 1024=1024 1025=2048 4097=8192 65536=65536 65537=131072 131072=131072 131073=262144 300000=393216; do
+    [ "$(sh "$1" pad-bucket "${kv%%=*}")" = "${kv#*=}" ] || { echo "    pad-bucket ${kv%%=*} is not ${kv#*=}"; return 1; }
+  done
+  for v in pad none; do
+    arm_dir "v2pad-$v"
+    if [ "$v" = pad ]; then _fl=--pad; _pw=buckets; else _fl=; _pw=none; fi
+    offline sh "$1" seal V2p 10 --list $_fl --recovery-recipient "$RECIP" || { echo "    the --list $_fl seal failed:"; show "$T/out.log"; return 1; }
+    P=$(pkg_in V2p); v2_files "$P" 7 "$_pw" || return 1
+    v2_index "$P" || { echo "    the index did not decrypt"; return 1; }
+    _ig=$(sed -n 's/^index-gzip: //p' "$P/layout")
+    tail -n +2 "$T/v2.tsv" | { while IFS="$TAB" read -r _b _p _n _h _g; do
+        age -d -i "$T/v2.id" -o "$T/v2.blk" "$P/$_b" || { echo "    $_b did not decrypt"; exit 1; }
+        _hd=$(head -c 10 "$T/v2.blk" | od -An -tx1 | tr -d ' \n')
+        case $_hd in 1f8b08??00000000*) ;; *) echo "    $_b: its gzip header carries an MTIME (header $_hd)"; exit 1 ;; esac
+        [ $(( 0x$(printf '%s' "$_hd" | cut -c7-8) & 8 )) = 0 ] || { echo "    $_b: its gzip header carries a file name"; exit 1; }
+        _s=$(wc -c < "$T/v2.blk" | tr -d ' '); if [ "$v" = pad ]; then _w=$(sh "$1" pad-bucket "$_g"); else _w=$_g; fi
+        [ "$_s" = "$_w" ] && [ "$(tail -c +$(( _g + 1 )) "$T/v2.blk" | tr -d '\000' | wc -c | tr -d ' ')" = 0 ] \
+          || { echo "    $_b decrypts to $_s bytes for a gzip stream of $_g ($v: want $_w, zeros after the stream)"; exit 1; }
+      done; } || return 1
+    _s=$(wc -c < "$T/v2.ibin" | tr -d ' '); if [ "$v" = pad ]; then _w=$(sh "$1" pad-bucket "$_ig"); else _w=$_ig; fi
+    [ "$_s" = "$_w" ] || { echo "    the index decrypts to $_s bytes for a gzip stream of $_ig ($v: want $_w)"; return 1; }
+  done
+  arm_dir v2padonly
+  if offline sh "$1" seal V2po 10 --pad; then echo "    --pad without --list was SEALED"; return 1; fi
+  grep -q -- '--pad goes with --list only' "$T/out.log" || { echo "    --pad without --list refused for another reason:"; show "$T/out.log"; return 1; }
+}
+# the block numbers follow the drawn order, not the paths: with TL_ORDER_SOURCE giving descending keys, b0001 is the last
+# path in seal order (ATTACHMENTS.csv), b0002 MANIFEST.csv, b0007 the first sorted item or attachment path; the banner
+# says the order came from the seam
+arm_v2_order() {
+  arm_dir v2order; : > "$T/v2order.src"
+  _i=9; while [ "$_i" -ge 1 ]; do printf "\\000\\000\\000\\000\\000\\000\\000\\$(printf %03o "$_i")" >> "$T/v2order.src"; _i=$((_i - 1)); done
+  offline TL_ORDER_SOURCE="$T/v2order.src" sh "$1" seal V2o 10 --list --recovery-recipient "$RECIP" || { echo "    the seeded --list seal failed:"; show "$T/out.log"; return 1; }
+  grep -q 'numbered in a random order (drawn from TL_ORDER_SOURCE: self-test)' "$T/out.log" || { echo "    the banner does not name the seam"; return 1; }
+  P=$(pkg_in V2o); v2_index "$P" || { echo "    the index did not decrypt"; return 1; }
+  _first=$(awk -F '\t' 'NR > 1 && $2 ~ /^(items|files)\// { print $2 }' "$T/v2.tsv" | LC_ALL=C sort | head -n 1)
+  [ "$(sed -n 2p "$T/v2.tsv" | cut -f1,2)" = "b0001${TAB}ATTACHMENTS.csv" ] && [ "$(sed -n 3p "$T/v2.tsv" | cut -f1,2)" = "b0002${TAB}MANIFEST.csv" ] \
+    && [ "$(sed -n 8p "$T/v2.tsv" | cut -f1,2)" = "b0007${TAB}$_first" ] || { echo "    b0001 is not the path the drawn order puts first:"; cut -f1,2 "$T/v2.tsv" | show; return 1; }
+}
+# the index is audited before anything is encrypted: an operator string found only there (a login name "b0001", the
+# first block's name) refuses the --list seal (counts and category only; no package, nothing left); the same vault
+# seals without --list (no index)
+arm_v2_audit() {
+  arm_dir v2aud
+  if offline PATH="$(sb)" FAKE_ID_UN=b0001 sh "$1" seal V2a 10 --list; then echo "    SEALED although the index holds the operator's login name"; return 1; fi
+  grep -q 'PII/ID audit: [0-9]* hit(s) (categories: login-name) in the index (block, path, bytes, sha256, gzip bytes)' "$T/out.log" || { echo "    refused for another reason:"; show "$T/out.log"; return 1; }
+  [ -z "$(pkg_in V2a)" ] && [ -z "$(ls -A "$T/tmp")" ] || { echo "    a package or plaintext was left behind"; return 1; }
+  ! grep -q '^  blocks ' "$T/out.log" || { echo "    blocks were reported before the index audit"; return 1; }
+  arm_dir v2aud1
+  offline PATH="$(sb)" FAKE_ID_UN=b0001 sh "$1" seal V2a 10 || { echo "    the same vault without --list did not seal:"; show "$T/out.log"; return 1; }
+}
+# flip FILE: its third-from-last byte changed (to that byte + 1, mod 256)
+flip() {
+  _fo=$(( $(wc -c < "$1") - 3 )); _fb=$(tail -c 3 "$1" | head -c 1 | od -An -tu1 | tr -d ' ')
+  printf "\\$(printf %03o $(( (_fb + 1) % 256 )))" | dd of="$1" bs=1 seek="$_fo" conv=notrunc 2>/dev/null
+}
+# v2_tamper P CASE SCRIPT: a copy of P (in $T/v2t) changed one way; open (KEY path) must refuse it for its reason, and
+# leave no restored/
+v2_tamper() {
+  rm -rf "$T/v2t"; cp -Rp "$1" "$T/v2t"; Q="$T/v2t"
+  case $2 in
+    block) flip "$Q/b0003"; _why="block b0003 did not open with the data key" ;;
+    index) flip "$Q/index"; _why='the data key did not open the index' ;;
+    missing) rm "$Q/b0002"; _why="the package's blocks are not exactly the index's: 7 listed, 6 present" ;;
+    extra) cp "$Q/b0001" "$Q/b0099"; _why="the package's blocks are not exactly the index's: 7 listed, 8 present" ;;
+    swapped) mv "$Q/b0001" "$Q/x" && mv "$Q/b0002" "$Q/b0001" && mv "$Q/x" "$Q/b0002"; _why='★ block b0001 ' ;;
+    gzip) _g=$(sed -n 's/^index-gzip: //p' "$Q/layout"); sed -i '' "s/^index-gzip: .*/index-gzip: $(( _g + 1 ))/" "$Q/layout"; _why="the index is not its gzip stream of $(( _g + 1 )) bytes" ;;
+    both) cp "$Q/b0001" "$Q/vault.tar.gz.age"; _why='holds both a per-file layout and vault.tar.gz.age' ;;
+  esac
+  if offline sh "$3" open "$Q" --identity "$T/recovery.key"; then echo "    a $2-tampered package OPENED"; return 1; fi
+  grep -q -- "$_why" "$T/out.log" || { echo "    $2: refused for another reason:"; show "$T/out.log"; return 1; }
+  [ ! -e "$Q/restored" ] && [ ! -e "$Q/x" ] || { echo "    $2: restored/ (or a stray file) was left"; return 1; }
+}
+# open refuses a tampered package, for its reason, and leaves no restored/: a changed byte in a block or in the index, a
+# missing block, an extra block, two blocks swapped, a wrong index-gzip, a layout beside vault.tar.gz.age
+arm_v2_tamper() {
+  arm_dir v2tamp
+  offline sh "$1" seal V2t 10 --list --recovery-recipient "$RECIP" || { echo "    the --list seal failed:"; show "$T/out.log"; return 1; }
+  for c in block index missing extra swapped gzip both; do v2_tamper "$(pkg_in V2t)" "$c" "$1" || return 1; done
+}
+# a crafted index (re-encrypted to the package's own data key, KEY path): a path with "..", a repeated block, a line
+# that is not 5 fields: open refuses before anything is written, nothing lands outside restored/; a line whose SHA-256
+# is not its block's file: refused, restored/ removed
+arm_v2_index() {
+  arm_dir v2idx; rm -f "$T/escaped"
+  offline sh "$1" seal V2i 10 --list --recovery-recipient "$RECIP" || { echo "    the --list seal failed:"; show "$T/out.log"; return 1; }
+  _z=$(printf '%064d' 0)
+  for c in "s|${TAB}MANIFEST[.]csv${TAB}|${TAB}../../escaped${TAB}|=malformed or repeated line" "2s|^b0001${TAB}|b0002${TAB}|=malformed or repeated line" \
+           "2s|${TAB}[0-9]*\$||=malformed or repeated line" "2s|${TAB}[0-9a-f]\{64\}${TAB}|${TAB}$_z${TAB}|=its file does not match the index (bytes or SHA-256)"; do
+    _cw=${c#*=}; c=${c%%=*}
+    rm -rf "$T/v2c"; cp -Rp "$(pkg_in V2i)" "$T/v2c"; Q="$T/v2c"
+    v2_index "$Q" && sed "$c" "$T/v2.tsv" > "$T/v2.crafted" && ! cmp -s "$T/v2.tsv" "$T/v2.crafted" || { echo "    could not craft the index ($c)"; return 1; }
+    gzip -n -9 -c "$T/v2.crafted" > "$T/v2.cgz" && age -r "$(age-keygen -y "$T/v2.id")" -o "$Q/index" "$T/v2.cgz" \
+      && printf 'layout: per-file\npadding: none\nindex-gzip: %s\n' "$(wc -c < "$T/v2.cgz" | tr -d ' ')" > "$Q/layout" || { echo "    could not re-encrypt the crafted index"; return 1; }
+    if offline sh "$1" open "$Q" --identity "$T/recovery.key"; then echo "    a crafted index ($c) was OPENED"; return 1; fi
+    grep -q -- "$_cw" "$T/out.log" || { echo "    crafted index ($c): refused for another reason (want: $_cw):"; show "$T/out.log"; return 1; }
+    [ ! -e "$Q/restored" ] && [ ! -e "$T/escaped" ] && [ ! -e "$Q/escaped" ] || { echo "    crafted index ($c): something was written"; return 1; }
+  done
+}
+# a block that does not come back in the seal's round trip (sigbin/age changes the decrypted bytes) refuses the seal,
+# naming the block; nothing is left under TMPDIR and no half package
+arm_v2_rt() {
+  arm_dir v2rt; E="$T/tmp-v2rt"; rm -rf "$E"; mkdir "$E"
+  if offline TMPDIR="$E" PATH="$(sb)" FAKE_AGE_V2_RT=1 sh "$1" seal V2r 10 --list; then echo "    SEALED although a block did not round-trip"; return 1; fi
+  grep -q 'round-trip FAILED: ★ block b[0-9]* is not its gzip stream of [0-9]* bytes' "$T/out.log" || { echo "    refused for another reason:"; show "$T/out.log"; return 1; }
+  [ -z "$(ls -A "$E")" ] && [ -z "$(pkg_in V2r)" ] || { echo "    plaintext or a half package was left behind"; return 1; }
+}
+# SIGTERM while the blocks are encrypted (sigbin/age signals the seal at b0003): exit 130, nothing under TMPDIR, no half
+# package (the gzipped plaintext blocks live in the work dir the traps remove)
+arm_v2_signal() {
+  arm_dir v2sig; E="$T/tmp-v2sig"; rm -rf "$E"; mkdir "$E"
+  st=0; offline TMPDIR="$E" PATH="$(sb)" FAKE_AGE_SIGNAL_V2=TERM sandbox-exec -p "$(no_tmp_writes "$E")" sh "$1" seal V2g 10 --list || st=$?
+  [ "$st" = 130 ] || { echo "    exit status $st after SIGTERM, not 130:"; show "$T/out.log"; return 1; }
+  [ -z "$(ls -A "$E")" ] && [ -z "$(pkg_in V2g)" ] || { echo "    left under TMPDIR, or a half package, after SIGTERM"; return 1; }
+}
+# --armor reaches the index and every block (and both unlock files)
+arm_v2_armor() {
+  arm_dir v2arm
+  offline sh "$1" seal V2r 10 --list --armor --recovery-recipient "$RECIP" || { echo "    the --list --armor seal failed:"; show "$T/out.log"; return 1; }
+  P=$(pkg_in V2r)
+  for f in unlock-TIME.age unlock-KEY.age index $(cd "$P" && ls | grep '^b[0-9]'); do
+    is_armored "$P/$f" || { echo "    $f is not canonical age ASCII armor"; return 1; }
+  done
+  [ "$(cat "$P/ARMOR")" = pem ] || { echo "    no ARMOR marker"; return 1; }
+}
+# the default seal (no --list) is format /1 exactly as before: its file set, SEALED.txt's format line and blocks, the
+# README's archive line, and none of the format /2 output
+arm_v1_unchanged() {
+  arm_dir v1same
+  offline sh "$1" seal V1s 10 --recovery-recipient "$RECIP" || { echo "    the default seal failed:"; show "$T/out.log"; return 1; }
+  P=$(pkg_in V1s)
+  [ "$(ls -A "$P" | LC_ALL=C sort | tr '\n' ' ')" = 'MANIFEST.csv README.txt SEALED.txt STRUCTURE.txt chain-info.json round unlock-KEY.age unlock-TIME.age vault.tar.gz.age ' ] \
+    || { echo "    the default package's files changed:"; ls -A "$P" | show; return 1; }
+  [ "$(sed -n 2p "$P/SEALED.txt")" = 'format: vault-timelock-sealed/1' ] && [ "$(sed -n 3p "$P/SEALED.txt" | cut -c1-14)" = 'what-this-is: ' ] \
+    && [ "$(grep '^\[file ' "$P/SEALED.txt" | cut -d' ' -f2 | tr '\n' ' ')" = 'unlock-TIME.age vault.tar.gz.age ' ] && ! grep -qE '^(layout|blocks|padding): ' "$P/SEALED.txt" \
+    || { echo "    SEALED.txt is not format /1 with unlock-TIME.age and vault.tar.gz.age"; return 1; }
+  grep -q '^  vault.tar.gz.age   the vault (tar.gz), age-encrypted to a one-time X25519 key$' "$P/README.txt" && ! grep -q 'per-file' "$P/README.txt" \
+    && grep -qx "binds-to: vault.tar.gz.age sha256=$(sed -n 's/^\[file vault\.tar\.gz\.age bytes=[0-9]* sha256=\([0-9a-f]\{64\}\)\]$/\1/p' "$P/SEALED.txt")   (valid for this archive only)" "$P/STRUCTURE.txt" \
+    || { echo "    README.txt or STRUCTURE.txt is not format /1's"; return 1; }
+  ! grep -qE '^  (layout|blocks)  ' "$T/out.log" && ! grep -q 'the index' "$T/out.log" || { echo "    the default seal printed format /2 output:"; show "$T/out.log"; return 1; }
+}
+# format /1 readers refuse a format /2 text on its format line: core's published-text parser (sealedFiles: what Open
+# decrypts; checkPayload: what is published) names payload.sealed-line; and the format /1 open of this tool's own
+# SEALED.txt check (--plaintext) refuses a /2 package whose SEALED.txt says /1 and a /1 package whose SEALED.txt says /2
+arm_v2_reader() {
+  arm_dir v2rd
+  offline sh "$1" seal V2d 10 --list --recovery-recipient "$RECIP" || { echo "    the --list seal failed:"; show "$T/out.log"; return 1; }
+  _core=$(dirname "$SELF")/packages/core/src/text/payload.ts
+  env -i PATH="$PATH" node --input-type=module -e '
+    const [core, file] = process.argv.slice(1)
+    const { sealedFiles, checkPayload } = await import(core)
+    const s = (await import("node:fs")).readFileSync(file, "utf8")
+    const t = "vault-timelock/1 unlock=" + /^unlock-after: (\S+)/m.exec(s)[1] + "\nar://" + "A".repeat(43) + "\nsynthetic note\n\n" + s
+    let r = "ACCEPTED"
+    try { sealedFiles(t) } catch (e) { r = "refused " + e.guardId + ": " + e.message }
+    const f = checkPayload(t).issues.find((i) => i.id === "payload.sealed-line")
+    process.stdout.write(r + "\n" + (f ? f.message : "no format refusal") + "\n")' "$_core" "$(pkg_in V2d)/SEALED.txt" > "$T/v2rd.out" 2>&1
+  grep -q '^refused payload.invalid: not a valid published text: payload.sealed-line' "$T/v2rd.out" && grep -q 'needs exactly one `format:` line' "$T/v2rd.out" \
+    || { echo "    core's format /1 parser did not refuse the format /2 text on its format line:"; show "$T/v2rd.out"; return 1; }
+}
+# open --plaintext (after the round) of a --list package writes the SAME SEALED-plaintext.txt as format /1: the PLAIN vault
+# sealed with --keep-item-ids both ways (so its ids, its paths and its order are the same) gives a byte-identical body; the
+# header names the index (its digest) as the archive; its own SEALED.txt saying format /1, or no layout line: refused
+arm_v2_plaintext() {
+  for f in v1 v2; do
+    eval "_src=\$PT_$f"; [ -n "$_src" ] || { echo "    no $f PLAIN package was sealed"; return 1; }
+    rm -rf "$T/v2pt-$f"; mkdir -p "$T/v2pt-$f"; cp -Rp "$_src" "$T/v2pt-$f/"; eval "_q$f=\$T/v2pt-$f/\$(basename \"\$_src\")"
+  done
+  for f in v1 v2; do
+    eval "Q=\$_q$f"
+    offline sh "$1" open "$Q" --identity "$T/recovery.key" --plaintext || { echo "    open --plaintext ($f) failed:"; show "$T/out.log"; return 1; }
+  done
+  tail -n +7 "$_qv1/SEALED-plaintext.txt" > "$T/v2pt.b1"; tail -n +7 "$_qv2/SEALED-plaintext.txt" > "$T/v2pt.b2"
+  [ -s "$T/v2pt.b1" ] && cmp -s "$T/v2pt.b1" "$T/v2pt.b2" || { echo "    the SEALED-plaintext.txt bodies differ (line $(first_diff_line "$T/v2pt.b1" "$T/v2pt.b2"); not shown)"; return 1; }
+  [ "$(sed -n 3p "$_qv2/SEALED-plaintext.txt")" = "source: SEALED.txt sha256=$(shasum -a 256 "$_qv2/SEALED.txt" | cut -c1-64)   archive: index sha256=$(shasum -a 256 "$_qv2/index" | cut -c1-64)   structure: ✓" ] \
+    && [ "$(sed -n 2p "$_qv2/SEALED-plaintext.txt")" = 'format: vault-timelock-plaintext/1' ] && [ "$(stat -f %Lp "$_qv2/SEALED-plaintext.txt")" = 600 ] \
+    || { echo "    the format /2 SEALED-plaintext.txt header is not format /1's with archive: index"; sed -n 1,4p "$_qv2/SEALED-plaintext.txt" | show; return 1; }
+  cp "$_qv2/SEALED.txt" "$T/v2pt.sealed"
+  for e in 's|^format: vault-timelock-sealed/2$|format: vault-timelock-sealed/1|' '/^layout: per-file$/d'; do
+    rm -rf "$_qv2/restored" "$_qv2/SEALED-plaintext.txt"; sed "$e" "$T/v2pt.sealed" > "$_qv2/SEALED.txt"
+    ! cmp -s "$T/v2pt.sealed" "$_qv2/SEALED.txt" || { echo "    the edit ($e) changed nothing"; return 1; }
+    if offline sh "$1" open "$_qv2" --identity "$T/recovery.key" --plaintext; then echo "    a format /2 package whose SEALED.txt was edited ($e) got a plaintext"; return 1; fi
+    grep -q "★ --plaintext: SEALED.txt does not carry this index's SHA-256" "$T/out.log" && [ ! -e "$_qv2/SEALED-plaintext.txt" ] || { echo "    ($e) refused for another reason:"; show "$T/out.log"; return 1; }
+  done
+}
+
 # ── self-test: the WHOLE pipeline, on a SYNTHETIC vault. No real vault is touched. ───────────
 #    Every REAL drand contact below runs under sandbox-exec with B §6.1's profile (TOR_ONLY): the
 #    kernel allows exactly one outbound destination, Tor's SOCKS port. The plumbing arms run on
@@ -3928,6 +4576,14 @@ esac
 case "\$*" in *"/rt/rt.tar.gz"*)
   if [ -n "\${FAKE_AGE_SIGNAL:-}" ]; then kill -"\$FAKE_AGE_SIGNAL" "\$PPID"; fi
   if [ "\${FAKE_AGE_FAIL_RT:-0}" = 1 ]; then exit 1; fi ;;
+esac
+# (lane B, seal --list) FAKE_AGE_V2_RT=1: a block decrypted by v2_restore (-o .../v2.blk) gains one byte; FAKE_AGE_SIGNAL_V2:
+# that signal to the seal when it encrypts block b0003 (from .../v2/gz/b0003)
+case "\$*" in *"/v2.blk "*)
+  if [ "\${FAKE_AGE_V2_RT:-0}" = 1 ]; then o=; p=; for a; do [ "\$p" != -o ] || o=\$a; p=\$a; done; printf x >> "\$o"; fi ;;
+esac
+case "\$*" in *"/v2/gz/b0003")
+  if [ -n "\${FAKE_AGE_SIGNAL_V2:-}" ]; then kill -"\$FAKE_AGE_SIGNAL_V2" "\$PPID"; fi ;;
 esac
 exit \$st
 FAKE
@@ -4332,6 +4988,53 @@ FAKE
     mut_arm pt-sepedge 's/return edges(s.k, t)/return false/' arm_plaintext_injective "reverting the separator-edge trigger (a label ending in \" :\", a value starting with \":\")" "rows are not injective"
   fi
 
+  # ── lane B: seal --list, SEALED.txt format /2 (offline; fake op/tle/curl, real age; v2-format.md) ───────────────
+  # the PLAIN vault again, --keep-item-ids (the same ids, paths and order both ways), as format /1 and as --list, with a
+  # 30 s horizon: its round has passed when arm_v2_plaintext opens copies of it at the end of this block (sealed HERE,
+  # not beside PT_SRC: the real 60 s seals above must still be shut when their TIME path is first tried)
+  # (lane B) the PLAIN vault again, --keep-item-ids (the same ids, paths and order both ways), as format /1 and as --list
+  for f in v1 v2; do
+    eval "PT_$f="; arm_dir "ptsrc-$f"; if [ "$f" = v2 ]; then _fl=--list; else _fl=; fi
+    if offline OP_FIXTURE_PLAIN=1 TL_TEST_SECONDS=30 sh "$SELF" seal "Plain$f" 10 --keep-item-ids --recovery-recipient "$RECIP" $_fl; then eval "PT_$f=\$(pkg_in Plain$f)"
+    else echo "  FAIL the PLAIN vault ($f, --keep-item-ids) did not seal"; show "$T/out.log"; ok=1; fi
+  done
+  check "--list: the format /2 package (layout, index, b0001..b0007, no vault.tar.gz.age) and SEALED.txt (format /2, layout per-file, blocks: 7, padding: none, unlock-TIME.age, index with gzip=, the blocks in order; no path of the vault); the index audited; the round trip through the index and every block; README per-file; STRUCTURE.txt bound to the index; open (KEY path) restores and verifies 7 blocks, 3 items, 2 attachments, structure ✓" arm_v2_seal "$SELF"
+  check "--list LITERAL: SEALED.txt alone in an empty dir; its printed steps 1-4 (awk, sed, base64, shasum, age, head -c, gunzip; tle = the fake drand) recover every file, OK, and shasum -c the manifests OK: padding none, --pad, --pad --armor" arm_v2_literal "$SELF"
+  if [ -f "$T/v2lit-padded.txt" ]; then
+    for m in "cut|s/{ f = (\$2 == n); next }/{ f = 0; next }/" "trunc|s/| head -c \"\$g\" |/|/"; do
+      sed "${m#*|}" "$T/v2lit-padded.txt" > "$T/v2lit-mut.txt"
+      if cmp -s "$T/v2lit-padded.txt" "$T/v2lit-mut.txt"; then echo "  FAIL MUTANT v2-literal/${m%%|*}: the alteration changed nothing"; ok=1
+      elif v2_lit "$T/v2lit-mut" "$T/v2lit-mut.txt" 1 4 > "$T/v2lit.log" 2>&1 && v2_lit_ok "$T/v2lit-mut" 7 >> "$T/v2lit.log" 2>&1
+      then echo "  FAIL MUTANT v2-literal/${m%%|*} SURVIVED: the altered text still recovered the vault"; ok=1
+      else echo "  OK   MUTANT v2-literal/${m%%|*} killed: altering the printed $( [ "${m%%|*}" = cut ] && echo 'cut (awk)' || echo "block step's cut at the gzip length (a --pad text)" ) makes the literal rehearsal FAIL (it passes unaltered, above)"; fi
+    done
+  fi
+  check "--list --pad: every block and the index decrypt to exactly their size bucket, zeros after the gzip stream; without --pad to exactly the stream; no gzip name or MTIME; pad-bucket's table; --pad without --list refused" arm_v2_pad "$SELF"
+  mut_arm v2-pad d arm_v2_pad "dropping the zero padding (the layout still says buckets)" "the --list --pad seal failed"
+  mut_arm v2-gzip 's/gzip -n -9 -c "\$WORK\/s/gzip -9 -c "$WORK\/s/' arm_v2_pad "gzip without -n for the blocks" "its gzip header carries"
+  check "--list: the block numbers follow the drawn order (a seeded TL_ORDER_SOURCE), not the paths; the banner names the seam" arm_v2_order "$SELF"
+  mut_arm v2-order 's/ | LC_ALL=C sort | cut/ | cut/' arm_v2_order "numbering the blocks in path order" "b0001 is not the path the drawn order puts first"
+  check "--list: the index is audited before encryption: an operator string only it holds refuses (category only; no package, nothing left); the same vault seals without --list" arm_v2_audit "$SELF"
+  mut_arm v2-audit 's/|| die /|| true /' arm_v2_audit "accepting a hit in the index" "SEALED although the index holds"
+  mut_arm v2-audit-call d arm_v2_audit "not auditing the index" "SEALED although the index holds"
+  check "--list open refuses, for its reason, with no restored/ left: a changed byte in a block or the index, a missing or an extra block, two blocks swapped, a wrong index-gzip, a layout beside vault.tar.gz.age" arm_v2_tamper "$SELF"
+  mut_arm v2-blockset 's/|| die /|| true /' arm_v2_tamper "ignoring a missing or extra block" "refused for another reason"
+  check "--list open: a crafted index (a '..' path, a repeated block, 4 fields) refuses before anything is written; a line whose SHA-256 is not its file's refuses, restored/ removed" arm_v2_index "$SELF"
+  mut_arm v2-index 's/|| die /|| true /' arm_v2_index "accepting a malformed index" "crafted index"
+  mut_arm v2-digest 's/|| die /|| true /' arm_v2_index "accepting a file whose digest is not the index's" "crafted index"
+  check "--list: a block that does not come back in the seal's round trip refuses the seal, naming the block; nothing left" arm_v2_rt "$SELF"
+  mut_arm v2-rt 's/|| die /|| true /' arm_v2_rt "ignoring the per-block round trip" "refused for another reason"
+  check "--list: SIGTERM while the blocks are encrypted: exit 130, nothing under TMPDIR, no half package" arm_v2_signal "$SELF"
+  check "--list --armor: the index and every block (and both unlock files) are canonical age armor" arm_v2_armor "$SELF"
+  mut_arm v2-armor 's/ \$ARMOR_FLAG//' arm_v2_armor "dropping --armor from the blocks" "is not canonical age ASCII armor"
+  mut_arm v2-armor-index 's/ \$ARMOR_FLAG//' arm_v2_armor "dropping --armor from the index" "index is not canonical age ASCII armor"
+  check "the default seal (no --list) is format /1 as before: its files, SEALED.txt (format /1; unlock-TIME.age, vault.tar.gz.age), README and STRUCTURE.txt; no format /2 output" arm_v1_unchanged "$SELF"
+  check "a format /1 reader refuses a format /2 text on its format line: core's published-text parser (Open's sealedFiles) says payload.sealed-line" arm_v2_reader "$SELF"
+  if [ -n "${PT_v1:-}" ] && [ -n "${PT_v2:-}" ]; then
+    wait_round "$(cat "$PT_v2/round")"
+    check "--list open --plaintext (after the round) writes the same SEALED-plaintext.txt as format /1 (the PLAIN vault, --keep-item-ids both ways: byte-identical body); its header names the index; a SEALED.txt saying format /1 or without its layout line refuses" arm_v2_plaintext "$SELF"
+  else echo "  FAIL no PLAIN packages for the --list plaintext arm"; ok=1; fi
+
   # ── Task S2 §7: no operator PII, no 1Password identifier in the sealed payload (offline) ─────
   check "PII scan: the decrypted archive and the time-locked key file hold 0 occurrences of the operator's names, host, home, UTC offset, today's date, uid, or the vault's real ids/member/vault names (counts only)" arm_pii_scan "$SELF"
   mut_arm key-strip "s/ | grep '^AGE-SECRET-KEY-1'//" arm_pii_scan "re-including age-keygen's '# created:' line in the data key" "PII/ID audit: .*seal-date-local"
@@ -4433,6 +5136,8 @@ case "${1:---help}" in
   # test seams for the random offset (Task S2 §6): no network, nothing written
   jitter-max) [ $# -eq 2 ] || die "usage: jitter-max <DURATION>"; jitter_default "$(duration_seconds "$2")" ;;
   jitter-draw) [ $# -eq 2 ] || die "usage: jitter-draw <MAX-SECONDS>"; case $2 in ''|*[!0-9]*) die "jitter-draw: whole seconds" ;; esac; jitter_draw "$2" ;;
+  # test seam for seal --list --pad (lane B): the size bucket of a gzip stream of N bytes; no network, nothing written
+  pad-bucket) [ $# -eq 2 ] || die "usage: pad-bucket <BYTES>"; case $2 in ''|0|*[!0-9]*|????????????????*) die "pad-bucket: 1 to 15 digits" ;; esac; pad_bucket "$2" ;;
   # test seam for STRUCTURE.txt (Task S3): the shape text of DIR/items + DIR/files bound to ARCHIVE, on
   # stdout, built by the same function as the seal's; no network; its scratch dir (under TMPDIR) is removed
   structure) [ $# -eq 3 ] || die "usage: structure <dir> <archive.age>"
@@ -4444,5 +5149,5 @@ case "${1:---help}" in
     _tmpd=${TMPDIR:-/tmp}; WORK=$(mktemp -d "${_tmpd%/}/1password-timelock.XXXXXXXX") || die "mktemp failed"
     trap 'obliterate "$WORK"' EXIT; plaintext_body "$2" ;;
   --self-test) cmd_selftest ;;
-  *) sed -n '2,24p' "$0" ;;
+  *) sed -n '2,25p' "$0" ;;
 esac

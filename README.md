@@ -497,6 +497,14 @@ sealed items (pseudonyms instead; `--keep-item-metadata`, `--keep-item-ids`), se
 key, and audits what it is about to encrypt for operator strings and 1Password identifiers (any hit
 refuses; counts and categories only).
 
+`1password-timelock.sh seal … --list [--pad]` seals **each captured file as its own age block**
+(`SEALED.txt` format `vault-timelock-sealed/2`, `layout: per-file`): every item JSON, attachment and
+both manifests are gzipped and age-encrypted to the same one-time key as `b0001`, `b0002`, … in a random
+order, and only an encrypted `index` says which block is which path (so one file can be opened alone).
+The text shows the file count and each block's size; `--pad` rounds each block up to a size bucket
+(1, 2, 4 … 128 KiB, then multiples of 128 KiB). The time lock, the KEY path, the manifests, STRUCTURE.txt
+and `open` (`--plaintext` too) work as for the default seal, which stays format `/1`, unchanged.
+
 Both carry `--self-test`. Run it first; it is the only thing that distinguishes *locked* from
 *broken*.
 
